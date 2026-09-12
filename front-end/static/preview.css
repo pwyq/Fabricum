@@ -1,24 +1,24 @@
 .preview-grid {
   display: grid;
-  gap: 10px;
+  gap: 8px;
 }
 
 .preview-card {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
-  padding: 11px;
-  background: #121820;
+  padding: 9px;
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 6px;
 }
 
 .preview-card--square {
-  border-left: 3px solid var(--lime);
+  border-left: 2px solid var(--accent);
 }
 
 .preview-card--wide {
-  border-left: 3px solid var(--orange);
+  border-left: 2px solid var(--wide);
 }
 
 .preview-heading {
@@ -37,7 +37,6 @@
   color: var(--faint);
   font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
   font-size: 9px;
-  font-weight: 800;
 }
 
 .preview-heading > span:last-child {
@@ -54,14 +53,9 @@
   overflow: hidden;
   min-height: 82px;
   place-items: center;
-  background:
-    linear-gradient(45deg, #17202b 25%, transparent 25%, transparent 75%, #17202b 75%),
-    linear-gradient(45deg, #17202b 25%, transparent 25%, transparent 75%, #17202b 75%);
-  background-position: 0 0, 8px 8px;
-  background-size: 16px 16px;
-  background-color: #10161e;
-  border: 1px solid #344253;
-  border-radius: 8px;
+  background: #eeeeea;
+  border: 1px solid var(--line);
+  border-radius: 4px;
 }
 
 .preview-media canvas,
@@ -70,7 +64,7 @@
   display: block;
   width: 100%;
   height: auto;
-  background: #090d12;
+  background: #e4e4df;
 }
 
 .preview-media img {
