@@ -1,11 +1,11 @@
 # Fabricum
 
-Fabricum is a game asset processing and optimization toolkit. It currently
-processes 2D images through a local crop editor.
+Fabricum is a game asset processing and optimization toolkit with a local
+browser GUI for preparing 2D artwork.
 
 ## What it can do
 
-- Crop and resize images into square and 4:3 artwork.
+- Choose a source and crop it visually into square and 4:3 artwork.
 - Export PNG, WebP, or AVIF, with quality and lossless options.
 - Preview encoded images and exact file sizes before exporting.
 
@@ -35,7 +35,8 @@ On Linux/macOS:
 ./bin/fabricum -source /images/sample.png -output-dir /images/delivery
 ```
 
-Open the printed local URL, adjust both crops, choose a format, and export.
+Open the printed local URL to launch the GUI, adjust both crops, choose a
+format, and export. The editor and processor stay on localhost.
 Existing output files are replaced. When running from another directory, pass
 `-encoder-directory` pointing to the checkout where you ran `npm ci`.
 Use `-help` to list options.

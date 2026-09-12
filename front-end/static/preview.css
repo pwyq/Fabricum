@@ -1,63 +1,78 @@
+.preview-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.preview-card {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  padding: 11px;
+  background: #121820;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.preview-card--square {
+  border-left: 3px solid var(--lime);
+}
+
+.preview-card--wide {
+  border-left: 3px solid var(--orange);
+}
+
+.preview-heading {
+  gap: 8px;
+  min-width: 0;
+}
+
+.preview-title {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  min-width: 0;
+}
+
+.preview-index {
+  color: var(--faint);
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  font-weight: 800;
+}
+
+.preview-heading > span:last-child {
+  overflow: hidden;
+  color: var(--muted);
+  font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .preview-media {
   display: grid;
+  overflow: hidden;
+  min-height: 82px;
+  place-items: center;
+  background:
+    linear-gradient(45deg, #17202b 25%, transparent 25%, transparent 75%, #17202b 75%),
+    linear-gradient(45deg, #17202b 25%, transparent 25%, transparent 75%, #17202b 75%);
+  background-position: 0 0, 8px 8px;
+  background-size: 16px 16px;
+  background-color: #10161e;
+  border: 1px solid #344253;
+  border-radius: 8px;
 }
 
 .preview-media canvas,
 .preview-media img {
   grid-area: 1 / 1;
+  display: block;
   width: 100%;
-  background: #05080c;
-  border: 1px solid #34485f;
+  height: auto;
+  background: #090d12;
 }
 
 .preview-media img {
-  height: auto;
-}
-
-.preview-card code {
-  overflow-wrap: anywhere;
-  color: #9eb2c6;
-  font-size: 11px;
-}
-
-.preview-heading {
-  justify-content: space-between;
-}
-
-.result-panel {
-  display: grid;
-  gap: 10px;
-}
-
-.result-panel pre {
-  max-height: 240px;
-  margin: 0;
-  overflow: auto;
-  color: #b9ffff;
-  white-space: pre-wrap;
-}
-
-@media (max-width: 900px) {
-  .workspace {
-    grid-template-columns: 1fr;
-  }
-
-  .preview-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .shell {
-    padding: 12px;
-  }
-
-  .header {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .preview-panel {
-    grid-template-columns: 1fr;
-  }
+  object-fit: contain;
 }

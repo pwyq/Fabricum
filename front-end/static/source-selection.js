@@ -28,7 +28,7 @@ export async function requireSource(
     elements.processorControls.hidden = true;
     elements.workspace.hidden = true;
     elements.result.textContent =
-      "Choose an source image to begin.";
+      "Choose a source image to begin.";
   }
 
   elements.loadSource.addEventListener("click", async () => {

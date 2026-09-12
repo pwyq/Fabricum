@@ -1,7 +1,8 @@
 export function createCropEditor({ stage, box, source, specs, onChange }) {
-  const crops = Object.fromEntries(
+  const initialCrops = Object.fromEntries(
     specs.map((spec) => [spec.role, centeredCrop(source, spec)]),
   );
+  const crops = structuredClone(initialCrops);
   let activeRole = specs[0].role;
   let pointerAction = null;
 
@@ -96,7 +97,15 @@ export function createCropEditor({ stage, box, source, specs, onChange }) {
   }
 
   render();
-  return { setActive, getCrops: () => structuredClone(crops) };
+  return {
+    setActive,
+    getCrops: () => structuredClone(crops),
+    reset: () => {
+      for (const spec of specs)
+        crops[spec.role] = structuredClone(initialCrops[spec.role]);
+      render();
+    },
+  };
 }
 
 export function centeredCrop(source, spec) {

@@ -5,6 +5,7 @@ import { capitalize, formatBytes, replaceExtension } from "/app-utils.js";
 const elements = {
   source: document.querySelector("#source"),
   sourceSummary: document.querySelector("#source-summary"),
+  processorVersion: document.querySelector("#processor-version"),
   sourceSelection: document.querySelector("#source-selection"),
   sourceSelector: document.querySelector("#source-selector"),
   loadSource: document.querySelector("#load-source"),
@@ -14,6 +15,7 @@ const elements = {
   cropBox: document.querySelector("#crop-box"),
   cropLabel: document.querySelector("#crop-label"),
   cropSummary: document.querySelector("#crop-summary"),
+  resetCrops: document.querySelector("#reset-crops"),
   import: document.querySelector("#import"),
   sourceFile: document.querySelector("#source-file"),
   export: document.querySelector("#export"),
@@ -22,6 +24,8 @@ const elements = {
   qualityValue: document.querySelector("#quality-value"),
   lossless: document.querySelector("#lossless"),
   result: document.querySelector("#result"),
+  previewStatus: document.querySelector("#preview-status"),
+  workflowSteps: [...document.querySelectorAll("[data-workflow]")],
   tabs: [...document.querySelectorAll("[data-role]")],
   previews: {
     square: document.querySelector("#square-preview"),
@@ -54,7 +58,9 @@ const config = await requireSource(
 const specs = Object.fromEntries(
   config.outputs.map((output) => [output.role, output]),
 );
+elements.processorVersion.textContent = config.processor;
 elements.sourceSummary.textContent = `${config.source.path} · ${config.source.width}×${config.source.height} · ${config.processor}`;
+setWorkflowStep("crop");
 for (const output of config.outputs) {
   elements.previews[output.role].width = output.width;
   elements.previews[output.role].height = output.height;
@@ -71,11 +77,16 @@ const editor = createCropEditor({
   onChange: updatePreviews,
 });
 
+elements.resetCrops.addEventListener("click", () => {
+  editor.reset();
+  elements.result.textContent = "Both crop frames were centered on the source.";
+});
+
 for (const tab of elements.tabs) {
   tab.addEventListener("click", () => {
     const role = tab.dataset.role;
     editor.setActive(role);
-    elements.cropLabel.textContent = role;
+    elements.cropLabel.textContent = capitalize(role);
     for (const candidate of elements.tabs)
       candidate.setAttribute("aria-pressed", String(candidate === tab));
   });
@@ -95,6 +106,7 @@ elements.sourceFile.addEventListener("change", async () => {
   elements.import.disabled = true;
   elements.export.disabled = true;
   elements.result.textContent = "Validating and importing source PNG…";
+  setActivityStatus("Importing source…");
   try {
     await fetchJSON("/api/import", {
       method: "POST",
@@ -107,6 +119,7 @@ elements.sourceFile.addEventListener("change", async () => {
     window.location.assign("/?imported=1");
   } catch (error) {
     elements.result.textContent = error.message;
+    setActivityStatus("Import failed", "error");
     elements.import.disabled = false;
     elements.export.disabled = !hasEncodedPreview;
     elements.sourceFile.value = "";
@@ -116,6 +129,8 @@ elements.sourceFile.addEventListener("change", async () => {
 elements.export.addEventListener("click", async () => {
   elements.export.disabled = true;
   elements.result.textContent = "Writing the previewed outputs…";
+  setActivityStatus("Writing outputs…");
+  setWorkflowStep("export");
   try {
     const response = await fetchJSON("/api/export", {
       method: "POST",
@@ -131,8 +146,10 @@ elements.export.addEventListener("click", async () => {
           `${capitalize(output.role)}: ${output.width}×${output.height} ${output.format.toUpperCase()}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
       )
       .join("\n\n");
+    setActivityStatus("Export complete", "ready");
   } catch (error) {
     elements.result.textContent = error.message;
+    setActivityStatus("Export failed", "error");
   } finally {
     elements.export.disabled = !hasEncodedPreview;
   }
@@ -160,6 +177,7 @@ function updatePreviews(activeRole, crops) {
     canvas.hidden = false;
     elements.encodedPreviews[role].hidden = true;
   }
+  setActivityStatus("Preview updating…");
   scheduleEncodedPreview();
 }
 
@@ -195,6 +213,7 @@ function scheduleEncodedPreview() {
   previewController?.abort();
   hasEncodedPreview = false;
   elements.export.disabled = true;
+  setActivityStatus("Rendering preview…");
   for (const output of config.outputs) {
     document.querySelector(`#${output.role}-size`).textContent =
       `${output.width}×${output.height} ${elements.format.value.toUpperCase()} · estimating…`;
@@ -232,10 +251,28 @@ async function loadEncodedPreview(sequence) {
     }
     hasEncodedPreview = true;
     elements.export.disabled = false;
+    setActivityStatus("Preview ready", "ready");
+    setWorkflowStep("export");
   } catch (error) {
     if (error.name !== "AbortError" && sequence === previewSequence) {
       elements.result.textContent = `Preview failed: ${error.message}`;
+      setActivityStatus("Preview failed", "error");
     }
+  }
+}
+
+function setActivityStatus(message, kind = "") {
+  elements.previewStatus.textContent = message;
+  elements.previewStatus.className = `activity-status${kind ? ` activity-status--${kind}` : ""}`;
+}
+
+function setWorkflowStep(activeStep) {
+  const activeIndex = elements.workflowSteps.findIndex(
+    (step) => step.dataset.workflow === activeStep,
+  );
+  for (const [index, step] of elements.workflowSteps.entries()) {
+    step.classList.toggle("workflow-step--active", index === activeIndex);
+    step.classList.toggle("workflow-step--complete", index < activeIndex);
   }
 }
 
