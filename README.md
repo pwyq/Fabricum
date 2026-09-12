@@ -1,12 +1,3 @@
-TODO:
-```
-1. For fabricum, need a install.sh or equivalent that installs necessary front-end, back-end, or githooks stuff. remove setup-hooks, prepare from package.json
-2. when I directly execute the executable, I'm expected to open the GUI, not requiring me to input some paths.
-Or to separate things:
-- GUI mode
-- CLI mode
-```
-
 # Fabricum
 
 Fabricum is a game asset processing and optimization toolkit with a local
