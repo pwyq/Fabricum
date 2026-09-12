@@ -16,7 +16,8 @@ copy or build-time synchronization step. No application Go files live at root.
 `.github/workflows/build.yml` runs the same local check and build commands on
 Ubuntu and Windows for every PR to main, pushes to main, and manual runs. Linux
 also runs Go race tests. Checks include Go formatting/vet/tests, JavaScript
-syntax, crop math, commit guard tests, and compilation of the embedded CLI.
+syntax, crop math, commit guard tests, file LOC limits, and compilation of the
+embedded CLI.
 
 `.github/workflows/commit-message.yml` checks the PR title and each non-merge
 commit introduced by the PR. Use `<type>: <message> (#<issue-number>)`, for example
@@ -25,13 +26,26 @@ test, build, ci, chore, revert. The issue number must be positive; the guard che
 format without fetching issues. Renovate-authored PRs are exempt from this
 message policy, but still run the build guard.
 
+`.github/workflows/main-policy.yml` runs for pull requests and pushes to main.
+Its CI guard verifies that every newly pushed main commit is associated with a
+merged pull request. Configure the GitHub `main` branch rule to require a pull
+request and the `Require pull request for main` status check; workflow files do
+not change remote branch-protection settings.
+
+The repository includes local hooks under `.githooks`. Run `bash install.sh`
+from the checkout to install dependencies, build the executable, and configure
+them. `pre-commit` rejects commits made while checked out on `main` and runs
+the file LOC check. `pre-push` rejects pushes whose local or remote ref is
+`main`. `commit-msg` enforces the commit subject format. Hooks are local
+guardrails and can be bypassed, so the CI check and GitHub branch rule remain
+required.
+
 The workflows use read-only repository permissions and no deployment secrets.
-Their files are prepared locally; no remote settings or required-status branch
-rules are changed by these scripts.
 
 ## Checks and local release
 
-Run commands from the repository root after `npm ci`. Go can download the required
+Run commands from the repository root after `bash install.sh` (or after
+installing Node dependencies with `npm ci`). Go can download the required
 toolchain when permitted. Sharp is pinned for WebP/AVIF; PNG processing needs only Go.
 
 ```text

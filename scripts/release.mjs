@@ -17,15 +17,17 @@ mkdirSync(resolve(root, 'bin'), { recursive: true })
 const archive = `fabricum-${version}-source.tar.gz`
 // Exact source allowlist excludes local art, native packages, executables, and git history.
 const sources = [
-  '.editorconfig', '.gitattributes', '.gitignore', 'LICENSE', 'README.md',
+  '.editorconfig', '.gitattributes', '.gitignore', 'LICENSE', 'README.md', 'install.sh',
   'docs/README.md', 'docs/configuration.md', 'docs/integration.md',
   'docs/processing.md', 'docs/development.md', 'docs/dependencies.md',
-  'front-end/assets.go', '.github/workflows/build.yml', '.github/workflows/commit-message.yml',
+  'front-end/assets.go', '.github/workflows/build.yml', '.github/workflows/commit-message.yml', '.github/workflows/main-policy.yml',
+  '.githooks/commit-msg', '.githooks/pre-commit', '.githooks/pre-push',
+  'scripts/code/check-file-loc.sh', 'scripts/git/install-hooks.mjs', 'scripts/git/protect-main.cjs',
   'scripts/git/validate-commit-message.cjs', 'scripts/git/validate-pr-title.cjs',
-  'scripts/git/validate-commit-range.cjs', 'scripts/git/commit-guard.test.cjs',
+  'scripts/git/validate-commit-range.cjs', 'scripts/git/commit-guard.test.cjs', 'scripts/git/main-guard.test.cjs',
   'go.mod', 'package.json', 'package-lock.json', 'renovate.json',
   'back-end/cli.go', 'back-end/config.go', 'back-end/config_test.go', 'back-end/encoder.go', 'back-end/export_command.go',
-  'back-end/export_handlers.go', 'back-end/processor.go', 'back-end/processor_test.go', 'back-end/run.go', 'back-end/security.go',
+  'back-end/export_handlers.go', 'back-end/processor.go', 'back-end/processor_test.go', 'back-end/run.go', 'back-end/security.go', 'back-end/source_upload_handler.go',
   'back-end/security_test.go', 'back-end/server.go', 'back-end/source_handler.go', 'back-end/cmd/fabricum/main.go',
   'back-end/encoder/encode.mjs', 'scripts/check.mjs', 'scripts/build.mjs', 'scripts/release.mjs',
   'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/app.css',

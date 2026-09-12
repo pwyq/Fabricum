@@ -229,6 +229,54 @@ func TestImportEndpointRejectsWrongSourceSize(t *testing.T) {
 	assertImageDimensions(t, config.sourcePath, 8, 8)
 }
 
+func TestSourceUploadEndpointSelectsUploadedImage(t *testing.T) {
+	temporary := t.TempDir()
+	config, err := configure(Config{
+		Mode:            ModeGUI,
+		SourceSize:      8,
+		SquareSize:      4,
+		WideWidth:       4,
+		OutputDirectory: temporary,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	app, err := newApplication(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(app.cleanup)
+
+	fixturePath := filepath.Join(temporary, "hero.png")
+	writeFixtureImage(t, fixturePath, 8, 8)
+	fixture, err := os.ReadFile(fixturePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest(http.MethodPost, "http://localhost/api/source-upload", bytes.NewReader(fixture))
+	request.Header.Set("Content-Type", "image/png")
+	request.Header.Set("X-Unit-Art-Token", app.token)
+	request.Header.Set("X-Fabricum-Source-Name", "hero.png")
+	response := httptest.NewRecorder()
+	app.handler().ServeHTTP(response, request)
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected successful source upload, got %d: %s", response.Code, response.Body.String())
+	}
+	var uploaded clientConfig
+	if err := json.NewDecoder(response.Body).Decode(&uploaded); err != nil {
+		t.Fatal(err)
+	}
+	if uploaded.Source == nil || uploaded.Source.Width != 8 || uploaded.Source.Height != 8 {
+		t.Fatalf("expected uploaded 8x8 source, got %+v", uploaded.Source)
+	}
+	if !strings.HasSuffix(uploaded.Source.Path, "hero.png") {
+		t.Fatalf("expected uploaded filename to be retained, got %q", uploaded.Source.Path)
+	}
+	if _, err := os.Stat(app.config.sourcePath); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestValidateEncodingOptions(t *testing.T) {
 	valid := []exportRequest{
 		{Format: "png"},

@@ -130,3 +130,43 @@ func TestInvalidPathsAndOutputCollisions(t *testing.T) {
 		t.Fatal("accepted public listener")
 	}
 }
+
+func TestParseConfigDefaultsToGUIAndCLIRequiresSource(t *testing.T) {
+	gui, err := ParseConfig([]string{}, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if gui.Mode != ModeGUI {
+		t.Fatalf("expected GUI default, got %q", gui.Mode)
+	}
+	if _, err := configure(gui); err != nil {
+		t.Fatalf("GUI should start without a source: %v", err)
+	}
+	handler, err := NewHandler(gui)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "http://localhost/api/config", nil))
+	if response.Code != http.StatusOK {
+		t.Fatalf("expected GUI config endpoint to start without a source, got %d", response.Code)
+	}
+
+	cli, err := ParseConfig([]string{"-mode", "cli"}, io.Discard)
+	if err == nil {
+		t.Fatal("CLI should require a source")
+	}
+
+	root := t.TempDir()
+	source := filepath.Join(root, "source.png")
+	writeFixtureImage(t, source, 8, 8)
+	cli, err = ParseConfig([]string{
+		"-mode", "cli", "-source", source, "-square-size", "4", "-wide-width", "4",
+	}, io.Discard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cli.Mode != ModeCLI {
+		t.Fatalf("expected CLI mode, got %q", cli.Mode)
+	}
+}

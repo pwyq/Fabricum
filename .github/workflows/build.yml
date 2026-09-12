@@ -43,6 +43,9 @@ jobs:
         run: npm ci
       - name: Check formatting, syntax, behavior, and compilation
         run: node scripts/check.mjs
+      - name: Check file LOC limits
+        shell: bash
+        run: bash scripts/code/check-file-loc.sh
       - name: Build standalone CLI with embedded frontend
         run: node scripts/build.mjs
       - name: Run race tests
