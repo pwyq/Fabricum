@@ -1,0 +1,19 @@
+{
+  "name": "fabricum",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "test": "node --test front-end/tests/*.test.js scripts/git/*.test.cjs",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "sharp": "0.35.3"
+  },
+  "description": "A game asset processing and optimization toolkit"
+}

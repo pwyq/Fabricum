@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fabricum</title>
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/preview.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Game asset processing</p>
+          <h1>Fabricum</h1>
+          <div id="source-selection" class="source-selection" hidden>
+            <select id="source-selector" aria-label="Source image">
+              <option value="">Choose source…</option>
+            </select>
+            <button id="load-source" type="button">Load source</button>
+          </div>
+          <p id="source-summary" class="summary">Loading source…</p>
+        </div>
+        <div id="processor-controls" class="role-tabs">
+          <input id="source-file" type="file" accept="image/png,.png" hidden />
+          <button id="import" type="button">Replace current PNG</button>
+          <label class="export-control">
+            Format
+            <select id="format">
+              <option value="png">PNG · lossless</option>
+              <option value="webp" selected>WebP</option>
+              <option value="avif">AVIF</option>
+            </select>
+          </label>
+          <label class="export-control">
+            Quality <output id="quality-value" for="quality">90</output>
+            <input id="quality" type="range" min="1" max="100" value="90" />
+          </label>
+          <label class="export-control export-control--check">
+            <input id="lossless" type="checkbox" />
+            Lossless codec mode
+          </label>
+          <button id="export" type="button" disabled>Export previewed files</button>
+        </div>
+      </header>
+
+      <section id="workspace" class="workspace" aria-label="Crop workspace">
+        <div class="editor-panel">
+          <div class="role-tabs" aria-label="Crop role">
+            <button type="button" data-role="square" aria-pressed="true">
+              Square · 1:1
+            </button>
+            <button type="button" data-role="wide" aria-pressed="false">
+              Wide · 4:3
+            </button>
+          </div>
+          <p class="instruction">
+            Drag inside the frame to move it. Drag any corner to resize while
+            preserving the role’s aspect ratio.
+          </p>
+          <div id="stage" class="stage">
+            <img
+              id="source"
+              alt="Raw unit artwork crop source"
+              draggable="false"
+            />
+            <div
+              id="crop-box"
+              class="crop-box crop-box--square"
+              tabindex="0"
+              aria-label="Square crop area"
+            >
+              <span id="crop-label" class="crop-label">Square</span>
+              <span class="handle handle--nw" data-handle="nw"></span>
+              <span class="handle handle--ne" data-handle="ne"></span>
+              <span class="handle handle--sw" data-handle="sw"></span>
+              <span class="handle handle--se" data-handle="se"></span>
+            </div>
+          </div>
+          <output id="crop-summary" class="crop-summary"></output>
+        </div>
+
+        <aside class="preview-panel" aria-label="Output previews">
+          <article class="preview-card">
+            <div class="preview-heading">
+              <h2>Square</h2>
+              <span id="square-size"></span>
+            </div>
+            <div class="preview-media">
+              <canvas id="square-preview" aria-label="Immediate square crop preview"></canvas>
+              <img id="square-encoded-preview" alt="Encoded square output preview" hidden />
+            </div>
+            <code id="square-path"></code>
+          </article>
+          <article class="preview-card">
+            <div class="preview-heading">
+              <h2>Wide</h2>
+              <span id="wide-size"></span>
+            </div>
+            <div class="preview-media">
+              <canvas id="wide-preview" aria-label="Immediate wide crop preview"></canvas>
+              <img id="wide-encoded-preview" alt="Encoded wide output preview" hidden />
+            </div>
+            <code id="wide-path"></code>
+          </article>
+        </aside>
+      </section>
+
+      <section class="result-panel" aria-live="polite">
+        <h2>Export result</h2>
+        <pre id="result">Adjust both crops, then export.</pre>
+      </section>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+import { spawnSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
+function run(command, args) {
+  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', windowsHide: true })
+  if (result.error) throw result.error
+  if (result.status !== 0) process.exit(result.status ?? 1)
+}
+run(process.execPath, ['scripts/check.mjs'])
+const { version } = JSON.parse(readFileSync(resolve(root, 'package.json')))
+if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Expected a stable semantic version')
+mkdirSync(resolve(root, 'bin'), { recursive: true })
+const archive = `fabricum-${version}-source.tar.gz`
+// Exact source allowlist excludes local art, native packages, executables, and git history.
+const sources = [
+  '.editorconfig', '.gitattributes', '.gitignore', 'LICENSE', 'README.md',
+  'docs/README.md', 'docs/configuration.md', 'docs/integration.md',
+  'docs/processing.md', 'docs/development.md', 'docs/dependencies.md',
+  'front-end/assets.go', '.github/workflows/build.yml', '.github/workflows/commit-message.yml',
+  'scripts/git/validate-commit-message.cjs', 'scripts/git/validate-pr-title.cjs',
+  'scripts/git/validate-commit-range.cjs', 'scripts/git/commit-guard.test.cjs',
+  'go.mod', 'package.json', 'package-lock.json', 'renovate.json',
+  'back-end/cli.go', 'back-end/config.go', 'back-end/config_test.go', 'back-end/encoder.go', 'back-end/export_command.go',
+  'back-end/export_handlers.go', 'back-end/processor.go', 'back-end/processor_test.go', 'back-end/run.go', 'back-end/security.go',
+  'back-end/security_test.go', 'back-end/server.go', 'back-end/source_handler.go', 'back-end/cmd/fabricum/main.go',
+  'back-end/encoder/encode.mjs', 'scripts/check.mjs', 'scripts/build.mjs', 'scripts/release.mjs',
+  'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/app.css',
+  'front-end/static/preview.css', 'front-end/static/crop.js', 'front-end/static/index.html', 'front-end/static/source-selection.js', 'front-end/tests/crop.test.js',
+]
+run('tar', ['-czf', `bin/${archive}`, ...sources])
+const hash = createHash('sha256').update(readFileSync(resolve(root, 'bin', archive))).digest('hex')
+writeFileSync(resolve(root, 'bin', `${archive}.sha256`), `${hash}  ${archive}\n`)
+console.log(`Created bin/${archive}; no publication or tagging performed.`)
