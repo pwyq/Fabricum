@@ -10,7 +10,7 @@ import {
   createPreviewChangeHandler,
   createSizeComparison,
   exportRequest,
-  setActivityStatus,
+  setLiveStatus,
   setWorkflowStep,
   showImmediatePreviews,
   updateExportControls,
@@ -47,8 +47,7 @@ const elements = {
   quality: document.querySelector("#quality"),
   qualityValue: document.querySelector("#quality-value"),
   lossless: document.querySelector("#lossless"),
-  result: document.querySelector("#result"),
-  previewStatus: document.querySelector("#preview-status"),
+  liveStatus: document.querySelector("#live-status"),
   workflowSteps: [...document.querySelectorAll("[data-workflow]")],
   tabs: [...document.querySelectorAll("[data-role]")],
   previews: {
@@ -66,11 +65,9 @@ let previewController;
 let previewSequence = 0;
 let hasEncodedPreview = false;
 if (new URLSearchParams(window.location.search).has("imported")) {
-  elements.result.textContent =
-    "Source image imported. Both crop frames were reset for the new dimensions.";
+  setLiveStatus(elements, "Source image imported. Both crop frames were reset for the new dimensions.");
 } else if (new URLSearchParams(window.location.search).has("selected")) {
-  elements.result.textContent =
-    "Source changed. Both crop frames were reset for the selected source.";
+  setLiveStatus(elements, "Source changed. Both crop frames were reset for the selected source.");
 }
 
 const config = await requireSource(
@@ -107,7 +104,7 @@ const editor = createCropEditor({
 
 elements.resetCrops.addEventListener("click", () => {
   editor.reset();
-  elements.result.textContent = "Both crop frames were centered on the source.";
+  setLiveStatus(elements, "Both crop frames were centered on the source.");
 });
 
 for (const tab of elements.tabs) {
@@ -133,8 +130,7 @@ elements.sourceFile.addEventListener("change", async () => {
   }
   elements.import.disabled = true;
   elements.export.disabled = true;
-  elements.result.textContent = "Validating and importing source image…";
-  setActivityStatus(elements, "Importing source…");
+  setLiveStatus(elements, "Validating and importing source image…");
   try {
     const mediaType = imageMediaType(file);
     if (!mediaType) {
@@ -150,8 +146,7 @@ elements.sourceFile.addEventListener("change", async () => {
     });
     window.location.assign("/?imported=1");
   } catch (error) {
-    elements.result.textContent = error.message;
-    setActivityStatus(elements, "Import failed", "error");
+    setLiveStatus(elements, error.message);
     elements.import.disabled = false;
     elements.export.disabled = !hasEncodedPreview;
     elements.sourceFile.value = "";
@@ -160,8 +155,7 @@ elements.sourceFile.addEventListener("change", async () => {
 
 elements.export.addEventListener("click", async () => {
   elements.export.disabled = true;
-  elements.result.textContent = "Writing the previewed outputs…";
-  setActivityStatus(elements, "Writing outputs…");
+  setLiveStatus(elements, "Writing the previewed outputs…");
   setWorkflowStep(elements, "export");
   try {
     const response = await fetchJSON("/api/export", {
@@ -172,16 +166,17 @@ elements.export.addEventListener("click", async () => {
       },
       body: JSON.stringify(exportRequest(elements, editor.getCrops())),
     });
-    elements.result.textContent = response.outputs
-      .map(
-        (output) =>
-          `${capitalize(output.role)}: ${output.width}×${output.height} ${output.format.toUpperCase()}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
-      )
-      .join("\n\n");
-    setActivityStatus(elements, "Export complete", "ready");
+    setLiveStatus(
+      elements,
+      response.outputs
+        .map(
+          (output) =>
+            `${capitalize(output.role)}: ${output.width}×${output.height} ${output.format.toUpperCase()}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
+        )
+        .join("\n\n"),
+    );
   } catch (error) {
-    elements.result.textContent = error.message;
-    setActivityStatus(elements, "Export failed", "error");
+    setLiveStatus(elements, error.message);
   } finally {
     elements.export.disabled = !hasEncodedPreview;
   }
@@ -200,7 +195,7 @@ function scheduleEncodedPreview() {
   hasEncodedPreview = false;
   elements.export.disabled = true;
   sizeComparison.reset("Rendering encoded sizes…");
-  setActivityStatus(elements, "Rendering preview…");
+  setLiveStatus(elements, "Rendering preview…");
   for (const output of config.outputs) {
     document.querySelector(`#${output.role}-size`).textContent =
       `${output.width}×${output.height} ${elements.format.value.toUpperCase()} · estimating…`;
@@ -231,7 +226,10 @@ async function loadEncodedPreview(sequence) {
         image.hidden = false;
         elements.previews[output.role].hidden = true;
       } catch {
-        elements.result.textContent = `${output.format.toUpperCase()} preview cannot be decoded by this browser. The exact encoded size is still available.`;
+        setLiveStatus(
+          elements,
+          `${output.format.toUpperCase()} preview cannot be decoded by this browser. The exact encoded size is still available.`,
+        );
       }
       document.querySelector(`#${output.role}-size`).textContent =
         `${output.width}×${output.height} ${output.format.toUpperCase()} · ${formatBytes(output.bytes)}`;
@@ -239,12 +237,11 @@ async function loadEncodedPreview(sequence) {
     sizeComparison.update(response.outputs);
     hasEncodedPreview = true;
     elements.export.disabled = false;
-    setActivityStatus(elements, "Preview ready", "ready");
+    setLiveStatus(elements, "Preview ready");
     setWorkflowStep(elements, "export");
   } catch (error) {
     if (error.name !== "AbortError" && sequence === previewSequence) {
-      elements.result.textContent = `Preview failed: ${error.message}`;
-      setActivityStatus(elements, "Preview failed", "error");
+      setLiveStatus(elements, `Preview failed: ${error.message}`);
     }
   }
 }

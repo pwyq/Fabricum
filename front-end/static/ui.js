@@ -56,14 +56,13 @@ export function createPreviewChangeHandler(
       canvas.hidden = false;
       elements.encodedPreviews[role].hidden = true;
     }
-    setActivityStatus(elements, "Preview updating…");
+    setLiveStatus(elements, "Preview updating…");
     schedulePreview();
   };
 }
 
-export function setActivityStatus(elements, message, kind = "") {
-  elements.previewStatus.textContent = message;
-  elements.previewStatus.className = `activity-status${kind ? ` activity-status--${kind}` : ""}`;
+export function setLiveStatus(elements, message) {
+  elements.liveStatus.textContent = message;
 }
 
 export function setWorkflowStep(elements, activeStep) {
