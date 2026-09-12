@@ -36,6 +36,7 @@ type clientSource struct {
 	Path   string `json:"path"`
 	Width  int    `json:"width"`
 	Height int    `json:"height"`
+	Bytes  int64  `json:"bytes"`
 }
 
 type clientOutputConfig struct {
@@ -121,8 +122,8 @@ func (app *application) clientConfig() (clientConfig, error) {
 		return clientConfig{}, fmt.Errorf("measure source: %w", err)
 	}
 	config.Source = &clientSource{
-		URL:  fmt.Sprintf("/source?v=%d-%d", info.ModTime().UnixNano(), info.Size()),
-		Path: filepath.ToSlash(app.config.sourcePath), Width: source.Width, Height: source.Height,
+		URL: fmt.Sprintf("/source?v=%d-%d", info.ModTime().UnixNano(), info.Size()), Path: filepath.ToSlash(app.config.sourcePath),
+		Width: source.Width, Height: source.Height, Bytes: info.Size(),
 	}
 	config.Outputs = []clientOutputConfig{
 		clientOutput(app.config.squareOutput),
