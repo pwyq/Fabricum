@@ -67,12 +67,19 @@
             </div>
           </div>
           <div id="source-selection" class="source-selection" hidden>
-            <label class="field-label" for="source-selector">Source image</label>
-            <div class="source-picker">
-              <select id="source-selector" aria-label="Source image">
-                <option value="">Choose source…</option>
-              </select>
-              <button id="load-source" class="button button--secondary" type="button">Load source</button>
+            <div id="source-path-selection">
+              <label class="field-label" for="source-selector">Source image</label>
+              <div class="source-picker">
+                <select id="source-selector" aria-label="Source image">
+                  <option value="">Choose source…</option>
+                </select>
+                <button id="load-source" class="button button--secondary" type="button">Load source</button>
+              </div>
+            </div>
+            <div id="source-upload" class="source-upload" hidden>
+              <input id="initial-source-file" type="file" accept="image/png,image/jpeg,image/gif,.png,.jpg,.jpeg,.gif" hidden />
+              <button id="choose-source-file" class="button button--secondary" type="button">Choose image</button>
+              <span class="source-upload-copy">PNG · JPEG · GIF</span>
             </div>
           </div>
           <div class="source-help">
@@ -180,9 +187,9 @@
                 <div class="target-row"><span class="target-swatch target-swatch--wide"></span><span>Wide</span><code id="wide-path"></code></div>
               </div>
 
-              <input id="source-file" type="file" accept="image/png,.png" hidden />
+              <input id="source-file" type="file" accept="image/png,image/jpeg,image/gif,.png,.jpg,.jpeg,.gif" hidden />
               <div class="action-stack">
-                <button id="import" class="button button--secondary" type="button">Replace current PNG <span aria-hidden="true">↗</span></button>
+                <button id="import" class="button button--secondary" type="button">Replace source image <span aria-hidden="true">↗</span></button>
                 <button id="export" class="button button--primary" type="button" disabled>
                   <span>Export delivery set</span><span class="button-arrow" aria-hidden="true">→</span>
                 </button>

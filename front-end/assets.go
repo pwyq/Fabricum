@@ -1,4 +1,4 @@
-// Package frontend embeds the editor served by the local CLI.
+// Package frontend embeds the editor served by the local processor.
 package frontend
 
 import "embed"

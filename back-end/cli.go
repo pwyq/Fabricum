@@ -13,6 +13,7 @@ type fileConfig struct {
 	Sources       []Source `json:"sources"`
 	ExportCommand []string `json:"exportCommand"`
 
+	Mode             string `json:"mode"`
 	Source           string `json:"source"`
 	SourceSize       int    `json:"sourceSize"`
 	SquareSize       int    `json:"squareSize"`
@@ -35,6 +36,7 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 	flags := flag.NewFlagSet("fabricum", flag.ContinueOnError)
 	flags.SetOutput(output)
 	configFile := flags.String("config", "", "JSON configuration file")
+	flags.StringVar(&settings.Mode, "mode", "", "launch mode: gui (default) or cli")
 	flags.StringVar(&settings.Source, "source", "", "input PNG, JPEG, or GIF path")
 	flags.StringVar(&settings.OutputDirectory, "output-dir", "output", "output directory")
 	flags.StringVar(&settings.SquareOutput, "square-output", "", "explicit square output path; extension follows selected format")
@@ -42,7 +44,7 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 	flags.IntVar(&settings.SourceSize, "source-size", 0, "required square source size; 0 accepts arbitrary dimensions")
 	flags.IntVar(&settings.SquareSize, "square-size", 512, "square output width and height")
 	flags.IntVar(&settings.WideWidth, "wide-width", 768, "4:3 output width, a multiple of four")
-	flags.StringVar(&settings.EncoderDirectory, "encoder-directory", "", "directory containing installed Sharp dependencies; defaults to cwd")
+	flags.StringVar(&settings.EncoderDirectory, "encoder-directory", "", "directory containing installed Sharp dependencies; defaults to the executable checkout or cwd")
 	flags.StringVar(&settings.Address, "address", "127.0.0.1:4179", "loopback listen address")
 	version := flags.Bool("version", false, "print version and exit")
 	if err := flags.Parse(args); err != nil {
@@ -105,10 +107,13 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 			return Config{}, err
 		}
 	}
+	if settings.Mode == "" {
+		settings.Mode = ModeGUI
+	}
 	if err := validateLocalAddress(settings.Address); err != nil {
 		return Config{}, err
 	}
-	options := Config{Address: settings.Address, Source: settings.Source, SourceSize: settings.SourceSize,
+	options := Config{Mode: settings.Mode, Address: settings.Address, Source: settings.Source, SourceSize: settings.SourceSize,
 		SquareSize: settings.SquareSize, WideWidth: settings.WideWidth, OutputDirectory: settings.OutputDirectory,
 		SquareOutput: settings.SquareOutput, WideOutput: settings.WideOutput, EncoderDirectory: settings.EncoderDirectory}
 	if settings.Sources != nil {

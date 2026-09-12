@@ -2,6 +2,7 @@
 
 ```json
 {
+  "mode": "gui",
   "source": "images/sample.png",
   "outputDirectory": "delivery",
   "squareSize": 512,
@@ -9,6 +10,12 @@
   "encoderDirectory": "."
 }
 ```
+
+The executable defaults to GUI mode. GUI mode can start without `source`; the
+browser then prompts for a PNG, JPEG, or GIF upload and keeps the temporary
+source in a local session directory. `-mode gui` makes this explicit. CLI mode
+is path-driven, requires `source` (or `-source`), prints the local editor URL,
+and does not open a browser. Select it with `"mode": "cli"` or `-mode cli`.
 
 Run `fabricum -config settings.json`. Paths in JSON resolve relative to the JSON
 file; CLI paths resolve relative to the working directory. Explicit flags override
@@ -24,8 +31,9 @@ limited to 64 megapixels and outputs to 8192 pixels per dimension. Crops must fi
 the image, match the role ratio, and never upscale.
 
 `-help` lists options; `-version` prints the version. Help/version exit 0, malformed
-CLI/configuration exits 2, and startup/listener errors exit 1. The CLI starts an
-interactive local server; it does not implement unattended batch crop selection.
+CLI/configuration exits 2, and startup/listener errors exit 1. Both modes start
+the interactive local editor; CLI mode does not implement unattended batch crop
+selection.
 
 The executable embeds the editor and encoder script; it never searches for a
 game repository. No image fixtures or project assets are bundled.

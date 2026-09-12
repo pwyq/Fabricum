@@ -1,3 +1,12 @@
+TODO:
+```
+1. For fabricum, need a install.sh or equivalent that installs necessary front-end, back-end, or githooks stuff. remove setup-hooks, prepare from package.json
+2. when I directly execute the executable, I'm expected to open the GUI, not requiring me to input some paths.
+Or to separate things:
+- GUI mode
+- CLI mode
+```
+
 # Fabricum
 
 Fabricum is a game asset processing and optimization toolkit with a local
@@ -14,31 +23,47 @@ browser GUI for preparing 2D artwork.
 Requires Go 1.26.6 and Node.js 24.15 or newer. From the source checkout:
 
 ```text
-npm ci
-node scripts/build.mjs
+bash install.sh
 ```
+
+The installer installs the pinned encoder dependencies, downloads Go modules,
+builds the standalone executable, and configures the repository's local Git
+hooks. The hooks keep work on feature branches and reject direct pushes to
+`main`.
 
 The executable is written to `bin/fabricum.exe` on Windows or `bin/fabricum`
 on Linux/macOS. Add `bin` to your PATH to use the `fabricum` command anywhere.
 
 ## Use
 
-From the checkout on Windows:
+Running the executable without arguments opens the GUI and lets you choose a
+PNG, JPEG, or GIF source in the browser:
 
 ```text
-bin\fabricum.exe -source C:\images\sample.png -output-dir C:\images\delivery
+bin\fabricum.exe
 ```
 
-On Linux/macOS:
+Use `-mode gui` to make that choice explicit. For path-driven use, select CLI
+mode and provide the source path:
 
 ```text
-./bin/fabricum -source /images/sample.png -output-dir /images/delivery
+bin\fabricum.exe -mode cli -source C:\images\sample.png -output-dir C:\images\delivery
 ```
 
-Open the printed local URL to launch the GUI, adjust both crops, choose a
-format, and export. The editor and processor stay on localhost.
+On Linux/macOS, the equivalent commands are:
+
+```text
+./bin/fabricum
+./bin/fabricum -mode cli -source /images/sample.png -output-dir /images/delivery
+```
+
+GUI mode opens the local URL automatically; CLI mode prints it without opening
+a browser. In either mode, adjust both crops, choose a format, and export in
+the local editor. The editor and processor stay on localhost.
 Existing output files are replaced. When running from another directory, pass
-`-encoder-directory` pointing to the checkout where you ran `npm ci`.
+`-encoder-directory` pointing to the checkout where you ran `bash install.sh`.
+The installed executable finds that checkout automatically when it remains next
+to its `bin` directory.
 Use `-help` to list options.
 
 See [documentation](docs/README.md) for configuration, project integration,

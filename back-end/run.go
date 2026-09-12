@@ -2,8 +2,15 @@ package fabricum
 
 import (
 	"errors"
+	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"time"
 )
 
@@ -21,7 +28,8 @@ func NewHandler(options Config) (http.Handler, error) {
 	return app.handler(), nil
 }
 
-// Serve runs the editor on a loopback address without opening a browser.
+// Serve runs the editor on a loopback address. GUI mode opens the local URL;
+// CLI mode prints it without starting a browser.
 func Serve(options Config) error {
 	if options.Address == "" {
 		options.Address = "127.0.0.1:4179"
@@ -29,19 +37,76 @@ func Serve(options Config) error {
 	if err := validateLocalAddress(options.Address); err != nil {
 		return err
 	}
-	handler, err := NewHandler(options)
+	if options.EncoderDirectory == "" {
+		options.EncoderDirectory = executableEncoderDirectory()
+	}
+	config, err := configure(options)
 	if err != nil {
 		return err
 	}
-	server := &http.Server{Addr: options.Address, Handler: handler,
+	app, err := newApplication(config)
+	if err != nil {
+		return err
+	}
+	defer app.cleanup()
+	listener, err := net.Listen("tcp", options.Address)
+	if err != nil {
+		return fmt.Errorf("listen on %s: %w", options.Address, err)
+	}
+	address := listener.Addr().String()
+	server := &http.Server{Addr: address, Handler: app.handler(),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second,
 		WriteTimeout: 60 * time.Second, IdleTimeout: 60 * time.Second}
-	log.Printf("fabricum/%s ready at http://%s", Version, options.Address)
-	err = server.ListenAndServe()
+	browserAddress := browserURL(address)
+	log.Printf("fabricum/%s ready at %s", Version, browserAddress)
+	if config.mode == ModeGUI {
+		if err := openBrowser(browserAddress); err != nil {
+			log.Printf("could not open the browser automatically; open %s manually: %v", browserAddress, err)
+		}
+	}
+	err = server.Serve(listener)
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
 	}
 	return err
+}
+
+func browserURL(address string) string {
+	return (&url.URL{Scheme: "http", Host: address, Path: "/"}).String()
+}
+
+func openBrowser(address string) error {
+	var command string
+	var arguments []string
+	switch runtime.GOOS {
+	case "windows":
+		command = "rundll32"
+		arguments = []string{"url.dll,FileProtocolHandler", address}
+	case "darwin":
+		command = "open"
+		arguments = []string{address}
+	default:
+		command = "xdg-open"
+		arguments = []string{address}
+	}
+	process := exec.Command(command, arguments...)
+	if err := process.Start(); err != nil {
+		return err
+	}
+	go func() { _ = process.Wait() }()
+	return nil
+}
+
+func executableEncoderDirectory() string {
+	executable, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	root := filepath.Dir(filepath.Dir(executable))
+	if _, err := os.Stat(filepath.Join(root, "node_modules", "sharp")); err != nil {
+		return ""
+	}
+	return root
 }
 
 // WriteFileAtomically replaces one file after synchronizing its temporary file.

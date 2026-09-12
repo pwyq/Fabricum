@@ -1,7 +1,12 @@
 import { fetchJSON } from "/api.js";
 import { createCropEditor } from "/crop.js";
 import { requireSource } from "/source-selection.js";
-import { capitalize, formatBytes, replaceExtension } from "/app-utils.js";
+import {
+  capitalize,
+  formatBytes,
+  imageMediaType,
+  replaceExtension,
+} from "/app-utils.js";
 const elements = {
   source: document.querySelector("#source"),
   sourceSummary: document.querySelector("#source-summary"),
@@ -9,6 +14,10 @@ const elements = {
   sourceSelection: document.querySelector("#source-selection"),
   sourceSelector: document.querySelector("#source-selector"),
   loadSource: document.querySelector("#load-source"),
+  sourcePathSelection: document.querySelector("#source-path-selection"),
+  sourceUpload: document.querySelector("#source-upload"),
+  initialSourceFile: document.querySelector("#initial-source-file"),
+  chooseSourceFile: document.querySelector("#choose-source-file"),
   processorControls: document.querySelector("#processor-controls"),
   workspace: document.querySelector("#workspace"),
   stage: document.querySelector("#stage"),
@@ -43,7 +52,7 @@ let previewSequence = 0;
 let hasEncodedPreview = false;
 if (new URLSearchParams(window.location.search).has("imported")) {
   elements.result.textContent =
-    "Source PNG imported. Both crop frames were reset for the new dimensions.";
+    "Source image imported. Both crop frames were reset for the new dimensions.";
 } else if (new URLSearchParams(window.location.search).has("selected")) {
   elements.result.textContent =
     "Source changed. Both crop frames were reset for the selected source.";
@@ -105,13 +114,17 @@ elements.sourceFile.addEventListener("change", async () => {
   }
   elements.import.disabled = true;
   elements.export.disabled = true;
-  elements.result.textContent = "Validating and importing source PNG…";
+  elements.result.textContent = "Validating and importing source image…";
   setActivityStatus("Importing source…");
   try {
+    const mediaType = imageMediaType(file);
+    if (!mediaType) {
+      throw new Error("Choose a PNG, JPEG, or GIF image.");
+    }
     await fetchJSON("/api/import", {
       method: "POST",
       headers: {
-        "Content-Type": "image/png",
+        "Content-Type": mediaType,
         "X-Unit-Art-Token": config.token,
       },
       body: file,

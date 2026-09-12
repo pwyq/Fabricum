@@ -477,6 +477,8 @@ h3 {
 }
 
 .source-selection {
+  display: grid;
+  gap: 6px;
   min-width: 0;
 }
 
@@ -492,6 +494,20 @@ h3 {
 
 .source-picker {
   gap: 8px;
+}
+
+.source-upload {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 40px;
+}
+
+.source-upload-copy {
+  color: var(--faint);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
 .source-picker select {

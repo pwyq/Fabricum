@@ -14,6 +14,13 @@ import (
 // Version identifies processing behavior in export records.
 const Version = "0.1.0"
 
+const (
+	// ModeGUI opens the local editor and allows a source to be chosen there.
+	ModeGUI = "gui"
+	// ModeCLI keeps the configured, path-driven server behavior without opening a browser.
+	ModeCLI = "cli"
+)
+
 // Source supplies explicit paths for an image and its two delivery roles.
 type Source struct {
 	Path         string `json:"path"`
@@ -21,9 +28,11 @@ type Source struct {
 	WideOutput   string `json:"wideOutput"`
 }
 
-// Config sets processing sizes and optional host-owned source and export policy.
-// Paths are relative to the working directory. Callbacks run serially.
+// Config sets the launch mode, processing sizes, and optional host-owned source
+// and export policy. An empty Mode defaults to GUI. Paths are relative to the
+// working directory. Callbacks run serially.
 type Config struct {
+	Mode             string
 	Address          string
 	Source           string
 	SourceSize       int
@@ -42,6 +51,7 @@ type CropRect = cropRect
 type OutputMeasurement = outputMeasurement
 
 type processorConfig struct {
+	mode             string
 	sourcePath       string
 	sourceSize       int
 	encoderDirectory string
@@ -55,6 +65,13 @@ type processorConfig struct {
 }
 
 func configure(options Config) (processorConfig, error) {
+	mode := options.Mode
+	if mode == "" {
+		mode = ModeGUI
+	}
+	if mode != ModeGUI && mode != ModeCLI {
+		return processorConfig{}, errors.New("mode must be gui or cli")
+	}
 	if options.SourceSize < 0 {
 		return processorConfig{}, errors.New("source-size cannot be negative")
 	}
@@ -75,6 +92,7 @@ func configure(options Config) (processorConfig, error) {
 		return processorConfig{}, err
 	}
 	config := processorConfig{
+		mode:       mode,
 		sourceSize: options.SourceSize, encoderDirectory: options.EncoderDirectory,
 		outputDirectory: directory, squarePath: options.SquareOutput, widePath: options.WideOutput,
 		squareOutput: outputSpec{role: "square", width: options.SquareSize, height: options.SquareSize},
@@ -82,8 +100,8 @@ func configure(options Config) (processorConfig, error) {
 		sources:      options.Sources, afterExport: options.AfterExport,
 	}
 	if options.Source == "" {
-		if options.Sources == nil {
-			return processorConfig{}, errors.New("source is required; pass -source or configure a source list")
+		if mode == ModeCLI {
+			return processorConfig{}, errors.New("source is required in cli mode; pass -source or use -mode gui")
 		}
 		return config, nil
 	}

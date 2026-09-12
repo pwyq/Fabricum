@@ -17,7 +17,7 @@ for (const directory of ['front-end/static', 'back-end/encoder', 'scripts', 'scr
 }
 run('go',['vet','./...'])
 run('go',['test','./...'])
-run(process.execPath,['--test','front-end/tests/crop.test.js','scripts/git/commit-guard.test.cjs'])
+run(process.execPath,['--test','front-end/tests/crop.test.js','scripts/git/commit-guard.test.cjs','scripts/git/main-guard.test.cjs'])
 run('go',['build','./...'])
 const pkg = JSON.parse(readFileSync(resolve(root,'package.json')))
 if (!readFileSync(resolve(root,'back-end/config.go'),'utf8').includes('Version = "'+pkg.version+'"')) throw new Error('Go and package versions differ')

@@ -1,19 +1,13 @@
 package fabricum
 
 import (
-	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	frontend "fabricum/front-end"
 	"fmt"
-	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
 	"io"
 	"io/fs"
-	"mime"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -26,6 +20,7 @@ type application struct {
 	static     http.Handler
 	mutationMu sync.Mutex
 	preview    *previewCache
+	uploadDir  string
 }
 
 type clientConfig struct {
@@ -75,6 +70,7 @@ func (app *application) handler() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/config", app.handleConfig)
 	mux.HandleFunc("POST /api/source", app.handleSelectSource)
+	mux.HandleFunc("POST /api/source-upload", app.handleSourceUpload)
 	mux.HandleFunc("POST /api/export", app.handleExport)
 	mux.HandleFunc("POST /api/preview", app.handlePreview)
 	mux.HandleFunc("POST /api/import", app.handleImport)
@@ -99,6 +95,7 @@ func (app *application) clientConfig() (clientConfig, error) {
 		Processor: "fabricum/" + Version,
 		Token:     app.token,
 		Sources:   []string{},
+		Outputs:   []clientOutputConfig{},
 	}
 	if app.config.sources != nil {
 		sources, err := app.config.sources()
@@ -146,56 +143,11 @@ func (app *application) handleSource(response http.ResponseWriter, request *http
 		writeError(response, http.StatusNotFound, "source is not configured")
 		return
 	}
+	if mediaType, err := sourceMediaType(sourcePath); err == nil {
+		response.Header().Set("Content-Type", mediaType)
+	}
 	response.Header().Set("Cache-Control", "no-store")
 	http.ServeFile(response, request, sourcePath)
-}
-
-func (app *application) handleImport(response http.ResponseWriter, request *http.Request) {
-	if request.Header.Get("X-Unit-Art-Token") != app.token {
-		writeError(response, http.StatusForbidden, "invalid processor session token")
-		return
-	}
-	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
-	if err != nil || mediaType != "image/png" {
-		writeError(response, http.StatusUnsupportedMediaType, "import must be a PNG file")
-		return
-	}
-	request.Body = http.MaxBytesReader(response, request.Body, 32<<20)
-	data, err := io.ReadAll(request.Body)
-	if err != nil {
-		writeError(response, http.StatusBadRequest, "read import: "+err.Error())
-		return
-	}
-	decoded, format, err := image.DecodeConfig(bytes.NewReader(data))
-	if err != nil || format != "png" {
-		writeError(response, http.StatusBadRequest, "import is not a valid PNG")
-		return
-	}
-	app.mutationMu.Lock()
-	defer app.mutationMu.Unlock()
-	if app.config.sourcePath == "" {
-		writeError(response, http.StatusConflict, "select a source before importing")
-		return
-	}
-	if err := validateSourceSize(decoded, app.config); err != nil {
-		writeError(response, http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-	if _, _, err := image.Decode(bytes.NewReader(data)); err != nil {
-		writeError(response, http.StatusBadRequest, "import is not a complete PNG")
-		return
-	}
-	if err := writeFileAtomically(app.config.sourcePath, data); err != nil {
-		writeError(response, http.StatusInternalServerError, "write imported source: "+err.Error())
-		return
-	}
-	app.preview = nil
-	config, err := app.clientConfig()
-	if err != nil {
-		writeError(response, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeJSON(response, http.StatusOK, config)
 }
 
 func ensureJSONEnd(decoder *json.Decoder) error {
