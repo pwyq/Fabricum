@@ -8,9 +8,12 @@
     "node": ">=24.15.0"
   },
   "scripts": {
-    "test": "node --test front-end/tests/*.test.js scripts/git/*.test.cjs",
+    "test": "node --test --test-isolation=none front-end/tests/*.test.js scripts/**/*.test.cjs",
     "check": "node scripts/check.mjs",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "release": "bash scripts/release/release.sh",
+    "release:archive": "node scripts/release.mjs",
+    "scripts:test": "node --test --test-isolation=none scripts/**/*.test.cjs"
   },
   "dependencies": {
     "sharp": "0.35.3"
