@@ -37,7 +37,7 @@ const sources = [
   'back-end/encoder/encode.mjs', 'scripts/check.mjs', 'scripts/build.mjs', 'scripts/release.mjs',
   'scripts/release/extract-release-notes.cjs', 'scripts/release/release.sh',
   'scripts/release/validate-release-tag.cjs', 'scripts/release/validate-release-tag.test.cjs',
-  'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/app.css',
+  'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/ui.js', 'front-end/static/app.css',
   'front-end/static/preview.css', 'front-end/static/crop.js', 'front-end/static/index.html', 'front-end/static/source-selection.js', 'front-end/tests/crop.test.js',
 ]
 run('tar', ['-czf', `bin/${archive}`, ...sources])

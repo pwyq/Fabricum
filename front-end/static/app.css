@@ -195,17 +195,17 @@ output {
 
 .shell {
   display: grid;
-  gap: 20px;
+  gap: 14px;
   width: min(1280px, calc(100% - 48px));
   min-height: calc(100vh - 64px);
   margin: auto;
-  padding: 32px 0 28px;
+  padding: 22px 0 20px;
 }
 
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 28px;
+  gap: 18px;
   align-items: center;
 }
 
@@ -217,7 +217,7 @@ p {
 }
 
 h1 {
-  font-size: clamp(28px, 4vw, 44px);
+  font-size: clamp(32px, 4vw, 52px);
   font-weight: 650;
   letter-spacing: -0.055em;
   line-height: 1.05;
@@ -225,13 +225,13 @@ h1 {
 
 h2 {
   color: var(--text);
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 650;
   letter-spacing: -0.025em;
 }
 
 h3 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
 }
 
@@ -264,7 +264,7 @@ h3 {
 }
 
 .workflow-step strong {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -304,10 +304,10 @@ h3 {
 .source-bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
-  gap: 24px;
+  gap: 16px;
   align-items: center;
-  min-height: 72px;
-  padding: 13px 16px;
+  min-height: 64px;
+  padding: 10px 14px;
 }
 
 .source-identity,
@@ -322,7 +322,7 @@ h3 {
 }
 
 .source-identity h2 {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .source-icon {
@@ -374,7 +374,7 @@ h3 {
   overflow: hidden;
   color: var(--muted);
   font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace;
-  font-size: 11px;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -389,7 +389,7 @@ h3 {
   display: block;
   margin-bottom: 4px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .source-picker {
@@ -417,7 +417,7 @@ h3 {
   min-height: 38px;
   padding: 8px 12px;
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   border: 1px solid var(--line-strong);
   border-radius: 6px;
@@ -467,7 +467,7 @@ h3 {
 .workspace {
   display: grid;
   grid-template-columns: minmax(0, 1.45fr) minmax(360px, 0.75fr);
-  gap: 20px;
+  gap: 14px;
   align-items: start;
 }
 
@@ -481,18 +481,18 @@ h3 {
 
 .inspector-column {
   display: grid;
-  gap: 14px;
+  gap: 10px;
 }
 
 .editor-panel,
 .settings-panel,
 .preview-panel {
-  padding: 16px;
+  padding: 14px;
 }
 
 .editor-panel {
   display: grid;
-  gap: 15px;
+  gap: 12px;
 }
 
 .panel-heading,
@@ -517,7 +517,7 @@ h3 {
 }
 
 .panel-heading--compact h2 {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .live-badge,
@@ -545,7 +545,7 @@ h3 {
   gap: 10px;
   align-items: center;
   min-width: 0;
-  min-height: 50px;
+  min-height: 44px;
   padding: 9px 11px;
   color: var(--muted);
   text-align: left;
@@ -591,7 +591,7 @@ h3 {
 }
 
 .stage-shell {
-  padding: 8px;
+  padding: 6px;
   background: var(--surface-muted);
   border: 1px solid var(--line);
   border-radius: 7px;
@@ -706,7 +706,7 @@ kbd {
 .settings-panel,
 .preview-panel {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .settings-form {
@@ -718,7 +718,7 @@ kbd {
 .toggle-card {
   display: grid;
   gap: 8px;
-  padding: 11px;
+  padding: 9px 10px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -732,7 +732,7 @@ kbd {
 .setting-label {
   display: block;
   color: var(--text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -836,7 +836,7 @@ input[type="range"] {
 .target-list-heading {
   padding: 0 2px 2px;
   color: var(--muted);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -845,7 +845,7 @@ input[type="range"] {
   min-width: 0;
   padding: 7px 8px;
   color: var(--muted);
-  font-size: 11px;
+  font-size: 12px;
   background: var(--surface-muted);
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -894,8 +894,8 @@ input[type="range"] {
 
 .result-panel {
   display: grid;
-  gap: 11px;
-  padding: 15px 16px;
+  gap: 8px;
+  padding: 12px 14px;
 }
 
 .activity-status {
@@ -917,7 +917,7 @@ input[type="range"] {
   padding: 11px 12px;
   overflow: auto;
   color: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.5;
   white-space: pre-wrap;
   background: var(--surface-muted);
@@ -930,7 +930,7 @@ input[type="range"] {
   justify-content: space-between;
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 0 0 20px;
+  padding: 0 0 14px;
   color: var(--faint);
   font-size: 10px;
 }
@@ -995,12 +995,12 @@ input[type="range"] {
 
 @media (max-width: 600px) {
   .shell {
-    gap: 15px;
-    padding-top: 22px;
+    gap: 11px;
+    padding-top: 16px;
   }
 
   h1 {
-    font-size: clamp(28px, 10vw, 38px);
+    font-size: clamp(30px, 10vw, 40px);
   }
 
   .workflow {

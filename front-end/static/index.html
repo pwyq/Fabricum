@@ -180,6 +180,27 @@
                 </div>
                 <span class="preview-live" aria-hidden="true"></span>
               </div>
+              <div class="size-comparison" aria-labelledby="size-comparison-heading" title="File sizes compare the source image with both encoded outputs combined.">
+                <div class="size-comparison-heading">
+                  <h3 id="size-comparison-heading">Size comparison</h3>
+                  <strong id="size-reduction" class="size-reduction">Waiting for preview</strong>
+                </div>
+                <div class="size-comparison-values">
+                  <div class="size-value">
+                    <span>Source</span>
+                    <strong id="source-size">—</strong>
+                    <small id="source-dimensions">—</small>
+                  </div>
+                  <span class="size-arrow" aria-hidden="true">→</span>
+                  <div class="size-value size-value--output">
+                    <span>Export set</span>
+                    <strong id="output-size">—</strong>
+                    <small id="output-dimensions">Preview required</small>
+                  </div>
+                </div>
+                <div class="size-track" aria-hidden="true"><span id="output-size-bar"></span></div>
+                <p id="size-comparison-detail" class="size-comparison-detail">Generate a preview to compare encoded output size.</p>
+              </div>
               <div class="preview-grid">
                 <article class="preview-card preview-card--square">
                   <div class="preview-heading">
