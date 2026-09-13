@@ -191,10 +191,15 @@ func validateImageTransform(transform ImageTransform) error {
 		return fmt.Errorf("unsupported channel %q", transform.Channel)
 	}
 	if transform.Pack != nil {
-		for name, input := range map[string]ChannelInput{
-			"red": transform.Pack.Red, "green": transform.Pack.Green, "blue": transform.Pack.Blue,
+		for _, channel := range []struct {
+			name  string
+			input ChannelInput
+		}{
+			{name: "red", input: transform.Pack.Red},
+			{name: "green", input: transform.Pack.Green},
+			{name: "blue", input: transform.Pack.Blue},
 		} {
-			if err := validateChannelInput(name, input); err != nil {
+			if err := validateChannelInput(channel.name, channel.input); err != nil {
 				return err
 			}
 		}
@@ -204,7 +209,7 @@ func validateImageTransform(transform ImageTransform) error {
 
 func validateResizeSpec(resize ResizeSpec) error {
 	if resize.Width < 1 || resize.Height < 1 || resize.Width > 8192 || resize.Height > 8192 {
-		return errors.New("resize dimensions must be positive")
+		return errors.New("resize dimensions must be between 1 and 8192")
 	}
 	if int64(resize.Width)*int64(resize.Height) > maxTransformPixels {
 		return errors.New("resize dimensions exceed 67108864 pixels")
@@ -346,7 +351,17 @@ func applySpatialTransform(source image.Image, transform ImageTransform) (image.
 			return nil, filter, err
 		}
 	}
+	if err := validateTransformDimensions(current.Bounds()); err != nil {
+		return nil, filter, err
+	}
 	return current, filter, nil
+}
+
+func validateTransformDimensions(bounds image.Rectangle) error {
+	if bounds.Dx() < 1 || bounds.Dy() < 1 || bounds.Dx() > 8192 || bounds.Dy() > 8192 || int64(bounds.Dx())*int64(bounds.Dy()) > maxTransformPixels {
+		return errors.New("output dimensions exceed 8192 pixels per side or 67108864 pixels")
+	}
+	return nil
 }
 
 func cropRectangle(bounds image.Rectangle, crop CropRect) (image.Rectangle, error) {
@@ -525,7 +540,7 @@ func channelValue(pixel color.NRGBA, channel string) uint8 {
 }
 
 func grayscaleValue(pixel color.NRGBA) uint8 {
-	return uint8((299*uint16(pixel.R) + 587*uint16(pixel.G) + 114*uint16(pixel.B) + 500) / 1000)
+	return uint8((299*uint32(pixel.R) + 587*uint32(pixel.G) + 114*uint32(pixel.B) + 500) / 1000)
 }
 
 func colorGray(value uint8) color.Gray {

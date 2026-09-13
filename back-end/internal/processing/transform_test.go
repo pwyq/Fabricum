@@ -132,8 +132,9 @@ func TestTransformChannelAndAlphaOperations(t *testing.T) {
 		t.Fatal(err)
 	}
 	assertTransformImage(t, outputs[0].Data, 2, 1, func(x, _ int, pixel color.NRGBA) {
-		if pixel.A != 255 || pixel.R != pixel.G || pixel.G != pixel.B {
-			t.Fatalf("gray pixel = %+v", pixel)
+		want := []uint8{124, 18}[x]
+		if pixel.A != 255 || pixel.R != want || pixel.G != want || pixel.B != want {
+			t.Fatalf("gray pixel = %+v, want %d", pixel, want)
 		}
 	})
 	assertTransformImage(t, outputs[1].Data, 2, 1, func(x, _ int, pixel color.NRGBA) {
