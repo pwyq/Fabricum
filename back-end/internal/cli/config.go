@@ -41,6 +41,7 @@ func ParseConfig(args []string, output io.Writer) (editor.Config, error) {
 		fmt.Fprintln(output, "  fabricum --source path --output path")
 		fmt.Fprintln(output, "  fabricum -s path -o path")
 		fmt.Fprintln(output, "  fabricum inspect path [path ...]")
+		fmt.Fprintln(output, "  fabricum transform request.json")
 		fmt.Fprintln(output)
 		fmt.Fprintln(output, "Options:")
 		fmt.Fprintln(output, "  -h, --help")

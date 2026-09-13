@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"flag"
 	"fmt"
@@ -11,6 +12,13 @@ import (
 
 func main() {
 	args := os.Args[1:]
+	if requestPath, ok := transformInvocation(args); ok {
+		if err := fabricum.TransformFile(context.Background(), requestPath, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "fabricum:", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if paths, ok := inspectionInvocation(args); ok {
 		if err := fabricum.Inspect(paths, os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "fabricum:", err)
@@ -37,4 +45,14 @@ func inspectionInvocation(args []string) ([]string, bool) {
 		return args[1:], true
 	}
 	return nil, false
+}
+
+func transformInvocation(args []string) (string, bool) {
+	if len(args) > 0 && (args[0] == "transform" || args[0] == "--transform") {
+		if len(args) != 2 {
+			return "", true
+		}
+		return args[1], true
+	}
+	return "", false
 }

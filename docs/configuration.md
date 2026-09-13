@@ -21,6 +21,9 @@ Run with JSON settings:
 - Without `source`, the browser prompts for a PNG, JPEG, or GIF.
 - `--source path --output path` (or `-s path -o path`) automatically uses CLI
   mode, prints the editor URL, and does not open a browser.
+- `fabricum transform request.json` runs a noninteractive transform and writes
+  its versioned receipt as JSON to stdout. Use `-` instead of a request path to
+  read JSON from stdin; relative paths are resolved from the request file.
 - `--output` is an output directory and defaults to `output`.
 - Both modes use the interactive editor. CLI mode is not an unattended batch mode.
 
@@ -64,6 +67,54 @@ file is missing, malformed, mismatched with its extension, or unsupported; the
 process exits 1 if any result contains `error`.
 
 Inspection never calculates content hashes and never writes its inputs.
+
+## Noninteractive transforms
+
+Transform requests are project-neutral JSON descriptions of one source and one
+or more outputs. For example:
+
+```json
+{
+  "source": "images/hero.png",
+  "constraints": {
+    "format": "png",
+    "singleFrame": true,
+    "hasAlpha": true,
+    "width": 1024,
+    "height": 1024
+  },
+  "format": "png",
+  "outputs": [
+    {
+      "role": "sprite",
+      "path": "delivery/hero.png",
+      "transform": {
+        "resize": {
+          "width": 256,
+          "height": 256,
+          "fit": "contain",
+          "filter": "lanczos3"
+        }
+      }
+    }
+  ]
+}
+```
+
+Spatial operations run as crop, resize, then transparent padding. Resize
+supports `fill` and aspect-preserving `contain`; filters are `nearest`,
+`bilinear`, and `lanczos3`. Color operations support `removeAlpha`,
+`grayscale`, a selected `channel` (`red`, `green`, `blue`, `alpha`, or
+`gray`), and generic RGB `pack` inputs. A pack input can read a channel from
+another image with `source` or provide a byte `constant`, so channels such as
+AO, roughness, and zero can be described without a project-specific command.
+
+PNG transforms use deterministic lossless encoding. Transparent outputs retain
+alpha; removing alpha or packing channels produces opaque RGB data. Supported
+source formats are PNG, JPEG, and GIF; GIF transforms use the first frame, or
+fail when `singleFrame` is requested for an animation. Transform outputs are
+written atomically and report dimensions, format, filter, alpha presence,
+encoder, byte count, and SHA-256 in the receipt.
 
 The executable embeds the editor. WebP and AVIF encoding requires the native
 `cwebp` and `avifenc` tools in `encoderDirectory` or `PATH`; it does not search

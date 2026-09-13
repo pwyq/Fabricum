@@ -46,4 +46,12 @@ The receipt contains:
 Keep project naming, manifests, ownership, and alternate-format cleanup in the
 export command. Fabricum does not remove alternate formats.
 
+## Noninteractive transforms
+
+`fabricum transform request.json` performs the same project-neutral processing
+without starting the browser. It writes a version 1 JSON receipt to stdout;
+the receipt contains the absolute `source`, the original `request`, and one
+measurement per output. Relative source, output, channel-source, and codec
+paths are resolved from the request file directory.
+
 See [configuration](configuration.md) for path rules and CLI overrides.

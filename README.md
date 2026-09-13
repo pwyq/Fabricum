@@ -6,6 +6,7 @@ browser GUI for preparing 2D artwork.
 ## Functions
 
 - Crop source image visually into square and 4:3 artwork.
+- Run deterministic noninteractive 2D transforms, including channel packing.
 - Export PNG, WebP, or AVIF, with quality and lossless options, reducing file sizes up to 95%
 - Preview encoded images and exact file sizes before exporting.
 
@@ -36,6 +37,10 @@ CLI mode (Unix):
 Machine-readable asset inspection:
 
 > bin\fabricum.exe inspect image.png model.glb texture.ktx2
+
+Noninteractive image transforms:
+
+> bin\fabricum.exe transform transform.json
 
 Short flags are also available: `-s path -o path`. A bare launch opens the GUI;
 supplying a source or output path automatically selects CLI mode.

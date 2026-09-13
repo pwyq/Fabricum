@@ -14,6 +14,21 @@
 - For repeatable WebP or AVIF, use the pinned native codec versions and the
   same platform/toolchain.
 
+## Deterministic transforms
+
+The `transform` command accepts project-neutral JSON requests for crop,
+exact-size fill resize, aspect-preserving contain resize, transparent padding,
+alpha removal, grayscale, channel extraction, and RGB channel packing. Spatial
+operations run in that order. Resize filtering supports nearest, bilinear, and
+Lanczos3; the default for a new resize is Lanczos3. The built-in decoder
+accepts PNG, JPEG, and GIF sources, with GIF using its first frame unless a
+single-frame constraint rejects an animation.
+
+Transform requests are fully prepared before any output is replaced. Each
+output is then written through the same synchronized temporary-file replacement
+used by interactive export, and its receipt measurement includes the final
+dimensions, alpha presence, encoder, byte count, and SHA-256.
+
 ## File writes
 
 - Export replaces existing outputs.
