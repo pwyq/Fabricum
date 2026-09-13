@@ -50,6 +50,12 @@ const elements = {
   liveStatus: document.querySelector("#live-status"),
   workflowSteps: [...document.querySelectorAll("[data-workflow]")],
   tabs: [...document.querySelectorAll("[data-role]")],
+  previewCards: Object.fromEntries(
+    [...document.querySelectorAll("[data-preview-role]")].map((card) => [
+      card.dataset.previewRole,
+      card,
+    ]),
+  ),
   previews: {
     square: document.querySelector("#square-preview"),
     wide: document.querySelector("#wide-preview"),

@@ -36,6 +36,7 @@ export function createPreviewChangeHandler(
 ) {
   return (activeRole, crops) => {
     setCrops(crops);
+    showPreviewRole(elements, activeRole);
     const active = crops[activeRole];
     elements.cropSummary.textContent = `${capitalize(activeRole)} crop · x ${active.x}, y ${active.y}, ${active.width}×${active.height}`;
     for (const [role, crop] of Object.entries(crops)) {
@@ -59,6 +60,11 @@ export function createPreviewChangeHandler(
     setLiveStatus(elements, "Preview updating…");
     schedulePreview();
   };
+}
+
+export function showPreviewRole(elements, activeRole) {
+  for (const [role, card] of Object.entries(elements.previewCards))
+    card.hidden = role !== activeRole;
 }
 
 export function setLiveStatus(elements, message) {
