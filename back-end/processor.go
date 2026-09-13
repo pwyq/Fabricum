@@ -21,6 +21,7 @@ type cropRect struct {
 }
 
 type exportRequest struct {
+	Role     string   `json:"role,omitempty"`
 	Square   cropRect `json:"square"`
 	Wide     cropRect `json:"wide"`
 	Format   string   `json:"format"`

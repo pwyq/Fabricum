@@ -39,17 +39,24 @@ const elements = {
   cropBox: document.querySelector("#crop-box"),
   cropLabel: document.querySelector("#crop-label"),
   cropSummary: document.querySelector("#crop-summary"),
+  cropRole: document.querySelector("#crop-role"),
   resetCrops: document.querySelector("#reset-crops"),
   import: document.querySelector("#import"),
   sourceFile: document.querySelector("#source-file"),
   export: document.querySelector("#export"),
+  exportLabel: document.querySelector("#export-label"),
   format: document.querySelector("#format"),
   quality: document.querySelector("#quality"),
   qualityValue: document.querySelector("#quality-value"),
   lossless: document.querySelector("#lossless"),
   liveStatus: document.querySelector("#live-status"),
   workflowSteps: [...document.querySelectorAll("[data-workflow]")],
-  tabs: [...document.querySelectorAll("[data-role]")],
+  outputRows: Object.fromEntries(
+    [...document.querySelectorAll("[data-output-role]")].map((row) => [
+      row.dataset.outputRole,
+      row,
+    ]),
+  ),
   previewCards: Object.fromEntries(
     [...document.querySelectorAll("[data-preview-role]")].map((card) => [
       card.dataset.previewRole,
@@ -115,18 +122,18 @@ const editor = createCropEditor({
 
 elements.resetCrops.addEventListener("click", () => {
   editor.reset();
-  setLiveStatus(elements, "Both crop frames were centered on the source.");
+  setLiveStatus(
+    elements,
+    `${capitalize(elements.cropRole.value)} crop frame was centered on the source.`,
+  );
 });
 
-for (const tab of elements.tabs) {
-  tab.addEventListener("click", () => {
-    const role = tab.dataset.role;
-    editor.setActive(role);
-    elements.cropLabel.textContent = capitalize(role);
-    for (const candidate of elements.tabs)
-      candidate.setAttribute("aria-pressed", String(candidate === tab));
-  });
-}
+elements.cropRole.addEventListener("change", () => {
+  const role = elements.cropRole.value;
+  editor.setActive(role);
+  elements.cropLabel.textContent = capitalize(role);
+  updateExportControls(elements, config.outputs);
+});
 
 elements.import.addEventListener("click", () => elements.sourceFile.click());
 elements.format.addEventListener("change", handleExportOptionChange);
@@ -166,7 +173,10 @@ elements.sourceFile.addEventListener("change", async () => {
 
 elements.export.addEventListener("click", async () => {
   elements.export.disabled = true;
-  setLiveStatus(elements, "Writing the previewed outputs…");
+  setLiveStatus(
+    elements,
+    `Writing the previewed ${elements.cropRole.value} output…`,
+  );
   setWorkflowStep(elements, "export");
   try {
     const response = await fetchJSON("/api/export", {
@@ -195,7 +205,7 @@ elements.export.addEventListener("click", async () => {
 
 function handleExportOptionChange() {
   updateExportControls(elements, config.outputs);
-  showImmediatePreviews(elements, config.outputs);
+  showImmediatePreviews(elements, config.outputs, elements.cropRole.value);
   scheduleEncodedPreview();
 }
 
@@ -207,10 +217,9 @@ function scheduleEncodedPreview() {
   elements.export.disabled = true;
   sizeComparison.reset("Rendering encoded sizes…");
   setLiveStatus(elements, "Rendering preview…");
-  for (const output of config.outputs) {
-    document.querySelector(`#${output.role}-size`).textContent =
-      `${output.width}×${output.height} ${elements.format.value.toUpperCase()} · estimating…`;
-  }
+  const output = specs[elements.cropRole.value];
+  document.querySelector(`#${output.role}-size`).textContent =
+    `${output.width}×${output.height} ${elements.format.value.toUpperCase()} · estimating…`;
   const sequence = ++previewSequence;
   previewTimer = setTimeout(() => loadEncodedPreview(sequence), 450);
 }

@@ -1,14 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createPreviewChangeHandler } from "../static/ui.js";
+import { createPreviewChangeHandler, exportRequest } from "../static/ui.js";
 
 function previewCanvas() {
-  return {
+  const canvas = {
     width: 8,
     height: 8,
     hidden: true,
-    getContext: () => ({ clearRect() {}, drawImage() {} }),
+    drawCount: 0,
+    getContext: () => ({
+      clearRect() {},
+      drawImage() {
+        canvas.drawCount += 1;
+      },
+    }),
   };
+  return canvas;
 }
 
 test("shows only the preview for the active crop role", () => {
@@ -47,8 +54,31 @@ test("shows only the preview for the active crop role", () => {
   handleChange("square", crops);
   assert.equal(elements.previewCards.square.hidden, false);
   assert.equal(elements.previewCards.wide.hidden, true);
+  assert.equal(elements.previews.square.drawCount, 1);
+  assert.equal(elements.previews.wide.drawCount, 0);
 
   handleChange("wide", crops);
   assert.equal(elements.previewCards.square.hidden, true);
   assert.equal(elements.previewCards.wide.hidden, false);
+  assert.equal(elements.previews.square.drawCount, 1);
+  assert.equal(elements.previews.wide.drawCount, 1);
+});
+
+test("requests only the selected output role", () => {
+  const request = exportRequest(
+    {
+      cropRole: { value: "wide" },
+      format: { value: "webp" },
+      quality: { value: "84" },
+      lossless: { checked: false },
+    },
+    {
+      square: { x: 1, y: 1, width: 6, height: 6 },
+      wide: { x: 0, y: 1, width: 8, height: 6 },
+    },
+  );
+
+  assert.equal(request.role, "wide");
+  assert.equal(request.format, "webp");
+  assert.equal(request.quality, 84);
 });

@@ -76,22 +76,15 @@
           <div class="editor-column">
             <section class="editor-panel surface" aria-labelledby="editor-heading">
               <div class="panel-heading">
-                <div>
+                <div class="editor-heading-title">
                   <h2 id="editor-heading">Crop</h2>
+                  <select id="crop-role" aria-label="Output shape">
+                    <option value="square">Square (1:1)</option>
+                    <option value="wide">Wide (4:3)</option>
+                  </select>
                 </div>
-                <button id="reset-crops" class="button button--quiet" type="button" title="Center both crop frames on the source image.">
-                  <span aria-hidden="true">↺</span> Reset frames
-                </button>
-              </div>
-
-              <div class="role-tabs editor-tabs" aria-label="Crop role">
-                <button class="role-tab role-tab--square" type="button" data-role="square" aria-pressed="true" title="Square output, 1:1 crop.">
-                  <span class="role-swatch" aria-hidden="true"></span>
-                  <span class="role-tab-copy"><strong>Square</strong></span>
-                </button>
-                <button class="role-tab role-tab--wide" type="button" data-role="wide" aria-pressed="false" title="Wide output, 4:3 crop.">
-                  <span class="role-swatch" aria-hidden="true"></span>
-                  <span class="role-tab-copy"><strong>Wide</strong></span>
+                <button id="reset-crops" class="button button--quiet" type="button" title="Center the selected crop frame on the source image.">
+                  <span aria-hidden="true">↺</span> Reset frame
                 </button>
               </div>
 
@@ -153,17 +146,17 @@
                 </label>
               </div>
 
-              <div class="target-list" aria-label="Output targets">
-                <div class="target-list-heading"><span>Output targets</span><span>Preview paths</span></div>
-                <div class="target-row"><span class="target-swatch target-swatch--square"></span><span>Square</span><code id="square-path"></code></div>
-                <div class="target-row"><span class="target-swatch target-swatch--wide"></span><span>Wide</span><code id="wide-path"></code></div>
+              <div class="target-list" aria-label="Output target">
+                <div class="target-list-heading"><span>Output target</span><span>Path</span></div>
+                <div class="target-row" data-output-role="square"><span class="target-swatch target-swatch--square"></span><span>Square</span><code id="square-path"></code></div>
+                <div class="target-row" data-output-role="wide" hidden><span class="target-swatch target-swatch--wide"></span><span>Wide</span><code id="wide-path"></code></div>
               </div>
 
               <input id="source-file" type="file" accept="image/png,image/jpeg,image/gif,.png,.jpg,.jpeg,.gif" hidden />
               <div class="action-stack">
                 <button id="import" class="button button--secondary" type="button">Replace source image <span aria-hidden="true">↗</span></button>
-                <button id="export" class="button button--primary" type="button" title="Write the two previewed output files." disabled>
-                  <span>Export delivery set</span><span class="button-arrow" aria-hidden="true">→</span>
+                <button id="export" class="button button--primary" type="button" title="Write the selected previewed output file." disabled>
+                  <span id="export-label">Export square</span><span class="button-arrow" aria-hidden="true">→</span>
                 </button>
               </div>
             </section>
@@ -188,7 +181,7 @@
                   </div>
                   <span class="size-arrow" aria-hidden="true">→</span>
                   <div class="size-value size-value--output">
-                    <span>Export set</span>
+                    <span>Output</span>
                     <strong id="output-size">—</strong>
                     <small id="output-dimensions">Preview required</small>
                   </div>
