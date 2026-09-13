@@ -87,6 +87,35 @@ async function installBasis(workspace) {
   await copyExecutables(workspace, [build, source], false, ['basisu'])
 }
 
+async function installGltfpack(workspace) {
+  const meshoptimizerArchive = join(workspace, 'meshoptimizer.tar.gz')
+  const webpSourceArchive = join(workspace, 'libwebp-source.tar.gz')
+  await download(versions.meshoptimizer.source, meshoptimizerArchive)
+  await verify(meshoptimizerArchive, versions.meshoptimizer.sha256)
+  await download(versions.webp.source, webpSourceArchive)
+  await verify(webpSourceArchive, versions.webp.sourceSha256)
+  const meshoptimizerRoot = join(workspace, 'meshoptimizer')
+  const webpRoot = join(workspace, 'libwebp-source')
+  await extract(meshoptimizerArchive, meshoptimizerRoot)
+  await extract(webpSourceArchive, webpRoot)
+  const meshoptimizerSource = join(meshoptimizerRoot, `meshoptimizer-${versions.meshoptimizer.version}`)
+  const webpSource = join(webpRoot, `libwebp-${versions.webp.version}`)
+  const basisSource = join(workspace, 'basis', 'basis_universal-2_0_3')
+  const build = join(workspace, 'gltfpack-build')
+  run('cmake', [
+    '-S', meshoptimizerSource,
+    '-B', build,
+    '-DMESHOPT_BUILD_GLTFPACK=ON',
+    '-DMESHOPT_BUILD_SHARED_LIBS=OFF',
+    '-DMESHOPT_INSTALL=OFF',
+    `-DMESHOPT_GLTFPACK_BASISU_PATH=${basisSource}`,
+    `-DMESHOPT_GLTFPACK_LIBWEBP_PATH=${webpSource}`,
+    `-DCMAKE_BUILD_TYPE=${versions.meshoptimizer.build.type}`,
+  ])
+  run('cmake', ['--build', build, '--config', versions.meshoptimizer.build.type, '--target', versions.meshoptimizer.build.target, '--parallel', '2'])
+  await copyExecutables(workspace, [build], false, ['gltfpack'])
+}
+
 async function copyExecutables(workspace, searchDirectories, includeDecoders = false, additional = []) {
   const filenames = [...(process.platform === 'win32'
     ? ['cwebp.exe', ...(includeDecoders ? ['dwebp.exe'] : []), 'avifenc.exe', ...(includeDecoders ? ['avifdec.exe'] : [])]
@@ -113,6 +142,7 @@ async function main() {
   if (process.platform === 'win32') await installWindows(workspace)
   else await installLinux(workspace)
   await installBasis(workspace)
+  await installGltfpack(workspace)
   if (process.env.GITHUB_PATH) await writeFile(process.env.GITHUB_PATH, `${outputDirectory}\n`, { flag: 'a' })
   console.log(`Native codec tools installed in ${outputDirectory}`)
 }

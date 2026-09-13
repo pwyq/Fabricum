@@ -9,6 +9,7 @@
 | `avifenc` from libavif 1.4.2 | AVIF preview and export container encoding. | BSD license and upstream notices. |
 | libaom 3.14.1 | The only AV1 encoder enabled for libavif. | AOMedia license and patent notice. |
 | `basisu` from Basis Universal 2.0.3 | Loose ETC1S and UASTC-Zstandard KTX2 encoding and mipmap generation. | Apache-2.0 and upstream Basis Universal notice; bundled Zstandard is covered by the upstream source notice. |
+| `gltfpack` from meshoptimizer 1.2 | Static model optimization, optional EXT_meshopt compression, Basis KTX2 texture compression, and WebP texture compression. | MIT meshoptimizer license plus the bundled Basis Universal, libwebp, cgltf, fast_obj, and sdefl notices. |
 | Node.js >=24.15 | Repository scripts, frontend tests, and optional export hooks. It is not used by image encoding. | Node and hook-owned notices apply. Not required by the encoder path. |
 
 The native versions, URLs, Windows artifact digest, selected AV1 codec, and
@@ -28,8 +29,9 @@ patent terms again before distributing native binaries.
   its in-tree Zstandard implementation. The KTX2 path invokes it with
   `-etc1s` or `-uastc -ktx2_zstandard_level 6`, generated mipmaps, and no
   internal multithreading.
-- The command-line integration uses dynamically discoverable native tools.
-  Static CGO integration and bundling are deferred.
+- The command-line integration uses dynamically discoverable native tools. The
+  native installer places the statically linked gltfpack build beside the
+  other tools in `bin/codecs`; static CGO integration remains deferred.
 
 ## Distribution
 
@@ -39,6 +41,8 @@ patent terms again before distributing native binaries.
   the Go binary. A release that bundles them must include the notices from
   `native/NOTICE.md` and the corresponding upstream source/relinking terms.
 - The project Apache-2.0 license does not relicense any codec dependency.
+- gltfpack must be built with meshoptimizer compression (`-c`) as an opt-in
+  EXT_meshopt path. Draco is not built, shipped, or emitted by Fabricum.
 
 ## References
 
