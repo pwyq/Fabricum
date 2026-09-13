@@ -11,7 +11,10 @@ import (
 	"time"
 )
 
+const ExportReceiptSchemaVersion = 1
+
 // ExportReceipt is sent to a configured command after delivery files are written.
+// Schema version 1 is additive: integrations must ignore unknown properties.
 type ExportReceipt struct {
 	SchemaVersion int                            `json:"schemaVersion"`
 	Processor     string                         `json:"processor"`
@@ -22,7 +25,13 @@ type ExportReceipt struct {
 
 func exportCommand(argv []string, directory string) func(string, processing.ExportRequest, []processing.OutputMeasurement) error {
 	return func(source string, request processing.ExportRequest, outputs []processing.OutputMeasurement) error {
-		data, err := json.Marshal(ExportReceipt{1, "fabricum/" + editor.Version, source, request, outputs})
+		data, err := json.Marshal(ExportReceipt{
+			SchemaVersion: ExportReceiptSchemaVersion,
+			Processor:     "fabricum/" + editor.Version,
+			Source:        source,
+			Request:       request,
+			Outputs:       outputs,
+		})
 		if err != nil {
 			return err
 		}

@@ -29,6 +29,7 @@ type OutputMeasurement struct {
 	Width    int      `json:"width"`
 	Height   int      `json:"height"`
 	Format   string   `json:"format"`
+	Encoder  string   `json:"encoder"`
 	Quality  int      `json:"quality,omitempty"`
 	Lossless bool     `json:"lossless,omitempty"`
 	Bytes    int      `json:"bytes"`

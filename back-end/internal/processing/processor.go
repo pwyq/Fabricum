@@ -52,7 +52,7 @@ func PrepareOutputs(ctx context.Context, sourcePath string, request ExportReques
 			Path: path, Data: data,
 			Measurement: OutputMeasurement{
 				Role: spec.Role, Path: filepath.ToSlash(path), Width: spec.Width, Height: spec.Height,
-				Format: request.Format, Quality: request.Quality, Lossless: request.Lossless,
+				Format: request.Format, Encoder: EncoderForFormat(request.Format), Quality: request.Quality, Lossless: request.Lossless,
 				Bytes: len(data), SHA256: hex.EncodeToString(hash[:]), Crop: crop,
 			},
 		})

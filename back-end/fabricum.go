@@ -26,6 +26,7 @@ type AssetFacts = processing.AssetFacts
 type InspectionReport = processing.InspectionReport
 
 const InspectionSchemaVersion = processing.InspectionSchemaVersion
+const ExportReceiptSchemaVersion = cli.ExportReceiptSchemaVersion
 
 func ParseConfig(args []string, output io.Writer) (Config, error) {
 	return cli.ParseConfig(args, output)
