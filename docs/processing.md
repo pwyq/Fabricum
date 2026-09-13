@@ -14,6 +14,25 @@
 - For repeatable WebP or AVIF, use the pinned native codec versions and the
   same platform/toolchain.
 
+## Loose KTX2 texture sets
+
+`fabricum texture-set request.json` (also available as `texture` or `ktx2`)
+builds one or more loose KTX2 files from ordinary image sources. Each output
+can select `etc1s` or `uastc-zstd`, transfer function, color primaries, full
+generated mipmaps, and a quality level. UASTC uses Zstandard level 6 by
+default. `maxWorkers` bounds concurrent encodes; set it to `1` for a
+reproducible single-worker game-asset run.
+
+Texture outputs reuse the deterministic transform and channel-pack operations.
+For an all-or-nothing material set, list `requiredRoles`, for example
+`base-color`, `normal`, and `arm`; all outputs are prepared and validated
+before existing delivery files can be replaced.
+
+Texture receipts report each output's dimensions, encoding, mip count, transfer
+function, color primaries, byte count, SHA-256, processor, and pinned Basis
+Universal version. The KTX2 path accepts opaque RGB results; use `removeAlpha`
+or RGB channel packing for source images with alpha.
+
 ## Deterministic transforms
 
 The `transform` command accepts project-neutral JSON requests for crop,

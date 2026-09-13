@@ -55,3 +55,65 @@ measurement per output. Relative source, output, channel-source, and codec
 paths are resolved from the request file directory.
 
 See [configuration](configuration.md) for path rules and CLI overrides.
+
+## Loose KTX2 texture sets
+
+Use a texture-set request when a project needs independently loaded texture
+files rather than textures embedded in a model. The request is project-neutral:
+each output supplies its own source, delivery path, transform, and KTX2
+encoding options.
+
+```json
+{
+  "maxWorkers": 1,
+  "requiredRoles": ["base-color", "normal", "arm"],
+  "outputs": [
+    {
+      "role": "base-color",
+      "source": "base.png",
+      "path": "delivery/base.ktx2",
+      "encoding": {
+        "encoding": "etc1s",
+        "mipLevels": 11,
+        "transferFunction": "srgb",
+        "colorPrimaries": "bt709"
+      }
+    },
+    {
+      "role": "normal",
+      "source": "normal.png",
+      "path": "delivery/normal.ktx2",
+      "encoding": {
+        "encoding": "uastc-zstd",
+        "mipLevels": 11,
+        "transferFunction": "linear",
+        "colorPrimaries": "bt709"
+      }
+    },
+    {
+      "role": "arm",
+      "source": "base.png",
+      "path": "delivery/arm.ktx2",
+      "transform": {
+        "pack": {
+          "red": {"source": "ao.png", "channel": "red"},
+          "green": {"source": "roughness.png", "channel": "red"},
+          "blue": {"constant": 0}
+        }
+      },
+      "encoding": {
+        "encoding": "uastc-zstd",
+        "mipLevels": 11,
+        "transferFunction": "linear",
+        "colorPrimaries": "bt709"
+      }
+    }
+  ]
+}
+```
+
+All outputs are prepared before any delivery replacement. A missing required
+role, source channel, invalid color contract, or native encoder failure leaves
+existing deliveries untouched. The receipt is schema version 1 and includes
+the request plus output encoding, dimensions, mip count, transfer function,
+color primaries, byte count, SHA-256, processor, and native encoder versions.

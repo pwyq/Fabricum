@@ -7,13 +7,15 @@ browser GUI for preparing 2D artwork.
 
 - Crop source image visually into square and 4:3 artwork.
 - Run deterministic noninteractive 2D transforms, including channel packing.
+- Build loose ETC1S and UASTC-Zstandard KTX2 texture sets from ordinary images.
 - Export PNG, WebP, or AVIF, with quality and lossless options, reducing file sizes up to 95%
 - Preview encoded images and exact file sizes before exporting.
 
 ## Install
 
-Requires Go 1.26.6, Node.js 24.15 or newer for repository tooling, and the
-native `cwebp` and `avifenc` tools for WebP/AVIF output. From the source checkout:
+Requires Go 1.26.6, Node.js 24.15 or newer for repository tooling, CMake for
+the pinned Basis Universal build, and the native `cwebp`, `avifenc`, and
+`basisu` tools. From the source checkout:
 
 > bash install.sh
 
@@ -41,6 +43,10 @@ Machine-readable asset inspection:
 Noninteractive image transforms:
 
 > bin\fabricum.exe transform transform.json
+
+Loose KTX2 texture sets:
+
+> bin\fabricum.exe texture-set texture-set.json
 
 Short flags are also available: `-s path -o path`. A bare launch opens the GUI;
 supplying a source or output path automatically selects CLI mode.

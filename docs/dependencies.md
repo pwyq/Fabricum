@@ -8,6 +8,7 @@
 | `cwebp` from libwebp 1.6.0 | WebP preview and export encoding. | BSD-3-Clause and libsharpyuv notice. |
 | `avifenc` from libavif 1.4.2 | AVIF preview and export container encoding. | BSD license and upstream notices. |
 | libaom 3.14.1 | The only AV1 encoder enabled for libavif. | AOMedia license and patent notice. |
+| `basisu` from Basis Universal 2.0.3 | Loose ETC1S and UASTC-Zstandard KTX2 encoding and mipmap generation. | Apache-2.0 and upstream Basis Universal notice; bundled Zstandard is covered by the upstream source notice. |
 | Node.js >=24.15 | Repository scripts, frontend tests, and optional export hooks. It is not used by image encoding. | Node and hook-owned notices apply. Not required by the encoder path. |
 
 The native versions, URLs, Windows artifact digest, selected AV1 codec, and
@@ -23,6 +24,10 @@ patent terms again before distributing native binaries.
   pinned local dependency is libaom 3.14.1.
 - libavif is invoked with the `aom` codec explicitly. rav1e, SVT-AV1, and
   decoder-only codecs are not part of Fabricum's encoding contract.
+- `basisu` is built from the pinned Basis Universal 2.0.3 source archive with
+  its in-tree Zstandard implementation. The KTX2 path invokes it with
+  `-etc1s` or `-uastc -ktx2_zstandard_level 6`, generated mipmaps, and no
+  internal multithreading.
 - The command-line integration uses dynamically discoverable native tools.
   Static CGO integration and bundling are deferred.
 
@@ -42,5 +47,7 @@ patent terms again before distributing native binaries.
 - [libavif build and codec selection](https://github.com/AOMediaCodec/libavif/tree/v1.4.2)
 - [libavif license](https://github.com/AOMediaCodec/libavif/blob/v1.4.2/LICENSE)
 - [libaom license](https://aomedia.googlesource.com/aom/+/v3.14.1/LICENSE)
+- [Basis Universal license](https://github.com/BinomialLLC/basis_universal/blob/v2_0_3/LICENSE)
+- [Basis Universal notice](https://github.com/BinomialLLC/basis_universal/blob/v2_0_3/NOTICE)
 - [Go license](https://go.dev/LICENSE)
 - [Node license](https://github.com/nodejs/node/blob/v24.15.0/LICENSE)

@@ -8,7 +8,8 @@
 - `back-end/fabricum.go`: stable host interface used by the executable and integrations.
 - `back-end/internal/cli`: flags, JSON launch configuration, and export-command integration.
 - `back-end/internal/editor`: local HTTP editor, source handling, security, and GUI lifecycle.
-- `back-end/internal/processing`: crop, resize, native encoding, hashing, and delivery file writes.
+- `back-end/internal/processing`: crop, resize, native encoding, loose KTX2
+  texture sets, hashing, and delivery file writes.
 - `back-end/cmd/fabricum`: executable entry point.
 - Root: Go/npm metadata and repository tooling.
 
@@ -32,6 +33,8 @@ From the repository root:
 - No browser runner, frontend framework, or TypeScript toolchain is required.
 - WebP/AVIF behavior tests need the pinned `cwebp` and `avifenc` tools; see
   [`dependencies.md`](dependencies.md) and [`../native/README.md`](../native/README.md).
+- Loose KTX2 behavior tests additionally need the pinned `basisu` build; the
+  native installer builds it from source with CMake.
 
 ## Git rules
 

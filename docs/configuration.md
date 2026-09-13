@@ -24,8 +24,11 @@ Run with JSON settings:
 - `fabricum transform request.json` runs a noninteractive transform and writes
   its versioned receipt as JSON to stdout. Use `-` instead of a request path to
   read JSON from stdin; relative paths are resolved from the request file.
+- `fabricum texture-set request.json` builds loose KTX2 outputs and writes its
+  versioned receipt as JSON to stdout. `texture` and `ktx2` are aliases.
 - `--output` is an output directory and defaults to `output`.
-- Both modes use the interactive editor. CLI mode is not an unattended batch mode.
+- GUI and source-driven modes use the interactive editor. `transform` and
+  `texture-set` are unattended noninteractive commands.
 
 ## Paths
 
