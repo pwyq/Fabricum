@@ -18,6 +18,7 @@ type application struct {
 	config     processorConfig
 	token      string
 	static     http.Handler
+	lifecycle  http.Handler
 	mutationMu sync.Mutex
 	preview    *previewCache
 	uploadDir  string
@@ -25,6 +26,7 @@ type application struct {
 
 type clientConfig struct {
 	Processor string               `json:"processor"`
+	Mode      string               `json:"mode"`
 	Token     string               `json:"token"`
 	Source    *clientSource        `json:"source,omitempty"`
 	Sources   []string             `json:"sources"`
@@ -69,6 +71,9 @@ func newApplication(config processorConfig) (*application, error) {
 
 func (app *application) handler() http.Handler {
 	mux := http.NewServeMux()
+	if app.lifecycle != nil {
+		mux.Handle("GET /api/lifecycle", app.lifecycle)
+	}
 	mux.HandleFunc("GET /api/config", app.handleConfig)
 	mux.HandleFunc("POST /api/source", app.handleSelectSource)
 	mux.HandleFunc("POST /api/source-upload", app.handleSourceUpload)
@@ -94,6 +99,7 @@ func (app *application) handleConfig(response http.ResponseWriter, _ *http.Reque
 func (app *application) clientConfig() (clientConfig, error) {
 	config := clientConfig{
 		Processor: "fabricum/" + Version,
+		Mode:      app.config.mode,
 		Token:     app.token,
 		Sources:   []string{},
 		Outputs:   []clientOutputConfig{},

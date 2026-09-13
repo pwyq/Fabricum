@@ -18,6 +18,7 @@ Run with JSON settings:
 ## Modes
 
 - `gui` is the default. It opens a browser and can start without `source`.
+- GUI mode exits when its last Fabricum page closes.
 - Without `source`, the browser prompts for a PNG, JPEG, or GIF.
 - `cli` requires `source`, prints the editor URL, and does not open a browser.
 - Both modes use the interactive editor. CLI mode is not an unattended batch mode.

@@ -1,6 +1,7 @@
 package fabricum
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -15,6 +16,11 @@ import (
 	"runtime"
 	"strings"
 	"time"
+)
+
+const (
+	guiConnectTimeout  = 15 * time.Second
+	guiDisconnectGrace = 1500 * time.Millisecond
 )
 
 // NewHandler constructs the local editor and processing API.
@@ -69,21 +75,44 @@ func serve(options Config, browserOpener func(string) error) error {
 		return fmt.Errorf("listen on %s: %w", options.Address, err)
 	}
 	address := listener.Addr().String()
-	server := &http.Server{Addr: address, Handler: app.handler(),
+	var lifecycle *guiLifecycle
+	var server *http.Server
+	if config.mode == ModeGUI {
+		lifecycle = newGUILifecycle(guiDisconnectGrace, func() {
+			stopServer(server)
+		})
+		app.lifecycle = lifecycle
+	}
+	server = &http.Server{Addr: address, Handler: app.handler(),
 		ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second,
 		WriteTimeout: 60 * time.Second, IdleTimeout: 60 * time.Second}
 	browserAddress := browserURL(address)
 	log.Printf("fabricum/%s ready at %s", Version, browserAddress)
 	if config.mode == ModeGUI {
+		serveResult := make(chan error, 1)
+		go func() { serveResult <- server.Serve(listener) }()
 		if err := browserOpener(browserAddress); err != nil {
-			log.Printf("could not open the browser automatically; open %s manually: %v", browserAddress, err)
+			stopServer(server)
+			<-serveResult
+			return fmt.Errorf("open browser: %w", err)
 		}
+		lifecycle.requireConnectionWithin(guiConnectTimeout)
+		err = <-serveResult
+	} else {
+		err = server.Serve(listener)
 	}
-	err = server.Serve(listener)
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
 	}
 	return err
+}
+
+func stopServer(server *http.Server) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(ctx); err != nil {
+		_ = server.Close()
+	}
 }
 
 func browserURL(address string) string {

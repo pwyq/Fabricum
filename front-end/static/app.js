@@ -76,9 +76,14 @@ if (new URLSearchParams(window.location.search).has("imported")) {
   setLiveStatus(elements, "Source changed. Both crop frames were reset for the selected source.");
 }
 
+const initialConfig = await fetchJSON("/api/config");
+const lifecycle =
+  initialConfig.mode === "gui" ? new EventSource("/api/lifecycle") : null;
+window.addEventListener("pagehide", () => lifecycle?.close(), { once: true });
+
 const config = await requireSource(
   elements,
-  await fetchJSON("/api/config"),
+  initialConfig,
   fetchJSON,
   () => window.location.assign("/?selected=1"),
 );
