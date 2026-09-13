@@ -124,6 +124,30 @@ func TestInspectFilesReturnsBoundedPerFileFailures(t *testing.T) {
 	}
 }
 
+func TestInspectWebPExtendedHeaderReportsCanvasDimensions(t *testing.T) {
+	width, height := 0x1234, 0x2345
+	canvas := []byte{0, 0, 0, 0, byte(width - 1), byte((width - 1) >> 8), byte((width - 1) >> 16), byte(height - 1), byte((height - 1) >> 8), byte((height - 1) >> 16)}
+	frame := []byte{0, 0, 0, 0x9d, 0x01, 0x2a, byte(width), byte(width >> 8), byte(height), byte(height >> 8)}
+	data := make([]byte, 12+8+len(canvas)+8+len(frame))
+	copy(data, []byte("RIFF"))
+	binary.LittleEndian.PutUint32(data[4:8], uint32(len(data)-8))
+	copy(data[8:12], []byte("WEBP"))
+	copy(data[12:16], []byte("VP8X"))
+	binary.LittleEndian.PutUint32(data[16:20], uint32(len(canvas)))
+	copy(data[20:], canvas)
+	offset := 20 + len(canvas)
+	copy(data[offset:offset+4], []byte("VP8 "))
+	binary.LittleEndian.PutUint32(data[offset+4:offset+8], uint32(len(frame)))
+	copy(data[offset+8:], frame)
+	facts, err := inspectWebP(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if facts.Width != width || facts.Height != height {
+		t.Fatalf("got %dx%d, want %dx%d", facts.Width, facts.Height, width, height)
+	}
+}
+
 func writeInspectionPNG(t *testing.T, path string, alpha bool) {
 	t.Helper()
 	fixture := image.NewNRGBA(image.Rect(0, 0, 4, 3))

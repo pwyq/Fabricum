@@ -209,8 +209,8 @@ func parseVP8X(data []byte) (int, int, error) {
 	if len(data) != 10 {
 		return 0, 0, errors.New("invalid WebP extended header")
 	}
-	width := 1 + int(data[4]) | int(data[5])<<8 | int(data[6])<<16
-	height := 1 + int(data[7]) | int(data[8])<<8 | int(data[9])<<16
+	width := 1 + (int(data[4]) | int(data[5])<<8 | int(data[6])<<16)
+	height := 1 + (int(data[7]) | int(data[8])<<8 | int(data[9])<<16)
 	return width, height, nil
 }
 
