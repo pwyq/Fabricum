@@ -1,9 +1,10 @@
-package fabricum
+package editor
 
 import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"fabricum/back-end/internal/processing"
 	frontend "fabricum/front-end"
 	"fmt"
 	"io"
@@ -138,8 +139,8 @@ func (app *application) clientConfig() (clientConfig, error) {
 	return config, nil
 }
 
-func clientOutput(spec outputSpec) clientOutputConfig {
-	return clientOutputConfig{Role: spec.role, Path: filepath.ToSlash(spec.path), Width: spec.width, Height: spec.height}
+func clientOutput(spec processing.OutputSpec) clientOutputConfig {
+	return clientOutputConfig{Role: spec.Role, Path: filepath.ToSlash(spec.Path), Width: spec.Width, Height: spec.Height}
 }
 
 func (app *application) handleSource(response http.ResponseWriter, request *http.Request) {

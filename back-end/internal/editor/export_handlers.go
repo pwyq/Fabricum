@@ -1,8 +1,9 @@
-package fabricum
+package editor
 
 import (
 	"encoding/base64"
 	"encoding/json"
+	"fabricum/back-end/internal/processing"
 	"fmt"
 	"net/http"
 	"os"
@@ -10,18 +11,18 @@ import (
 )
 
 type exportResponse struct {
-	Outputs []outputMeasurement `json:"outputs"`
+	Outputs []processing.OutputMeasurement `json:"outputs"`
 }
 
 type previewResponse struct {
-	Outputs  []outputMeasurement `json:"outputs"`
-	DataURLs map[string]string   `json:"dataUrls"`
+	Outputs  []processing.OutputMeasurement `json:"outputs"`
+	DataURLs map[string]string              `json:"dataUrls"`
 }
 
 type previewCache struct {
-	request exportRequest
+	request processing.ExportRequest
 	source  sourceRevision
-	outputs []processedOutput
+	outputs []processing.ProcessedOutput
 }
 
 type sourceRevision struct {
@@ -47,10 +48,10 @@ func (app *application) handlePreview(response http.ResponseWriter, request *htt
 	}
 	dataURLs := make(map[string]string, len(outputs))
 	for _, output := range outputs {
-		mimeType := "image/" + output.measurement.Format
-		dataURLs[output.measurement.Role] = "data:" + mimeType + ";base64," + base64.StdEncoding.EncodeToString(output.data)
+		mimeType := "image/" + output.Measurement.Format
+		dataURLs[output.Measurement.Role] = "data:" + mimeType + ";base64," + base64.StdEncoding.EncodeToString(output.Data)
 	}
-	writeJSON(response, http.StatusOK, previewResponse{Outputs: outputMeasurements(outputs), DataURLs: dataURLs})
+	writeJSON(response, http.StatusOK, previewResponse{Outputs: processing.OutputMeasurements(outputs), DataURLs: dataURLs})
 }
 
 func (app *application) handleExport(response http.ResponseWriter, request *http.Request) {
@@ -66,19 +67,19 @@ func (app *application) handleExport(response http.ResponseWriter, request *http
 	}
 	outputs, err := app.previewOutputs(request, input)
 	if err == nil {
-		err = writeOutputs(outputs)
+		err = processing.WriteOutputs(outputs)
 	}
 	if err == nil && app.config.afterExport != nil {
-		err = app.config.afterExport(app.config.sourcePath, input, outputMeasurements(outputs))
+		err = app.config.afterExport(app.config.sourcePath, input, processing.OutputMeasurements(outputs))
 	}
 	if err != nil {
 		writeError(response, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	writeJSON(response, http.StatusOK, exportResponse{Outputs: outputMeasurements(outputs)})
+	writeJSON(response, http.StatusOK, exportResponse{Outputs: processing.OutputMeasurements(outputs)})
 }
 
-func (app *application) previewOutputs(request *http.Request, input exportRequest) ([]processedOutput, error) {
+func (app *application) previewOutputs(request *http.Request, input processing.ExportRequest) ([]processing.ProcessedOutput, error) {
 	decoded, err := readSourceConfig(app.config.sourcePath)
 	if err != nil {
 		return nil, err
@@ -97,7 +98,7 @@ func (app *application) previewOutputs(request *http.Request, input exportReques
 	if err != nil {
 		return nil, err
 	}
-	outputs, err := prepareOutputs(request.Context(), app.config.sourcePath, input, specs, app.config.encoderDirectory)
+	outputs, err := processing.PrepareOutputs(request.Context(), app.config.sourcePath, input, specs, app.config.encoderDirectory)
 	if err != nil {
 		return nil, err
 	}
@@ -105,39 +106,39 @@ func (app *application) previewOutputs(request *http.Request, input exportReques
 	return outputs, nil
 }
 
-func selectedOutputSpecs(role string, square, wide outputSpec) ([]outputSpec, error) {
+func selectedOutputSpecs(role string, square, wide processing.OutputSpec) ([]processing.OutputSpec, error) {
 	switch role {
 	case "":
-		return []outputSpec{square, wide}, nil
+		return []processing.OutputSpec{square, wide}, nil
 	case "square":
-		return []outputSpec{square}, nil
+		return []processing.OutputSpec{square}, nil
 	case "wide":
-		return []outputSpec{wide}, nil
+		return []processing.OutputSpec{wide}, nil
 	default:
 		return nil, fmt.Errorf("unsupported output role %q", role)
 	}
 }
 
-func (app *application) readExportRequest(response http.ResponseWriter, request *http.Request) (exportRequest, bool) {
+func (app *application) readExportRequest(response http.ResponseWriter, request *http.Request) (processing.ExportRequest, bool) {
 	if request.Header.Get("X-Unit-Art-Token") != app.token {
 		writeError(response, http.StatusForbidden, "invalid processor session token")
-		return exportRequest{}, false
+		return processing.ExportRequest{}, false
 	}
 	if !strings.HasPrefix(request.Header.Get("Content-Type"), "application/json") {
 		writeError(response, http.StatusUnsupportedMediaType, "Content-Type must be application/json")
-		return exportRequest{}, false
+		return processing.ExportRequest{}, false
 	}
 	request.Body = http.MaxBytesReader(response, request.Body, 16<<10)
 	decoder := json.NewDecoder(request.Body)
 	decoder.DisallowUnknownFields()
-	var input exportRequest
+	var input processing.ExportRequest
 	if err := decoder.Decode(&input); err != nil {
 		writeError(response, http.StatusBadRequest, "invalid export request: "+err.Error())
-		return exportRequest{}, false
+		return processing.ExportRequest{}, false
 	}
 	if err := ensureJSONEnd(decoder); err != nil {
 		writeError(response, http.StatusBadRequest, err.Error())
-		return exportRequest{}, false
+		return processing.ExportRequest{}, false
 	}
 	return input, true
 }

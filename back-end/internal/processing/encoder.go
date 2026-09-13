@@ -1,4 +1,4 @@
-package fabricum
+package processing
 
 import (
 	"bytes"
@@ -17,7 +17,7 @@ import (
 //go:embed encoder/encode.mjs
 var encoderScript string
 
-func validateEncodingOptions(request exportRequest) error {
+func validateEncodingOptions(request ExportRequest) error {
 	if request.Format != "png" && request.Format != "webp" && request.Format != "avif" {
 		return errors.New("format must be png, webp, or avif")
 	}
@@ -33,11 +33,11 @@ func validateEncodingOptions(request exportRequest) error {
 	return nil
 }
 
-func outputPath(path, format string) string {
+func OutputPath(path, format string) string {
 	return strings.TrimSuffix(path, filepath.Ext(path)) + "." + format
 }
 
-func encodeOutput(ctx context.Context, source image.Image, request exportRequest, encoderDirectory string) ([]byte, error) {
+func encodeOutput(ctx context.Context, source image.Image, request ExportRequest, encoderDirectory string) ([]byte, error) {
 	var pngInput bytes.Buffer
 	compression := png.BestCompression
 	if request.Format != "png" {

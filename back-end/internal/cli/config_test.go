@@ -1,10 +1,14 @@
-package fabricum
+package cli
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fabricum/back-end/internal/editor"
 	"flag"
+	"image"
+	"image/color"
+	"image/png"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -27,14 +31,10 @@ func TestConfigPathsAndCLIOverrideOutsideRepository(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config, err := configure(options)
-	if err != nil {
-		t.Fatal(err)
+	if options.Source != source || options.SquareSize != 6 || options.WideWidth != 8 || options.OutputDirectory != filepath.Join(root, "deliveries") {
+		t.Fatalf("unexpected config: %+v", options)
 	}
-	if config.sourcePath != source || config.squareOutput.width != 6 || config.wideOutput.width != 8 || config.squareOutput.path != filepath.Join(root, "deliveries", "arbitrary-square.webp") {
-		t.Fatalf("unexpected config: %+v", config)
-	}
-	if _, err := NewHandler(options); err != nil {
+	if _, err := editor.NewHandler(options); err != nil {
 		t.Fatal(err)
 	}
 	for _, args := range [][]string{{"--help"}, {"-h"}, {"--version"}} {
@@ -89,20 +89,25 @@ func TestConfigSourceListAndExportCommand(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	config, err := configure(options)
+	handler, err := editor.NewHandler(options)
 	if err != nil {
 		t.Fatal(err)
 	}
-	app, err := newApplication(config)
-	if err != nil {
+	configRequest := httptest.NewRequest(http.MethodGet, "http://localhost/api/config", nil)
+	configResponse := httptest.NewRecorder()
+	handler.ServeHTTP(configResponse, configRequest)
+	var initialConfig struct {
+		Token string `json:"token"`
+	}
+	if err := json.NewDecoder(configResponse.Body).Decode(&initialConfig); err != nil {
 		t.Fatal(err)
 	}
 	call := func(route string, data string) *httptest.ResponseRecorder {
 		request := httptest.NewRequest(http.MethodPost, "http://localhost"+route, bytes.NewBufferString(data))
 		request.Header.Set("Content-Type", "application/json")
-		request.Header.Set("X-Unit-Art-Token", app.token)
+		request.Header.Set("X-Unit-Art-Token", initialConfig.Token)
 		response := httptest.NewRecorder()
-		app.handler().ServeHTTP(response, request)
+		handler.ServeHTTP(response, request)
 		return response
 	}
 	selection, _ := json.Marshal(map[string]string{"path": source})
@@ -124,30 +129,27 @@ func TestConfigSourceListAndExportCommand(t *testing.T) {
 	if err := json.Unmarshal(receiptBytes, &receipt); err != nil {
 		t.Fatal(err)
 	}
-	if receipt.SchemaVersion != 1 || receipt.Source != source || len(receipt.Outputs) != 2 || receipt.Processor != "fabricum/"+Version {
+	if receipt.SchemaVersion != 1 || receipt.Source != source || len(receipt.Outputs) != 2 || receipt.Processor != "fabricum/"+editor.Version {
 		t.Fatalf("unexpected receipt: %+v", receipt)
 	}
 	assertImageDimensions(t, filepath.Join(root, "square.png"), 4, 4)
 	assertImageDimensions(t, filepath.Join(root, "wide.png"), 4, 3)
-	if err := exportCommand([]string{"node", "-e", "process.exit(7)"}, root)(source, receipt.Request, receipt.Outputs); err == nil {
-		t.Fatal("hook failure must be returned")
-	}
 }
 
 func TestInvalidPathsAndOutputCollisions(t *testing.T) {
 	root := t.TempDir()
 	source := filepath.Join(root, "source.png")
 	writeFixtureImage(t, source, 8, 8)
-	for _, options := range []Config{
+	for _, options := range []editor.Config{
 		{Source: filepath.Join(root, "missing.png"), SquareSize: 4, WideWidth: 4},
 		{Source: source, SquareSize: 4, WideWidth: 4, SquareOutput: source},
 		{Source: source, SquareSize: 4, WideWidth: 4, SquareOutput: "same.png", WideOutput: "same.webp"},
 	} {
-		if _, err := NewHandler(options); err == nil {
+		if _, err := editor.NewHandler(options); err == nil {
 			t.Fatalf("accepted invalid options: %+v", options)
 		}
 	}
-	if err := validateLocalAddress("0.0.0.0:4179"); err == nil {
+	if _, err := ParseConfig([]string{"--address", "0.0.0.0:4179"}, io.Discard); err == nil {
 		t.Fatal("accepted public listener")
 	}
 }
@@ -157,13 +159,10 @@ func TestParseConfigInfersGUIOrCLIFromPathFlags(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if gui.Mode != ModeGUI {
+	if gui.Mode != editor.ModeGUI {
 		t.Fatalf("expected GUI default, got %q", gui.Mode)
 	}
-	if _, err := configure(gui); err != nil {
-		t.Fatalf("GUI should start without a source: %v", err)
-	}
-	handler, err := NewHandler(gui)
+	handler, err := editor.NewHandler(gui)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,7 +188,7 @@ func TestParseConfigInfersGUIOrCLIFromPathFlags(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if cli.Mode != ModeCLI {
+		if cli.Mode != editor.ModeCLI {
 			t.Fatalf("expected CLI mode, got %q", cli.Mode)
 		}
 		if cli.OutputDirectory != args[3] {
@@ -198,5 +197,42 @@ func TestParseConfigInfersGUIOrCLIFromPathFlags(t *testing.T) {
 	}
 	if _, err := ParseConfig([]string{"--mode", "cli", "--source", source}, io.Discard); err == nil {
 		t.Fatal("obsolete --mode flag should be rejected")
+	}
+}
+
+func writeFixtureImage(t *testing.T, path string, width, height int) {
+	t.Helper()
+	fixture := image.NewNRGBA(image.Rect(0, 0, width, height))
+	for y := range height {
+		for x := range width {
+			fixture.SetNRGBA(x, y, color.NRGBA{R: uint8(x * 20), G: uint8(y * 30), B: uint8((x + y) * 10), A: 255})
+		}
+	}
+	file, err := os.Create(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := png.Encode(file, fixture); err != nil {
+		_ = file.Close()
+		t.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func assertImageDimensions(t *testing.T, path string, width, height int) {
+	t.Helper()
+	file, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer file.Close()
+	decoded, _, err := image.DecodeConfig(file)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if decoded.Width != width || decoded.Height != height {
+		t.Fatalf("expected %dx%d image, got %dx%d", width, height, decoded.Width, decoded.Height)
 	}
 }

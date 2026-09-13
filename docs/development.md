@@ -5,7 +5,10 @@
 - `front-end/static`: browser editor.
 - `front-end/tests`: crop math tests.
 - `front-end/assets.go`: embedded editor assets.
-- `back-end`: config, HTTP, processing, encoding, and Go tests.
+- `back-end/fabricum.go`: stable host interface used by the executable and integrations.
+- `back-end/internal/cli`: flags, JSON launch configuration, and export-command integration.
+- `back-end/internal/editor`: local HTTP editor, source handling, security, and GUI lifecycle.
+- `back-end/internal/processing`: crop, resize, encoding, hashing, and delivery file writes.
 - `back-end/cmd/fabricum`: executable entry point.
 - Root: Go/npm metadata and repository tooling.
 
@@ -50,7 +53,7 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
 ## Versions and updates
 
 - `VERSION` is authoritative.
-- `package.json` and `back-end/config.go` must match it.
+- `package.json` and `back-end/internal/editor/config.go` must match it.
 - `npm run release:archive` creates a source archive and SHA-256 file in `bin`.
 - Archives do not publish, tag, commit, or contact GitHub.
 - The Go module name is local; choose a public identity before supporting `go install`.

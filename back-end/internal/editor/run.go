@@ -1,4 +1,4 @@
-package fabricum
+package editor
 
 import (
 	"context"
@@ -176,7 +176,3 @@ func executableEncoderDirectory() string {
 	}
 	return root
 }
-
-// WriteFileAtomically replaces one file after synchronizing its temporary file.
-// An export of multiple files is not a transaction.
-func WriteFileAtomically(path string, data []byte) error { return writeFileAtomically(path, data) }

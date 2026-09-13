@@ -1,4 +1,4 @@
-package fabricum
+package editor
 
 import (
 	"context"
