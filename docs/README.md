@@ -1,10 +1,10 @@
 # Documentation
 
-- [Configuration](configuration.md): flags, JSON settings, paths, dimensions, and exit codes.
-- [Project integration](integration.md): source lists and export receipt commands.
-- [Processing behavior](processing.md): encoding, reproducibility, overwrites, and local server security.
-- [Development](development.md): repository layout, checks, CI guards, versions, and releases.
-- [Release process](release.md): version policy, release commands, and CI gates.
-- [Dependency review](dependencies.md): runtime dependencies, licenses, and redistribution.
+- [Configuration](configuration.md): modes, paths, limits, and exit codes.
+- [Project integration](integration.md): source lists and export receipts.
+- [Processing](processing.md): formats, file writes, and local security.
+- [Development](development.md): layout, checks, CI, and Git rules.
+- [Releases](release.md): version policy and publishing.
+- [Dependencies](dependencies.md): runtime packages and licenses.
 
-For installation and basic usage, see the [project README](../README.md).
+See the [project README](../README.md) to install and run Fabricum.

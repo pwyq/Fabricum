@@ -1,19 +1,30 @@
-# Processing behavior
+# Processing
 
-The editor defaults to WebP quality 90. PNG is lossless; WebP and AVIF offer
-quality 1–100 and lossless mode. AVIF uses 4:4:4 chroma and maximum effort, which
-can make previews slower. Superseded preview requests cancel the encoder process.
-PNG output is deterministic for identical inputs/crops and the same toolchain.
-For WebP/AVIF reproducibility, keep Sharp, its native codecs, and platform fixed.
+## Formats
 
-Export replaces existing output files. Each file is synchronized to a temporary
-file before replacement, with restoration attempted on failure. Multiple outputs
-and external registration are not a transaction. Fix errors and retry export;
-use one writer per output set or shared project manifest. Import replaces the
-selected source with a validated PNG after the editor asks for confirmation.
+- Default: WebP, quality 90.
+- PNG: lossless.
+- WebP and AVIF: quality 1–100 or lossless.
+- AVIF: 4:4:4 chroma and maximum effort; previews may be slower.
+- New preview requests cancel superseded encoder work.
+- PNG is deterministic with identical input, crop, and toolchain.
+- For repeatable WebP or AVIF, pin Sharp, native codecs, and platform.
 
-The server binds only to loopback, rejects foreign Host/Origin headers, and requires
-a random session token for mutations. It is an authoring tool for a trusted local
-user, not a multi-user service. Do not expose it through a proxy or port tunnel.
+## File writes
 
-3D processing and general-purpose asset pipelines are outside this release.
+- Export replaces existing outputs.
+- Each output is synced to a temporary file before replacement.
+- Fabricum attempts restoration if replacement fails.
+- Multiple outputs and the export command are not one transaction.
+- Use one writer per output set and make registration retry-safe.
+- Import confirms before replacing the source with a validated PNG.
+
+## Local server
+
+- Binds only to loopback.
+- Rejects foreign `Host` and `Origin` headers.
+- Requires a random session token for mutations.
+- Is intended for one trusted local user.
+- Must not be exposed through a proxy or port tunnel.
+
+3D and general-purpose asset pipelines are out of scope.

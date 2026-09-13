@@ -1,6 +1,6 @@
 # Project integration
 
-Projects can supply a `sources` array instead of an initial source:
+Use `sources` to restrict the editor to project-owned inputs:
 
 ```json
 {
@@ -16,20 +16,31 @@ Projects can supply a `sources` array instead of an initial source:
 }
 ```
 
-The editor selects only from that list. Lists are loaded at startup; restart after
-changing them. The optional `exportCommand` receives a JSON receipt on stdin after
-the files have been written. It runs directly as an argument array, without a
-shell, in the config file's directory with a 30-second timeout. Relative executable
-paths containing a separator resolve from the process working directory; prefer
-an absolute executable path. A nonzero exit fails the export response and reports
-that outputs were already written. Repeated exports can repeat the command, so
-registration should be idempotent. Only load configuration files you trust: an
-export command executes local code with your permissions.
+## Sources
 
-Receipt schema version 1 includes `processor`, absolute `source`, `request`
-(square/wide crop rectangles, format, quality, lossless), and `outputs` (role,
-path, dimensions, encoding options, bytes, SHA-256, crop). Project-specific naming,
-manifest schemas, ownership, and removal of alternate formats belong in the
-project's registration command. The CLI never removes alternate output formats.
+- The editor only shows configured sources.
+- Source lists load at startup. Restart after changes.
+- Each source may set its square and wide output paths.
 
-See [configuration](configuration.md) for path resolution and CLI overrides.
+## Export command
+
+- Runs after output files are written.
+- Receives a version 1 JSON receipt on stdin.
+- Runs as an argument array without a shell.
+- Uses the config directory as its working directory.
+- Times out after 30 seconds.
+- May run more than once; make it idempotent.
+- A failure leaves the output files in place and fails the export response.
+- Prefer an absolute executable path.
+- Only use trusted config files. The command runs with your permissions.
+
+The receipt contains:
+
+- `processor` and absolute `source`.
+- `request`: crops, format, quality, and lossless mode.
+- `outputs`: role, path, dimensions, encoding, bytes, SHA-256, and crop.
+
+Keep project naming, manifests, ownership, and alternate-format cleanup in the
+export command. Fabricum does not remove alternate formats.
+
+See [configuration](configuration.md) for path rules and CLI overrides.
