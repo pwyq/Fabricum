@@ -22,6 +22,10 @@ type ExportRequest = processing.ExportRequest
 type CropRect = processing.CropRect
 type OutputMeasurement = processing.OutputMeasurement
 type ExportReceipt = cli.ExportReceipt
+type AssetFacts = processing.AssetFacts
+type InspectionReport = processing.InspectionReport
+
+const InspectionSchemaVersion = processing.InspectionSchemaVersion
 
 func ParseConfig(args []string, output io.Writer) (Config, error) {
 	return cli.ParseConfig(args, output)
@@ -39,4 +43,10 @@ func Serve(options Config) error {
 // An export of multiple files is not a transaction.
 func WriteFileAtomically(path string, data []byte) error {
 	return processing.WriteFileAtomically(path, data)
+}
+
+// Inspect writes a versioned, machine-readable report for the supplied files.
+// The report is written even when one or more individual files fail.
+func Inspect(paths []string, output io.Writer) error {
+	return cli.RunInspection(paths, output)
 }

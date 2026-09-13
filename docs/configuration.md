@@ -53,6 +53,18 @@ Run with JSON settings:
 - Invalid flags or config: exit 2.
 - Startup or listener failure: exit 1.
 
+## Asset inspection
+
+Use `fabricum inspect path [path ...]` (or `fabricum --inspect path ...`) for a
+bounded, noninteractive JSON report. Results use schema version 1, are emitted
+in input order, and contain project-neutral file facts under `assets`. The
+invocation accepts at most 1024 paths; each file is limited to 256 MiB and
+each failure message is limited to 512 bytes. A report is written even when a
+file is missing, malformed, mismatched with its extension, or unsupported; the
+process exits 1 if any result contains `error`.
+
+Inspection never calculates content hashes and never writes its inputs.
+
 The executable embeds the editor. WebP and AVIF encoding requires the native
 `cwebp` and `avifenc` tools in `encoderDirectory` or `PATH`; it does not search
 for a game repository or bundle project assets.

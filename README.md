@@ -33,6 +33,10 @@ CLI mode (Unix):
 
 > ./bin/fabricum --source input-image-path-here --output output-directory-here
 
+Machine-readable asset inspection:
+
+> bin\fabricum.exe inspect image.png model.glb texture.ktx2
+
 Short flags are also available: `-s path -o path`. A bare launch opens the GUI;
 supplying a source or output path automatically selects CLI mode.
 
