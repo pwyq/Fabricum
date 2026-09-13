@@ -1,9 +1,10 @@
-package fabricum
+package editor
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fabricum/back-end/internal/processing"
 	"image"
 	"image/color"
 	"image/png"
@@ -15,55 +16,16 @@ import (
 	"testing"
 )
 
-func TestProcessOutputsWritesDeterministicRoleImages(t *testing.T) {
-	temporary := t.TempDir()
-	sourcePath := filepath.Join(temporary, "source.png")
-	writeFixtureImage(t, sourcePath, 8, 6)
-	specs := []outputSpec{
-		{role: "square", path: filepath.Join(temporary, "square.png"), width: 4, height: 4},
-		{role: "wide", path: filepath.Join(temporary, "wide.png"), width: 4, height: 3},
-	}
-	request := exportRequest{
-		Square: cropRect{X: 1, Y: 0, Width: 6, Height: 6},
-		Wide:   cropRect{X: 0, Y: 0, Width: 8, Height: 6},
-		Format: "png",
-	}
-
-	first, err := processOutputs(sourcePath, request, specs, "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	second, err := processOutputs(sourcePath, request, specs, "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if first[0].SHA256 != second[0].SHA256 || first[1].SHA256 != second[1].SHA256 {
-		t.Fatalf("expected deterministic hashes, first=%v second=%v", first, second)
-	}
-	assertImageDimensions(t, specs[0].path, 4, 4)
-	assertImageDimensions(t, specs[1].path, 4, 3)
-}
-
-func TestValidateCropRejectsWrongAspectAndUpscaling(t *testing.T) {
-	spec := outputSpec{role: "wide", width: 8, height: 6}
-	if err := validateCrop(image.Rect(0, 0, 16, 12), cropRect{Width: 8, Height: 8}, spec); err == nil {
-		t.Fatal("expected wrong aspect ratio to fail")
-	}
-	if err := validateCrop(image.Rect(0, 0, 16, 12), cropRect{Width: 4, Height: 3}, spec); err == nil {
-		t.Fatal("expected an upscaled crop to fail")
-	}
-}
-
 func TestExportEndpointRequiresTokenAndWritesBothOutputs(t *testing.T) {
 	temporary := t.TempDir()
 	config := processorConfig{
 		sourcePath: filepath.Join(temporary, "source.png"),
 		sourceSize: 8,
-		squareOutput: outputSpec{
-			role: "square", path: filepath.Join(temporary, "square.png"), width: 4, height: 4,
+		squareOutput: processing.OutputSpec{
+			Role: "square", Path: filepath.Join(temporary, "square.png"), Width: 4, Height: 4,
 		},
-		wideOutput: outputSpec{
-			role: "wide", path: filepath.Join(temporary, "wide.png"), width: 4, height: 3,
+		wideOutput: processing.OutputSpec{
+			Role: "wide", Path: filepath.Join(temporary, "wide.png"), Width: 4, Height: 3,
 		},
 	}
 	writeFixtureImage(t, config.sourcePath, 8, 8)
@@ -83,9 +45,9 @@ func TestExportEndpointRequiresTokenAndWritesBothOutputs(t *testing.T) {
 			t.Fatalf("expected %s to return 200, got %d", route, response.StatusCode)
 		}
 	}
-	payload, err := json.Marshal(exportRequest{
-		Square: cropRect{X: 1, Y: 1, Width: 6, Height: 6},
-		Wide:   cropRect{X: 0, Y: 1, Width: 8, Height: 6},
+	payload, err := json.Marshal(processing.ExportRequest{
+		Square: processing.CropRect{X: 1, Y: 1, Width: 6, Height: 6},
+		Wide:   processing.CropRect{X: 0, Y: 1, Width: 8, Height: 6},
 		Format: "png",
 	})
 	if err != nil {
@@ -120,7 +82,7 @@ func TestExportEndpointRequiresTokenAndWritesBothOutputs(t *testing.T) {
 	if len(preview.Outputs) != 2 || !strings.HasPrefix(preview.DataURLs["square"], "data:image/png;base64,") {
 		t.Fatalf("expected two PNG preview outputs, got %+v", preview)
 	}
-	if _, err := os.Stat(config.squareOutput.path); !errors.Is(err, os.ErrNotExist) {
+	if _, err := os.Stat(config.squareOutput.Path); !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("preview must not write delivery files")
 	}
 	request, err := http.NewRequest(http.MethodPost, server.URL+"/api/export", bytes.NewReader(payload))
@@ -137,9 +99,9 @@ func TestExportEndpointRequiresTokenAndWritesBothOutputs(t *testing.T) {
 	if response.StatusCode != http.StatusOK {
 		t.Fatalf("expected successful export, got %d", response.StatusCode)
 	}
-	assertImageDimensions(t, config.squareOutput.path, 4, 4)
-	assertImageDimensions(t, config.wideOutput.path, 4, 3)
-	info, err := os.Stat(config.squareOutput.path)
+	assertImageDimensions(t, config.squareOutput.Path, 4, 4)
+	assertImageDimensions(t, config.wideOutput.Path, 4, 3)
+	info, err := os.Stat(config.squareOutput.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -156,10 +118,10 @@ func TestSelectedRolePreviewsAndWritesOnlyThatOutput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	input := exportRequest{
+	input := processing.ExportRequest{
 		Role:   "wide",
-		Square: cropRect{X: 1, Y: 1, Width: 6, Height: 6},
-		Wide:   cropRect{X: 0, Y: 1, Width: 8, Height: 6},
+		Square: processing.CropRect{X: 1, Y: 1, Width: 6, Height: 6},
+		Wide:   processing.CropRect{X: 0, Y: 1, Width: 8, Height: 6},
 		Format: "png",
 	}
 	request := httptest.NewRequest(http.MethodPost, "http://localhost/api/preview", nil)
@@ -167,20 +129,20 @@ func TestSelectedRolePreviewsAndWritesOnlyThatOutput(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(outputs) != 1 || outputs[0].measurement.Role != "wide" {
-		t.Fatalf("expected only the wide preview, got %+v", outputMeasurements(outputs))
+	if len(outputs) != 1 || outputs[0].Measurement.Role != "wide" {
+		t.Fatalf("expected only the wide preview, got %+v", processing.OutputMeasurements(outputs))
 	}
-	if err := writeOutputs(outputs); err != nil {
+	if err := processing.WriteOutputs(outputs); err != nil {
 		t.Fatal(err)
 	}
-	assertImageDimensions(t, config.wideOutput.path, 4, 3)
-	if _, err := os.Stat(config.squareOutput.path); !errors.Is(err, os.ErrNotExist) {
+	assertImageDimensions(t, config.wideOutput.Path, 4, 3)
+	if _, err := os.Stat(config.squareOutput.Path); !errors.Is(err, os.ErrNotExist) {
 		t.Fatal("selected wide export must not write the square output")
 	}
 }
 
 func TestSelectedOutputSpecsRejectsUnknownRole(t *testing.T) {
-	_, err := selectedOutputSpecs("portrait", outputSpec{role: "square"}, outputSpec{role: "wide"})
+	_, err := selectedOutputSpecs("portrait", processing.OutputSpec{Role: "square"}, processing.OutputSpec{Role: "wide"})
 	if err == nil {
 		t.Fatal("expected an unknown output role to fail")
 	}
@@ -322,61 +284,15 @@ func TestSourceUploadEndpointSelectsUploadedImage(t *testing.T) {
 	}
 }
 
-func TestValidateEncodingOptions(t *testing.T) {
-	valid := []exportRequest{
-		{Format: "png"},
-		{Format: "webp", Quality: 95},
-		{Format: "avif", Quality: 100, Lossless: true},
-	}
-	for _, request := range valid {
-		if err := validateEncodingOptions(request); err != nil {
-			t.Fatalf("expected %+v to be valid: %v", request, err)
-		}
-	}
-	invalid := []exportRequest{
-		{Format: "jpeg", Quality: 95},
-		{Format: "png", Quality: 95},
-		{Format: "webp", Quality: 0},
-		{Format: "avif", Quality: 101},
-	}
-	for _, request := range invalid {
-		if err := validateEncodingOptions(request); err == nil {
-			t.Fatalf("expected %+v to be invalid", request)
-		}
-	}
-}
-
-func TestProcessOutputsEncodesWebPAndAVIF(t *testing.T) {
-	temporary := t.TempDir()
-	sourcePath := filepath.Join(temporary, "source.png")
-	writeFixtureImage(t, sourcePath, 8, 8)
-	encoderDirectory, err := filepath.Abs(".")
-	if err != nil {
-		t.Fatal(err)
-	}
-	spec := outputSpec{role: "square", path: filepath.Join(temporary, "square.png"), width: 4, height: 4}
-	for _, format := range []string{"webp", "avif"} {
-		request := exportRequest{Square: cropRect{Width: 8, Height: 8}, Format: format, Quality: 95}
-		outputs, err := processOutputs(sourcePath, request, []outputSpec{spec}, encoderDirectory)
-		if err != nil {
-			t.Fatalf("encode %s: %v", format, err)
-		}
-		if outputs[0].Format != format || filepath.Ext(outputs[0].Path) != "."+format {
-			t.Fatalf("expected %s measurement, got %+v", format, outputs[0])
-		}
-		assertEncodedFormat(t, outputs[0].Path, format)
-	}
-}
-
 func testProcessorConfig(directory string) processorConfig {
 	return processorConfig{
 		sourcePath: filepath.Join(directory, "source.png"),
 		sourceSize: 8,
-		squareOutput: outputSpec{
-			role: "square", path: filepath.Join(directory, "square.png"), width: 4, height: 4,
+		squareOutput: processing.OutputSpec{
+			Role: "square", Path: filepath.Join(directory, "square.png"), Width: 4, Height: 4,
 		},
-		wideOutput: outputSpec{
-			role: "wide", path: filepath.Join(directory, "wide.png"), width: 4, height: 3,
+		wideOutput: processing.OutputSpec{
+			Role: "wide", Path: filepath.Join(directory, "wide.png"), Width: 4, Height: 3,
 		},
 		encoderDirectory: filepath.Join(directory, "encode.mjs"),
 	}

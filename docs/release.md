@@ -4,7 +4,7 @@
 
 - Releases are human-versioned and CI-authorized.
 - `VERSION` is authoritative and omits the `v` prefix.
-- `package.json` and `back-end/config.go` must match `VERSION`.
+- `package.json` and `back-end/internal/editor/config.go` must match `VERSION`.
 - `node scripts/check.mjs` checks version consistency.
 - Tags are immutable. Fix a bad release with a newer version.
 - GitHub publishes only after all release gates pass.
@@ -19,7 +19,7 @@ Allowed tags:
 
 ## Publish
 
-1. Update `VERSION`, `package.json`, and `back-end/config.go` to the same
+1. Update `VERSION`, `package.json`, and `back-end/internal/editor/config.go` to the same
    version.
 2. Add a matching section to `CHANGELOG.md`.
 3. Commit and push the release changes.
@@ -46,6 +46,10 @@ Monitor CI:
 Create a source archive without publishing:
 
 > npm run release:archive
+
+The archive contains all Git-tracked files from the working tree. Add a new
+project file to Git and it is included automatically; ignored and untracked
+local files are excluded.
 
 ## Gates
 

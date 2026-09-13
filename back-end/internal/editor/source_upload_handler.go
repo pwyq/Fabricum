@@ -1,7 +1,8 @@
-package fabricum
+package editor
 
 import (
 	"bytes"
+	"fabricum/back-end/internal/processing"
 	"fmt"
 	"image"
 	_ "image/gif"
@@ -32,7 +33,7 @@ func (app *application) handleImport(response http.ResponseWriter, request *http
 		writeError(response, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	if err := writeFileAtomically(app.config.sourcePath, data); err != nil {
+	if err := processing.WriteFileAtomically(app.config.sourcePath, data); err != nil {
 		writeError(response, http.StatusInternalServerError, "write imported source: "+err.Error())
 		return
 	}
@@ -83,7 +84,7 @@ func (app *application) handleSourceUpload(response http.ResponseWriter, request
 		writeError(response, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	if err := writeFileAtomically(sourcePath, data); err != nil {
+	if err := processing.WriteFileAtomically(sourcePath, data); err != nil {
 		writeError(response, http.StatusInternalServerError, "write uploaded source: "+err.Error())
 		return
 	}

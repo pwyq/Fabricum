@@ -1,7 +1,8 @@
-package fabricum
+package editor
 
 import (
 	"errors"
+	"fabricum/back-end/internal/processing"
 	"fmt"
 	"image"
 	"net"
@@ -43,25 +44,21 @@ type Config struct {
 	WideOutput       string
 	EncoderDirectory string
 	Sources          func() ([]Source, error)
-	AfterExport      func(string, ExportRequest, []OutputMeasurement) error
+	AfterExport      func(string, processing.ExportRequest, []processing.OutputMeasurement) error
 }
-
-type ExportRequest = exportRequest
-type CropRect = cropRect
-type OutputMeasurement = outputMeasurement
 
 type processorConfig struct {
 	mode             string
 	sourcePath       string
 	sourceSize       int
 	encoderDirectory string
-	squareOutput     outputSpec
-	wideOutput       outputSpec
+	squareOutput     processing.OutputSpec
+	wideOutput       processing.OutputSpec
 	outputDirectory  string
 	squarePath       string
 	widePath         string
 	sources          func() ([]Source, error)
-	afterExport      func(string, ExportRequest, []OutputMeasurement) error
+	afterExport      func(string, processing.ExportRequest, []processing.OutputMeasurement) error
 }
 
 func configure(options Config) (processorConfig, error) {
@@ -95,17 +92,28 @@ func configure(options Config) (processorConfig, error) {
 		mode:       mode,
 		sourceSize: options.SourceSize, encoderDirectory: options.EncoderDirectory,
 		outputDirectory: directory, squarePath: options.SquareOutput, widePath: options.WideOutput,
-		squareOutput: outputSpec{role: "square", width: options.SquareSize, height: options.SquareSize},
-		wideOutput:   outputSpec{role: "wide", width: options.WideWidth, height: options.WideWidth * 3 / 4},
+		squareOutput: processing.OutputSpec{Role: "square", Width: options.SquareSize, Height: options.SquareSize},
+		wideOutput:   processing.OutputSpec{Role: "wide", Width: options.WideWidth, Height: options.WideWidth * 3 / 4},
 		sources:      options.Sources, afterExport: options.AfterExport,
 	}
 	if options.Source == "" {
 		if mode == ModeCLI {
-			return processorConfig{}, errors.New("source is required in cli mode; pass -source or use -mode gui")
+			return processorConfig{}, errors.New("source is required in cli mode; pass --source or -s")
 		}
 		return config, nil
 	}
 	return config.withSource(options.Source)
+}
+
+// ValidateConfig checks launch and processing configuration without starting the editor.
+func ValidateConfig(options Config) error {
+	if options.Address != "" {
+		if err := validateLocalAddress(options.Address); err != nil {
+			return err
+		}
+	}
+	_, err := configure(options)
+	return err
 }
 
 func (config processorConfig) withSource(path string) (processorConfig, error) {
@@ -148,16 +156,16 @@ func (config processorConfig) withSource(path string) (processorConfig, error) {
 		source.WideOutput = filepath.Join(config.outputDirectory, base+"-wide.webp")
 	}
 	config.sourcePath = source.Path
-	config.squareOutput.path, err = filepath.Abs(source.SquareOutput)
+	config.squareOutput.Path, err = filepath.Abs(source.SquareOutput)
 	if err != nil {
 		return processorConfig{}, err
 	}
-	config.wideOutput.path, err = filepath.Abs(source.WideOutput)
+	config.wideOutput.Path, err = filepath.Abs(source.WideOutput)
 	if err != nil {
 		return processorConfig{}, err
 	}
 	for _, format := range []string{"png", "webp", "avif"} {
-		square, wide := outputPath(config.squareOutput.path, format), outputPath(config.wideOutput.path, format)
+		square, wide := processing.OutputPath(config.squareOutput.Path, format), processing.OutputPath(config.wideOutput.Path, format)
 		if samePath(square, wide) || samePath(square, abs) || samePath(wide, abs) {
 			return processorConfig{}, errors.New("source and output paths must be distinct for every format")
 		}
@@ -206,9 +214,9 @@ func validateSourceSize(source image.Config, config processorConfig) error {
 	if config.sourceSize > 0 && (source.Width != config.sourceSize || source.Height != config.sourceSize) {
 		return fmt.Errorf("source must be exactly %dx%d, got %dx%d", config.sourceSize, config.sourceSize, source.Width, source.Height)
 	}
-	for _, output := range []outputSpec{config.squareOutput, config.wideOutput} {
-		if source.Width < output.width || source.Height < output.height {
-			return fmt.Errorf("source %dx%d is smaller than %s output %dx%d", source.Width, source.Height, output.role, output.width, output.height)
+	for _, output := range []processing.OutputSpec{config.squareOutput, config.wideOutput} {
+		if source.Width < output.Width || source.Height < output.Height {
+			return fmt.Errorf("source %dx%d is smaller than %s output %dx%d", source.Width, source.Height, output.Role, output.Width, output.Height)
 		}
 	}
 	return nil

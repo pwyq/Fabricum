@@ -1,7 +1,8 @@
-package fabricum
+package cli
 
 import (
 	"encoding/json"
+	"fabricum/back-end/internal/editor"
 	"flag"
 	"fmt"
 	"io"
@@ -10,10 +11,9 @@ import (
 )
 
 type fileConfig struct {
-	Sources       []Source `json:"sources"`
-	ExportCommand []string `json:"exportCommand"`
+	Sources       []editor.Source `json:"sources"`
+	ExportCommand []string        `json:"exportCommand"`
 
-	Mode             string `json:"mode"`
 	Source           string `json:"source"`
 	SourceSize       int    `json:"sourceSize"`
 	SquareSize       int    `json:"squareSize"`
@@ -27,18 +27,30 @@ type fileConfig struct {
 
 // ParseConfig loads optional JSON settings; explicit flags take precedence.
 // File paths in JSON are relative to that file; CLI paths are relative to cwd.
-func ParseConfig(args []string, output io.Writer) (Config, error) {
+func ParseConfig(args []string, output io.Writer) (editor.Config, error) {
 	var settings fileConfig
 	commandDirectory, err := os.Getwd()
 	if err != nil {
-		return Config{}, err
+		return editor.Config{}, err
 	}
 	flags := flag.NewFlagSet("fabricum", flag.ContinueOnError)
 	flags.SetOutput(output)
+	flags.Usage = func() {
+		fmt.Fprintln(output, "Usage:")
+		fmt.Fprintln(output, "  fabricum")
+		fmt.Fprintln(output, "  fabricum --source path --output path")
+		fmt.Fprintln(output, "  fabricum -s path -o path")
+		fmt.Fprintln(output)
+		fmt.Fprintln(output, "Options:")
+		fmt.Fprintln(output, "  -h, --help")
+		fmt.Fprintln(output, "    \tshow this help")
+		flags.PrintDefaults()
+	}
 	configFile := flags.String("config", "", "JSON configuration file")
-	flags.StringVar(&settings.Mode, "mode", "", "launch mode: gui (default) or cli")
 	flags.StringVar(&settings.Source, "source", "", "input PNG, JPEG, or GIF path")
-	flags.StringVar(&settings.OutputDirectory, "output-dir", "output", "output directory")
+	flags.StringVar(&settings.Source, "s", "", "shorthand for --source")
+	flags.StringVar(&settings.OutputDirectory, "output", "output", "output directory")
+	flags.StringVar(&settings.OutputDirectory, "o", "output", "shorthand for --output")
 	flags.StringVar(&settings.SquareOutput, "square-output", "", "explicit square output path; extension follows selected format")
 	flags.StringVar(&settings.WideOutput, "wide-output", "", "explicit wide output path; extension follows selected format")
 	flags.IntVar(&settings.SourceSize, "source-size", 0, "required square source size; 0 accepts arbitrary dimensions")
@@ -48,33 +60,33 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 	flags.StringVar(&settings.Address, "address", "127.0.0.1:4179", "loopback listen address")
 	version := flags.Bool("version", false, "print version and exit")
 	if err := flags.Parse(args); err != nil {
-		return Config{}, err
+		return editor.Config{}, err
 	}
 	if *version {
-		fmt.Fprintln(output, "fabricum/"+Version)
-		return Config{}, flag.ErrHelp
+		fmt.Fprintln(output, "fabricum/"+editor.Version)
+		return editor.Config{}, flag.ErrHelp
 	}
 	if flags.NArg() != 0 {
-		return Config{}, fmt.Errorf("unexpected arguments: %v", flags.Args())
+		return editor.Config{}, fmt.Errorf("unexpected arguments: %v", flags.Args())
 	}
 	if *configFile != "" {
 		file, err := os.Open(*configFile)
 		if err != nil {
-			return Config{}, err
+			return editor.Config{}, err
 		}
 		defer file.Close()
 		decoder := json.NewDecoder(io.LimitReader(file, 64<<10))
 		decoder.DisallowUnknownFields()
 		var loaded fileConfig
 		if err := decoder.Decode(&loaded); err != nil {
-			return Config{}, fmt.Errorf("decode config: %w", err)
+			return editor.Config{}, fmt.Errorf("decode config: %w", err)
 		}
 		if err := ensureJSONEnd(decoder); err != nil {
-			return Config{}, err
+			return editor.Config{}, err
 		}
 		root, err := filepath.Abs(filepath.Dir(*configFile))
 		if err != nil {
-			return Config{}, err
+			return editor.Config{}, err
 		}
 		for _, value := range []*string{&loaded.Source, &loaded.OutputDirectory, &loaded.SquareOutput, &loaded.WideOutput, &loaded.EncoderDirectory} {
 			if *value != "" && !filepath.IsAbs(*value) {
@@ -104,26 +116,45 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 		}
 		settings = loaded
 		if err := flags.Parse(args); err != nil {
-			return Config{}, err
+			return editor.Config{}, err
 		}
 	}
-	if settings.Mode == "" {
-		settings.Mode = ModeGUI
+	mode := editor.ModeGUI
+	if settings.Source != "" || cliPathFlagProvided(flags) {
+		mode = editor.ModeCLI
 	}
-	if err := validateLocalAddress(settings.Address); err != nil {
-		return Config{}, err
-	}
-	options := Config{Mode: settings.Mode, Address: settings.Address, Source: settings.Source, SourceSize: settings.SourceSize,
+	options := editor.Config{Mode: mode, Address: settings.Address, Source: settings.Source, SourceSize: settings.SourceSize,
 		SquareSize: settings.SquareSize, WideWidth: settings.WideWidth, OutputDirectory: settings.OutputDirectory,
 		SquareOutput: settings.SquareOutput, WideOutput: settings.WideOutput, EncoderDirectory: settings.EncoderDirectory}
 	if settings.Sources != nil {
-		options.Sources = func() ([]Source, error) { return settings.Sources, nil }
+		options.Sources = func() ([]editor.Source, error) { return settings.Sources, nil }
 	}
 	if len(settings.ExportCommand) > 0 {
 		options.AfterExport = exportCommand(settings.ExportCommand, commandDirectory)
 	}
-	if _, err := configure(options); err != nil {
-		return Config{}, err
+	if err := editor.ValidateConfig(options); err != nil {
+		return editor.Config{}, err
 	}
 	return options, nil
+}
+
+func ensureJSONEnd(decoder *json.Decoder) error {
+	var trailing any
+	if err := decoder.Decode(&trailing); err == io.EOF {
+		return nil
+	} else if err != nil {
+		return fmt.Errorf("invalid trailing JSON: %w", err)
+	}
+	return fmt.Errorf("request must contain one JSON value")
+}
+
+func cliPathFlagProvided(flags *flag.FlagSet) bool {
+	provided := false
+	flags.Visit(func(option *flag.Flag) {
+		switch option.Name {
+		case "source", "s", "output", "o":
+			provided = true
+		}
+	})
+	return provided
 }

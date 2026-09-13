@@ -26,11 +26,14 @@ GUI mode:
 
 CLI mode (Windows):
 
-> bin\fabricum.exe -mode cli -source input-image-path-here -output-dir output-path-here
+> bin\fabricum.exe --source input-image-path-here --output output-directory-here
 
 CLI mode (Unix):
 
-> ./bin/fabricum -mode cli -source input-image-path-here -output-dir output-path-here
+> ./bin/fabricum --source input-image-path-here --output output-directory-here
+
+Short flags are also available: `-s path -o path`. A bare launch opens the GUI;
+supplying a source or output path automatically selects CLI mode.
 
 See [documentation](docs/README.md) for configuration, project integration,
 processing details, and development.

@@ -36,4 +36,4 @@ fi
 
 printf '\nFabricum is ready.\n'
 printf 'GUI:  %s\n' "$EXECUTABLE"
-printf 'Run the executable directly to open the GUI, or pass -mode cli with -source for path-driven use.\n'
+printf 'Run the executable directly to open the GUI, or pass --source and --output for path-driven use.\n'

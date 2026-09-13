@@ -5,10 +5,11 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-function run(command, args) {
-  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', windowsHide: true })
+function run(command, args, options = {}) {
+  const result = spawnSync(command, args, { cwd: root, stdio: 'inherit', windowsHide: true, ...options })
   if (result.error) throw result.error
   if (result.status !== 0) process.exit(result.status ?? 1)
+  return result
 }
 run(process.execPath, ['scripts/check.mjs'])
 const version = readFileSync(resolve(root, 'VERSION'), 'utf8').trim()
@@ -19,28 +20,14 @@ if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(alpha|beta|rc)\.(0|[1-9]\d*)
 }
 mkdirSync(resolve(root, 'bin'), { recursive: true })
 const archive = `fabricum-${version}-source.tar.gz`
-// Exact source allowlist excludes local art, native packages, executables, and git history.
-const sources = [
-  '.editorconfig', '.gitattributes', '.gitignore', 'CHANGELOG.md', 'LICENSE', 'README.md', 'VERSION', 'install.sh',
-  'docs/README.md', 'docs/configuration.md', 'docs/integration.md',
-  'docs/processing.md', 'docs/development.md', 'docs/dependencies.md', 'docs/release.md',
-  'front-end/assets.go', '.github/workflows/build.yml', '.github/workflows/commit-message.yml', '.github/workflows/main-policy.yml',
-  '.github/workflows/release.yml',
-  '.githooks/commit-msg', '.githooks/pre-commit', '.githooks/pre-push',
-  'scripts/code/check-file-loc.sh', 'scripts/git/install-hooks.mjs', 'scripts/git/protect-main.cjs',
-  'scripts/git/validate-commit-message.cjs', 'scripts/git/validate-pr-title.cjs',
-  'scripts/git/validate-commit-range.cjs', 'scripts/git/commit-guard.test.cjs', 'scripts/git/main-guard.test.cjs',
-  'go.mod', 'package.json', 'package-lock.json', 'renovate.json',
-  'back-end/cli.go', 'back-end/config.go', 'back-end/config_test.go', 'back-end/encoder.go', 'back-end/export_command.go',
-  'back-end/export_handlers.go', 'back-end/processor.go', 'back-end/processor_test.go', 'back-end/run.go', 'back-end/security.go', 'back-end/source_upload_handler.go',
-  'back-end/security_test.go', 'back-end/server.go', 'back-end/source_handler.go', 'back-end/cmd/fabricum/main.go',
-  'back-end/encoder/encode.mjs', 'scripts/check.mjs', 'scripts/build.mjs', 'scripts/release.mjs',
-  'scripts/release/extract-release-notes.cjs', 'scripts/release/release.sh',
-  'scripts/release/validate-release-tag.cjs', 'scripts/release/validate-release-tag.test.cjs',
-  'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/ui.js', 'front-end/static/app.css',
-  'front-end/static/preview.css', 'front-end/static/crop.js', 'front-end/static/index.html', 'front-end/static/source-selection.js', 'front-end/tests/crop.test.js',
-]
-run('tar', ['-czf', `bin/${archive}`, ...sources])
+// Git is the source manifest: ignored dependencies, outputs, and local files
+// stay out of the archive, while newly tracked project files are included.
+const sources = run('git', ['ls-files', '-z'], { stdio: ['ignore', 'pipe', 'inherit'] }).stdout
+if (sources.length === 0) throw new Error('Git reported no tracked source files')
+run('tar', ['-czf', `bin/${archive}`, '--null', '--files-from=-'], {
+  input: sources,
+  stdio: ['pipe', 'inherit', 'inherit'],
+})
 const hash = createHash('sha256').update(readFileSync(resolve(root, 'bin', archive))).digest('hex')
 writeFileSync(resolve(root, 'bin', `${archive}.sha256`), `${hash}  ${archive}\n`)
 console.log(`Created bin/${archive}; no publication or tagging performed.`)
