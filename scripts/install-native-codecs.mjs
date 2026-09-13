@@ -74,10 +74,23 @@ async function installLinux(workspace) {
   await copyExecutables(workspace, [join(workspace, 'webp'), join(workspace, 'avif')], true)
 }
 
-async function copyExecutables(workspace, searchDirectories, includeDecoders = false) {
-  const filenames = process.platform === 'win32'
+async function installBasis(workspace) {
+  const archive = join(workspace, 'basis_universal.tar.gz')
+  await download(versions.basisu.source, archive)
+  await verify(archive, versions.basisu.sha256)
+  const sourceDirectory = join(workspace, 'basis')
+  await extract(archive, sourceDirectory)
+  const source = join(sourceDirectory, 'basis_universal-2_0_3')
+  const build = join(workspace, 'basis-build')
+  run('cmake', ['-S', source, '-B', build, `-DCMAKE_BUILD_TYPE=${versions.basisu.build.type}`])
+  run('cmake', ['--build', build, '--config', versions.basisu.build.type, '--target', versions.basisu.build.target, '--parallel', '2'])
+  await copyExecutables(workspace, [build, source], false, ['basisu'])
+}
+
+async function copyExecutables(workspace, searchDirectories, includeDecoders = false, additional = []) {
+  const filenames = [...(process.platform === 'win32'
     ? ['cwebp.exe', ...(includeDecoders ? ['dwebp.exe'] : []), 'avifenc.exe', ...(includeDecoders ? ['avifdec.exe'] : [])]
-    : ['cwebp', ...(includeDecoders ? ['dwebp'] : []), 'avifenc', ...(includeDecoders ? ['avifdec'] : [])]
+    : ['cwebp', ...(includeDecoders ? ['dwebp'] : []), 'avifenc', ...(includeDecoders ? ['avifdec'] : [])]), ...additional.map(filename => process.platform === 'win32' ? `${filename}.exe` : filename)]
   for (const filename of filenames) {
     let source = ''
     for (const directory of searchDirectories) {
@@ -99,6 +112,7 @@ async function main() {
   const workspace = await mkdtemp(join(tmpdir(), 'fabricum-native-'))
   if (process.platform === 'win32') await installWindows(workspace)
   else await installLinux(workspace)
+  await installBasis(workspace)
   if (process.env.GITHUB_PATH) await writeFile(process.env.GITHUB_PATH, `${outputDirectory}\n`, { flag: 'a' })
   console.log(`Native codec tools installed in ${outputDirectory}`)
 }

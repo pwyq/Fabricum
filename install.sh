@@ -11,7 +11,7 @@ require_command() {
   fi
 }
 
-for command in node npm go; do
+for command in node npm go cmake; do
   require_command "$command"
 done
 

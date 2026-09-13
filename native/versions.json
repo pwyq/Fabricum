@@ -37,5 +37,18 @@
       "artifact": "https://github.com/AOMediaCodec/libavif/releases/download/v1.4.2/windows-artifacts.zip",
       "sha256": "cb2d9fea43dcbab1d0707e3b37eb7b08070ad2fb60a2c188c39ec12382c0484a"
     }
+  },
+  "basisu": {
+    "version": "2.0.3",
+    "revision": "21fb6e2",
+    "source": "https://github.com/BinomialLLC/basis_universal/archive/refs/tags/v2_0_3.tar.gz",
+    "sha256": "eb9ac9ec933524b3c97720368b5cb423fa8767bfc409029d4864063e0d078bec",
+    "license": "https://github.com/BinomialLLC/basis_universal/blob/v2_0_3/LICENSE",
+    "build": {
+      "system": "cmake",
+      "type": "Release",
+      "target": "basisu",
+      "internalThreads": 1
+    }
   }
 }
