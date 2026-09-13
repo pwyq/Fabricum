@@ -56,7 +56,7 @@ func ParseConfig(args []string, output io.Writer) (editor.Config, error) {
 	flags.IntVar(&settings.SourceSize, "source-size", 0, "required square source size; 0 accepts arbitrary dimensions")
 	flags.IntVar(&settings.SquareSize, "square-size", 512, "square output width and height")
 	flags.IntVar(&settings.WideWidth, "wide-width", 768, "4:3 output width, a multiple of four")
-	flags.StringVar(&settings.EncoderDirectory, "encoder-directory", "", "directory containing installed Sharp dependencies; defaults to the executable checkout or cwd")
+	flags.StringVar(&settings.EncoderDirectory, "encoder-directory", "", "directory containing cwebp and avifenc; defaults to the executable checkout or PATH")
 	flags.StringVar(&settings.Address, "address", "127.0.0.1:4179", "loopback listen address")
 	version := flags.Bool("version", false, "print version and exit")
 	if err := flags.Parse(args); err != nil {

@@ -294,7 +294,7 @@ func testProcessorConfig(directory string) processorConfig {
 		wideOutput: processing.OutputSpec{
 			Role: "wide", Path: filepath.Join(directory, "wide.png"), Width: 4, Height: 3,
 		},
-		encoderDirectory: filepath.Join(directory, "encode.mjs"),
+		encoderDirectory: filepath.Join(directory, "codecs"),
 	}
 }
 

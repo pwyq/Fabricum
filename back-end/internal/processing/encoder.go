@@ -3,19 +3,12 @@ package processing
 import (
 	"bytes"
 	"context"
-	_ "embed"
 	"errors"
-	"fmt"
 	"image"
 	"image/png"
-	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
-
-//go:embed encoder/encode.mjs
-var encoderScript string
 
 func validateEncodingOptions(request ExportRequest) error {
 	if request.Format != "png" && request.Format != "webp" && request.Format != "avif" {
@@ -38,6 +31,9 @@ func OutputPath(path, format string) string {
 }
 
 func encodeOutput(ctx context.Context, source image.Image, request ExportRequest, encoderDirectory string) ([]byte, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	var pngInput bytes.Buffer
 	compression := png.BestCompression
 	if request.Format != "png" {
@@ -49,13 +45,5 @@ func encodeOutput(ctx context.Context, source image.Image, request ExportRequest
 	if request.Format == "png" {
 		return pngInput.Bytes(), nil
 	}
-	command := exec.CommandContext(ctx, "node", "--input-type=module", "-e", encoderScript, "--", request.Format, strconv.Itoa(request.Quality), strconv.FormatBool(request.Lossless))
-	command.Dir = encoderDirectory
-	command.Stdin = &pngInput
-	var output, stderr bytes.Buffer
-	command.Stdout, command.Stderr = &output, &stderr
-	if err := command.Run(); err != nil {
-		return nil, fmt.Errorf("run Sharp encoder: %w: %s", err, strings.TrimSpace(stderr.String()))
-	}
-	return output.Bytes(), nil
+	return encodeNative(ctx, pngInput.Bytes(), request, encoderDirectory)
 }
