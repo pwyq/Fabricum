@@ -34,16 +34,24 @@ func encodeOutput(ctx context.Context, source image.Image, request ExportRequest
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	var pngInput bytes.Buffer
 	compression := png.BestCompression
 	if request.Format != "png" {
 		compression = png.BestSpeed
 	}
-	if err := (&png.Encoder{CompressionLevel: compression}).Encode(&pngInput, source); err != nil {
+	pngInput, err := encodePNG(source, compression)
+	if err != nil {
 		return nil, err
 	}
 	if request.Format == "png" {
-		return pngInput.Bytes(), nil
+		return pngInput, nil
 	}
-	return encodeNative(ctx, pngInput.Bytes(), request, encoderDirectory)
+	return encodeNative(ctx, pngInput, request, encoderDirectory)
+}
+
+func encodePNG(source image.Image, compression png.CompressionLevel) ([]byte, error) {
+	var output bytes.Buffer
+	if err := (&png.Encoder{CompressionLevel: compression}).Encode(&output, source); err != nil {
+		return nil, err
+	}
+	return output.Bytes(), nil
 }

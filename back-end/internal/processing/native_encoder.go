@@ -69,6 +69,8 @@ func validNativeOutput(format string, data []byte) bool {
 		return len(data) >= 12 && string(data[:4]) == "RIFF" && string(data[8:12]) == "WEBP"
 	case "avif":
 		return len(data) >= 12 && string(data[4:8]) == "ftyp"
+	case "ktx2":
+		return isKTX2(data)
 	default:
 		return false
 	}

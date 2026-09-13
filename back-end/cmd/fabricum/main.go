@@ -19,6 +19,13 @@ func main() {
 		}
 		return
 	}
+	if requestPath, ok := textureSetInvocation(args); ok {
+		if err := fabricum.TextureSetFile(context.Background(), requestPath, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "fabricum:", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if paths, ok := inspectionInvocation(args); ok {
 		if err := fabricum.Inspect(paths, os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "fabricum:", err)
@@ -49,6 +56,16 @@ func inspectionInvocation(args []string) ([]string, bool) {
 
 func transformInvocation(args []string) (string, bool) {
 	if len(args) > 0 && (args[0] == "transform" || args[0] == "--transform") {
+		if len(args) != 2 {
+			return "", true
+		}
+		return args[1], true
+	}
+	return "", false
+}
+
+func textureSetInvocation(args []string) (string, bool) {
+	if len(args) > 0 && (args[0] == "texture-set" || args[0] == "texture" || args[0] == "ktx2" || args[0] == "--texture-set") {
 		if len(args) != 2 {
 			return "", true
 		}

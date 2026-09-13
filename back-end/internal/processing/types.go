@@ -94,6 +94,57 @@ type TransformRequest struct {
 	EncoderDirectory  string                `json:"encoderDirectory,omitempty"`
 }
 
+// TextureEncodingOptions describes one loose KTX2 encoding. MipLevels is
+// optional; when omitted, the encoder writes the complete generated mip chain.
+type TextureEncodingOptions struct {
+	Encoding         string `json:"encoding,omitempty"`
+	Mode             string `json:"mode,omitempty"`
+	MipLevels        int    `json:"mipLevels,omitempty"`
+	TransferFunction string `json:"transferFunction,omitempty"`
+	ColorPrimaries   string `json:"colorPrimaries,omitempty"`
+	Quality          int    `json:"quality,omitempty"`
+	ZstdLevel        int    `json:"zstdLevel,omitempty"`
+}
+
+// TextureOutputSpec describes one loose KTX2 output. Transform uses the same
+// project-neutral crop, resize, padding, and channel-packing operations as a
+// regular transform request.
+type TextureOutputSpec struct {
+	Role              string                 `json:"role,omitempty"`
+	Path              string                 `json:"path"`
+	Source            string                 `json:"source"`
+	Constraints       SourceConstraints      `json:"constraints,omitempty"`
+	SourceConstraints *SourceConstraints     `json:"sourceConstraints,omitempty"`
+	Transform         ImageTransform         `json:"transform,omitempty"`
+	Format            string                 `json:"format,omitempty"`
+	Encoding          TextureEncodingOptions `json:"encoding"`
+}
+
+// TextureSetRequest prepares one or more independent loose KTX2 outputs.
+// RequiredRoles makes a material set fail before any output is replaced when
+// one of its caller-defined roles is absent.
+type TextureSetRequest struct {
+	Outputs          []TextureOutputSpec `json:"outputs"`
+	RequiredRoles    []string            `json:"requiredRoles,omitempty"`
+	MaxWorkers       int                 `json:"maxWorkers,omitempty"`
+	EncoderDirectory string              `json:"encoderDirectory,omitempty"`
+}
+
+const (
+	TextureEncodingETC1S     = "etc1s"
+	TextureEncodingUASTCZstd = "uastc-zstd"
+	TextureTransferLinear    = "linear"
+	TextureTransferSRGB      = "srgb"
+	TexturePrimariesBT709    = "bt709"
+)
+
+// These aliases keep the KTX2/material terminology available to integrations
+// without adding a second request format.
+type KTX2EncodingOptions = TextureEncodingOptions
+type KTX2OutputSpec = TextureOutputSpec
+type KTX2SetRequest = TextureSetRequest
+type MaterialSetRequest = TextureSetRequest
+
 type OutputSpec struct {
 	Role   string
 	Path   string
@@ -102,19 +153,26 @@ type OutputSpec struct {
 }
 
 type OutputMeasurement struct {
-	Role     string   `json:"role"`
-	Path     string   `json:"path"`
-	Width    int      `json:"width"`
-	Height   int      `json:"height"`
-	Format   string   `json:"format"`
-	Encoder  string   `json:"encoder"`
-	HasAlpha bool     `json:"hasAlpha"`
-	Filter   string   `json:"filter,omitempty"`
-	Quality  int      `json:"quality,omitempty"`
-	Lossless bool     `json:"lossless,omitempty"`
-	Bytes    int      `json:"bytes"`
-	SHA256   string   `json:"sha256"`
-	Crop     CropRect `json:"crop"`
+	Role                  string            `json:"role"`
+	Path                  string            `json:"path"`
+	Width                 int               `json:"width"`
+	Height                int               `json:"height"`
+	Format                string            `json:"format"`
+	Encoder               string            `json:"encoder"`
+	EncoderVersion        string            `json:"encoderVersion,omitempty"`
+	Processor             string            `json:"processor,omitempty"`
+	NativeEncoderVersions map[string]string `json:"nativeEncoderVersions,omitempty"`
+	HasAlpha              bool              `json:"hasAlpha"`
+	Filter                string            `json:"filter,omitempty"`
+	Quality               int               `json:"quality,omitempty"`
+	Lossless              bool              `json:"lossless,omitempty"`
+	Encoding              string            `json:"encoding,omitempty"`
+	MipLevels             int               `json:"mipLevels,omitempty"`
+	TransferFunction      string            `json:"transferFunction,omitempty"`
+	ColorPrimaries        string            `json:"colorPrimaries,omitempty"`
+	Bytes                 int               `json:"bytes"`
+	SHA256                string            `json:"sha256"`
+	Crop                  CropRect          `json:"crop"`
 }
 
 type ProcessedOutput struct {

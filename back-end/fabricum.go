@@ -29,16 +29,33 @@ type ChannelPack = processing.ChannelPack
 type ImageTransform = processing.ImageTransform
 type TransformOutputSpec = processing.TransformOutputSpec
 type TransformRequest = processing.TransformRequest
+type TextureEncodingOptions = processing.TextureEncodingOptions
+type TextureOutputSpec = processing.TextureOutputSpec
+type TextureSetRequest = processing.TextureSetRequest
+type KTX2EncodingOptions = processing.KTX2EncodingOptions
+type KTX2OutputSpec = processing.KTX2OutputSpec
+type KTX2SetRequest = processing.KTX2SetRequest
+type MaterialSetRequest = processing.MaterialSetRequest
 type OutputMeasurement = processing.OutputMeasurement
 type ProcessedOutput = processing.ProcessedOutput
 type ExportReceipt = cli.ExportReceipt
 type TransformReceipt = cli.TransformReceipt
+type TextureReceipt = cli.TextureReceipt
 type AssetFacts = processing.AssetFacts
 type InspectionReport = processing.InspectionReport
 
 const InspectionSchemaVersion = processing.InspectionSchemaVersion
 const ExportReceiptSchemaVersion = cli.ExportReceiptSchemaVersion
 const TransformReceiptSchemaVersion = cli.TransformReceiptSchemaVersion
+const TextureReceiptSchemaVersion = cli.TextureReceiptSchemaVersion
+
+const (
+	TextureEncodingETC1S     = processing.TextureEncodingETC1S
+	TextureEncodingUASTCZstd = processing.TextureEncodingUASTCZstd
+	TextureTransferLinear    = processing.TextureTransferLinear
+	TextureTransferSRGB      = processing.TextureTransferSRGB
+	TexturePrimariesBT709    = processing.TexturePrimariesBT709
+)
 
 func ParseConfig(args []string, output io.Writer) (Config, error) {
 	return cli.ParseConfig(args, output)
@@ -69,10 +86,32 @@ func PrepareTransformOutputs(ctx context.Context, request TransformRequest) ([]P
 	return processing.PrepareTransformOutputs(ctx, request)
 }
 
+// BuildTextureSet prepares and atomically writes a loose KTX2 texture set.
+func BuildTextureSet(ctx context.Context, request TextureSetRequest) ([]OutputMeasurement, error) {
+	return processing.BuildTextureSet(ctx, request)
+}
+
+// PrepareTextureSetOutputs prepares a loose KTX2 texture set without writing
+// its output files.
+func PrepareTextureSetOutputs(ctx context.Context, request TextureSetRequest) ([]ProcessedOutput, error) {
+	return processing.PrepareTextureSetOutputs(ctx, request)
+}
+
+// EncodeTexture prepares one standalone loose KTX2 output without writing it.
+func EncodeTexture(ctx context.Context, request TextureOutputSpec, encoderDirectory string) (ProcessedOutput, error) {
+	return processing.EncodeTexture(ctx, request, encoderDirectory)
+}
+
 // TransformFile reads a JSON transform request and writes its versioned
 // receipt to output.
 func TransformFile(ctx context.Context, path string, output io.Writer) error {
 	return cli.RunTransformFile(ctx, path, output)
+}
+
+// TextureSetFile reads a JSON texture-set request and writes its versioned
+// receipt to output.
+func TextureSetFile(ctx context.Context, path string, output io.Writer) error {
+	return cli.RunTextureSetFile(ctx, path, output)
 }
 
 // Inspect writes a versioned, machine-readable report for the supplied files.
