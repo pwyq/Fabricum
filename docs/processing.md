@@ -33,6 +33,46 @@ function, color primaries, byte count, SHA-256, processor, and pinned Basis
 Universal version. The KTX2 path accepts opaque RGB results; use `removeAlpha`
 or RGB channel packing for source images with alpha.
 
+## Static glTF model optimization
+
+`fabricum gltfpack request.json` optimizes one static `.gltf` or `.glb` input
+with the bundled native gltfpack build. The request remains project-neutral:
+the caller supplies the output path, optional role, material names, and target
+runtime compatibility choices.
+
+```json
+{
+  "source": "prop.gltf",
+  "output": "delivery/prop.glb",
+  "compression": "meshopt",
+  "textureCompression": "ktx2",
+  "textureEncoding": "etc1s",
+  "bakeRootTransform": true,
+  "centerXZAtGround": true,
+  "removeAttributes": ["COLOR_0"],
+  "deduplicateMaterials": true,
+  "compactBuffers": true
+}
+```
+
+`compression` is `none` by default and passes gltfpack's `-noq` option so a
+runtime that requires unextended geometry can opt out of meshopt compression.
+Use `meshopt` to enable the preferred `EXT_meshopt_compression` output.
+`textureCompression` can be `ktx2` (Basis Universal, with `etc1s` or `uastc`)
+or `webp`; both texture choices require the corresponding target-runtime
+extension.
+
+Before invoking gltfpack, Fabricum validates glTF 2.0, optionally bakes a
+shared root transform, repairs mirrored triangle winding, centers the XZ
+footprint at the lowest Y contact, removes only caller-selected attributes,
+deduplicates identical material JSON, and compacts buffer views when asked.
+The output receipt includes the gltfpack/meshoptimizer tool version, output
+SHA-256, bounds, geometry/material/texture/animation counts, used extensions,
+native tool versions, and warnings from discarded unsupported data.
+
+Draco is deliberately not bundled or emitted. A Draco path needs a separate
+target-engine requirement and ticket.
+
 ## Deterministic transforms
 
 The `transform` command accepts project-neutral JSON requests for crop,
@@ -65,4 +105,5 @@ dimensions, alpha presence, encoder, byte count, and SHA-256.
 - Is intended for one trusted local user.
 - Must not be exposed through a proxy or port tunnel.
 
-3D and general-purpose asset pipelines are out of scope.
+General-purpose asset pipelines remain out of scope; static glTF/GLB model
+optimization is limited to the operation set above.

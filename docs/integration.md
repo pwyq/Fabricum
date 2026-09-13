@@ -117,3 +117,24 @@ role, source channel, invalid color contract, or native encoder failure leaves
 existing deliveries untouched. The receipt is schema version 1 and includes
 the request plus output encoding, dimensions, mip count, transfer function,
 color primaries, byte count, SHA-256, processor, and native encoder versions.
+
+## Static model optimization
+
+Use `fabricum gltfpack request.json` for a static glTF/GLB build. Relative
+source, output, and native-tool paths are resolved from the request file
+directory; glTF resource paths retain glTF semantics and are resolved from
+the model file. The output path and any material names are caller data;
+Fabricum does not assign project-specific semantic names.
+
+Set `compression` to `meshopt` for meshoptimizer compression, or to `none`
+when the target loader requires ordinary unextended geometry. Set
+`textureCompression` to `ktx2` or `webp` only when the target loader supports
+the corresponding glTF extension. The native gltfpack executable is resolved
+from the installed bundle's `codecs` directory before falling back to `PATH`;
+Node and an npm-installed gltfpack are not involved.
+
+The model receipt is schema version 1. It reports the Fabricum processor,
+gltfpack tool version, request, every main/sidecar output's byte count and
+SHA-256, bounds, triangle/primitive/material/texture/animation counts, used
+extensions, native tool versions, and warnings. Unsupported input extensions
+are surfaced as warnings rather than silently presented as supported output.

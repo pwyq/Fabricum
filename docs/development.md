@@ -9,7 +9,7 @@
 - `back-end/internal/cli`: flags, JSON launch configuration, and export-command integration.
 - `back-end/internal/editor`: local HTTP editor, source handling, security, and GUI lifecycle.
 - `back-end/internal/processing`: crop, resize, native encoding, loose KTX2
-  texture sets, hashing, and delivery file writes.
+  texture sets, static glTF optimization, hashing, and delivery file writes.
 - `back-end/cmd/fabricum`: executable entry point.
 - Root: Go/npm metadata and repository tooling.
 
@@ -35,6 +35,8 @@ From the repository root:
   [`dependencies.md`](dependencies.md) and [`../native/README.md`](../native/README.md).
 - Loose KTX2 behavior tests additionally need the pinned `basisu` build; the
   native installer builds it from source with CMake.
+- Static model behavior tests use a gltfpack-compatible native executable; the
+  native installer builds the pinned full gltfpack tool with CMake.
 
 ## Git rules
 
