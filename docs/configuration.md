@@ -1,5 +1,9 @@
 # Configuration
 
+Run with JSON settings:
+
+> fabricum -config settings.json
+
 ```json
 {
   "mode": "gui",
@@ -11,32 +15,44 @@
 }
 ```
 
-The executable defaults to GUI mode. GUI mode can start without `source`; the
-browser then prompts for a PNG, JPEG, or GIF upload and keeps the temporary
-source in a local session directory. `-mode gui` makes this explicit. CLI mode
-is path-driven, requires `source` (or `-source`), prints the local editor URL,
-and does not open a browser. Select it with `"mode": "cli"` or `-mode cli`.
+## Modes
 
-Run `fabricum -config settings.json`. Paths in JSON resolve relative to the JSON
-file; CLI paths resolve relative to the working directory. Explicit flags override
-JSON values. Unknown properties and trailing JSON are rejected. `sourceSize: 0`
-accepts arbitrary dimensions; a positive value requires an exact square source.
+- `gui` is the default. It opens a browser and can start without `source`.
+- GUI mode exits when its last Fabricum page closes.
+- Without `source`, the browser prompts for a PNG, JPEG, or GIF.
+- `cli` requires `source`, prints the editor URL, and does not open a browser.
+- Both modes use the interactive editor. CLI mode is not an unattended batch mode.
 
-Default outputs are `<source-name>-square.webp` and `<source-name>-wide.webp` in
-`output`. The selected format changes the extension. `squareOutput` and
-`wideOutput` (or their CLI flags) supply explicit paths. Input and output paths
-must be distinct. Square output defaults to 512×512, wide output to 768×576.
-Inputs may be PNG, JPEG, or GIF; only the first GIF frame is processed. Inputs are
-limited to 64 megapixels and outputs to 8192 pixels per dimension. Crops must fit
-the image, match the role ratio, and never upscale.
+## Paths
 
-`-help` lists options; `-version` prints the version. Help/version exit 0, malformed
-CLI/configuration exits 2, and startup/listener errors exit 1. Both modes start
-the interactive local editor; CLI mode does not implement unattended batch crop
-selection.
+- JSON paths are relative to the config file.
+- CLI paths are relative to the working directory.
+- Explicit flags override JSON values.
+- Unknown JSON properties and trailing JSON are rejected.
+- `outputDirectory` defaults to `output`.
+- Outputs default to `<name>-square.webp` and `<name>-wide.webp`.
+- `squareOutput` and `wideOutput` set explicit paths.
+- Source and output paths must differ.
 
-The executable embeds the editor and encoder script; it never searches for a
-game repository. No image fixtures or project assets are bundled.
+## Sizes
 
-See [project integration](integration.md) for source lists and export commands,
-and [processing behavior](processing.md) for encoding and write details.
+- `sourceSize: 0` accepts any dimensions.
+- A positive `sourceSize` requires an exact square source.
+- Square output defaults to 512×512.
+- Wide output defaults to 768×576.
+- Sources are limited to 64 megapixels.
+- Outputs are limited to 8192 pixels per dimension.
+- Crops must fit the source, match the output ratio, and never upscale.
+- GIF input uses the first frame only.
+
+## Commands and exit codes
+
+- `-help`: list flags; exit 0.
+- `-version`: print the version; exit 0.
+- Invalid flags or config: exit 2.
+- Startup or listener failure: exit 1.
+
+The executable embeds the editor and encoder script. It does not search for a
+game repository or bundle project assets.
+
+See [project integration](integration.md) and [processing](processing.md).

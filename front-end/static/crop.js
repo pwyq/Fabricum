@@ -101,8 +101,7 @@ export function createCropEditor({ stage, box, source, specs, onChange }) {
     setActive,
     getCrops: () => structuredClone(crops),
     reset: () => {
-      for (const spec of specs)
-        crops[spec.role] = structuredClone(initialCrops[spec.role]);
+      crops[activeRole] = structuredClone(initialCrops[activeRole]);
       render();
     },
   };

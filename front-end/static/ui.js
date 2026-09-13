@@ -23,7 +23,7 @@ export function createSizeComparison(elements, sourceBytes) {
       elements.sizeReduction.textContent = changeLabel;
       elements.sizeReduction.className = `size-reduction${change < 0 ? " size-reduction--larger" : ""}`;
       elements.outputSizeBar.style.width = `${Math.min(100, Math.max(0, sourceBytes > 0 ? (outputBytes / sourceBytes) * 100 : 0))}%`;
-      elements.sizeComparisonDetail.textContent = `${formatBytes(sourceBytes)} source → ${formatBytes(outputBytes)} across ${outputs.length} outputs`;
+      elements.sizeComparisonDetail.textContent = `${formatBytes(sourceBytes)} source → ${formatBytes(outputBytes)} ${outputs[0].role} output`;
     },
   };
 }
@@ -36,29 +36,33 @@ export function createPreviewChangeHandler(
 ) {
   return (activeRole, crops) => {
     setCrops(crops);
+    showPreviewRole(elements, activeRole);
     const active = crops[activeRole];
     elements.cropSummary.textContent = `${capitalize(activeRole)} crop · x ${active.x}, y ${active.y}, ${active.width}×${active.height}`;
-    for (const [role, crop] of Object.entries(crops)) {
-      const canvas = elements.previews[role];
-      const context = canvas.getContext("2d");
-      context.clearRect(0, 0, canvas.width, canvas.height);
-      context.drawImage(
-        elements.source,
-        crop.x,
-        crop.y,
-        crop.width,
-        crop.height,
-        0,
-        0,
-        specs[role].width,
-        specs[role].height,
-      );
-      canvas.hidden = false;
-      elements.encodedPreviews[role].hidden = true;
-    }
+    const canvas = elements.previews[activeRole];
+    const context = canvas.getContext("2d");
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(
+      elements.source,
+      active.x,
+      active.y,
+      active.width,
+      active.height,
+      0,
+      0,
+      specs[activeRole].width,
+      specs[activeRole].height,
+    );
+    canvas.hidden = false;
+    elements.encodedPreviews[activeRole].hidden = true;
     setLiveStatus(elements, "Preview updating…");
     schedulePreview();
   };
+}
+
+export function showPreviewRole(elements, activeRole) {
+  for (const [role, card] of Object.entries(elements.previewCards))
+    card.hidden = role !== activeRole;
 }
 
 export function setLiveStatus(elements, message) {
@@ -77,6 +81,7 @@ export function setWorkflowStep(elements, activeStep) {
 
 export function updateExportControls(elements, outputs) {
   const format = elements.format.value;
+  const activeRole = elements.cropRole.value;
   const hasQuality = format !== "png" && !elements.lossless.checked;
   elements.quality.disabled = !hasQuality;
   elements.lossless.disabled = format === "png";
@@ -88,12 +93,14 @@ export function updateExportControls(elements, outputs) {
       output.path,
       format,
     );
+    elements.outputRows[output.role].hidden = output.role !== activeRole;
   }
+  elements.exportLabel.textContent = `Export ${activeRole}`;
 }
 
-export function showImmediatePreviews(elements, outputs) {
+export function showImmediatePreviews(elements, outputs, activeRole) {
   for (const output of outputs) {
-    elements.previews[output.role].hidden = false;
+    elements.previews[output.role].hidden = output.role !== activeRole;
     elements.encodedPreviews[output.role].hidden = true;
   }
 }
@@ -101,6 +108,7 @@ export function showImmediatePreviews(elements, outputs) {
 export function exportRequest(elements, crops) {
   const format = elements.format.value;
   return {
+    role: elements.cropRole.value,
     ...crops,
     format,
     quality: format === "png" ? 0 : Number(elements.quality.value),

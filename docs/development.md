@@ -2,75 +2,60 @@
 
 ## Repository layout
 
-`front-end/static` owns the editor, and `front-end/tests` contains crop math
-tests. `front-end/assets.go` embeds those assets directly for the Go server.
-`back-end` owns processing, HTTP, configuration, encoding, and Go tests;
-`back-end/cmd/fabricum` is the executable entry point.
+- `front-end/static`: browser editor.
+- `front-end/tests`: crop math tests.
+- `front-end/assets.go`: embedded editor assets.
+- `back-end`: config, HTTP, processing, encoding, and Go tests.
+- `back-end/cmd/fabricum`: executable entry point.
+- Root: Go/npm metadata and repository tooling.
 
-The root keeps shared module/package metadata and repository tooling. One Go
-module allows the backend to import embedded frontend assets without a generated
-copy or build-time synchronization step. No application Go files live at root.
+The single Go module lets the backend import embedded frontend assets directly.
 
-## CI guards
+## Setup and checks
 
-`.github/workflows/build.yml` runs the same local check and build commands on
-Ubuntu and Windows for every PR to main, pushes to main, and manual runs. Linux
-also runs Go race tests. Checks include Go formatting/vet/tests, JavaScript
-syntax, crop math, commit guard tests, file LOC limits, and compilation of the
-embedded CLI.
+From the repository root:
 
-`.github/workflows/commit-message.yml` checks the PR title and each non-merge
-commit introduced by the PR. Use `<type>: <message> (#<issue-number>)`, for example
-`feat: add image export (#123)`. Types: feat, fix, docs, style, refactor, perf,
-test, build, ci, chore, revert. The issue number must be positive; the guard checks
-format without fetching issues. Renovate-authored PRs are exempt from this
-message policy, but still run the build guard.
+> bash install.sh
 
-`.github/workflows/main-policy.yml` runs for pull requests and pushes to main.
-Its CI guard verifies that every newly pushed main commit is associated with a
-merged pull request. Configure the GitHub `main` branch rule to require a pull
-request and the `Require pull request for main` status check; workflow files do
-not change remote branch-protection settings.
+> node scripts/check.mjs
 
-The repository includes local hooks under `.githooks`. Run `bash install.sh`
-from the checkout to install dependencies, build the executable, and configure
-them. `pre-commit` rejects commits made while checked out on `main` and runs
-the file LOC check. `pre-push` rejects pushes whose local or remote ref is
-`main`. `commit-msg` enforces the commit subject format. Hooks are local
-guardrails and can be bypassed, so the CI check and GitHub branch rule remain
-required.
+> node scripts/build.mjs
 
-The workflows use read-only repository permissions and no deployment secrets.
+- `install.sh`: install dependencies, configure hooks, and build.
+- `check.mjs`: formatting, syntax, vet, tests, compilation, and version checks.
+- `build.mjs`: build the embedded executable.
+- `npm audit`: inspect the installed npm dependency graph.
+- Linux CI also runs Go race tests.
+- No browser runner, frontend framework, or TypeScript toolchain is required.
 
-## Checks and local release
+## Git rules
 
-Run commands from the repository root after `bash install.sh` (or after
-installing Node dependencies with `npm ci`). Go can download the required
-toolchain when permitted. Sharp is pinned for WebP/AVIF; PNG processing needs only Go.
+- Work on a branch; local hooks reject commits and pushes to `main`.
+- CI requires each new `main` commit to come from a merged PR.
+- Protect `main` with required PRs and the `Require pull request for main` check.
+- Hooks are local guardrails; CI and branch protection remain authoritative.
+- Workflows use read-only repository permissions and no deployment secrets.
 
-```text
-node scripts/check.mjs
-node scripts/build.mjs
-```
+Commit and PR titles use:
 
-`node scripts/check.mjs` is the portable CI entry point: Go formatting, vet,
-tests, compilation, JS syntax, crop math tests, and version consistency. No UI or
-browser tests are required. Run `npm audit` for the installed dependency graph.
-No JavaScript build framework or TypeScript toolchain is needed.
+> `<type>: <message> (#<issue-number>)`
 
-`npm run release:archive` verifies the checkout and creates a source archive and
-SHA-256 file under `bin`. It does not publish, tag, commit, or contact GitHub.
-The root `VERSION` file is the release source of truth; `package.json` and
-`back-end/config.go` must retain the same value. Use `npm run release --
-v0.1.0` to validate release metadata and dispatch the CI-authorized release
-workflow. See [the release process](release.md) for the complete policy.
-The Go module currently has the local name `fabricum`; choose a public module
-identity before offering `go install ...@version`.
+Example:
 
-Renovate configuration is prepared but inactive until a maintainer installs a bot.
-Updates are weekly, delayed 14 days, grouped for minor/patch releases, never
-automerged, and majors require dashboard approval. Review codec output changes
-with dependency updates. The release workflow is configured to create tags and
-GitHub Releases only after its CI gates pass.
+> `feat: add image export (#123)`
 
-See [dependency review](dependencies.md) for native codec licensing and redistribution.
+Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
+`build`, `ci`, `chore`, `revert`.
+
+## Versions and updates
+
+- `VERSION` is authoritative.
+- `package.json` and `back-end/config.go` must match it.
+- `npm run release:archive` creates a source archive and SHA-256 file in `bin`.
+- Archives do not publish, tag, commit, or contact GitHub.
+- The Go module name is local; choose a public identity before supporting `go install`.
+- Renovate is inactive until installed.
+- Renovate waits 14 days, groups minor/patch updates, and never automerges.
+- Review codec output changes after dependency updates.
+
+See [releases](release.md) and [dependencies](dependencies.md).

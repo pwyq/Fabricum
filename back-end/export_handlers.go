@@ -93,13 +93,29 @@ func (app *application) previewOutputs(request *http.Request, input exportReques
 	if app.preview != nil && app.preview.request == input && app.preview.source == revision {
 		return app.preview.outputs, nil
 	}
-	specs := []outputSpec{app.config.squareOutput, app.config.wideOutput}
+	specs, err := selectedOutputSpecs(input.Role, app.config.squareOutput, app.config.wideOutput)
+	if err != nil {
+		return nil, err
+	}
 	outputs, err := prepareOutputs(request.Context(), app.config.sourcePath, input, specs, app.config.encoderDirectory)
 	if err != nil {
 		return nil, err
 	}
 	app.preview = &previewCache{request: input, source: revision, outputs: outputs}
 	return outputs, nil
+}
+
+func selectedOutputSpecs(role string, square, wide outputSpec) ([]outputSpec, error) {
+	switch role {
+	case "":
+		return []outputSpec{square, wide}, nil
+	case "square":
+		return []outputSpec{square}, nil
+	case "wide":
+		return []outputSpec{wide}, nil
+	default:
+		return nil, fmt.Errorf("unsupported output role %q", role)
+	}
 }
 
 func (app *application) readExportRequest(response http.ResponseWriter, request *http.Request) (exportRequest, bool) {

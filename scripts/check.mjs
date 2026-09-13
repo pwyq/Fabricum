@@ -23,7 +23,7 @@ for (const directory of ['front-end/static', 'back-end/encoder', 'scripts', 'scr
 }
 run('go',['vet','./...'])
 run('go',['test','./...'])
-run(process.execPath,['--test','front-end/tests/crop.test.js','scripts/git/commit-guard.test.cjs','scripts/git/main-guard.test.cjs','scripts/release/validate-release-tag.test.cjs'])
+run(process.execPath,['--test','front-end/tests/crop.test.js','front-end/tests/ui.test.js','scripts/git/commit-guard.test.cjs','scripts/git/main-guard.test.cjs','scripts/release/validate-release-tag.test.cjs'])
 run('go',['build','./...'])
 if (!readFileSync(resolve(root,'back-end/config.go'),'utf8').includes('Version = "'+releaseVersion+'"')) throw new Error('Go and release versions differ')
 console.log('Formatting, syntax, vet, tests, compilation, and version checks passed.')

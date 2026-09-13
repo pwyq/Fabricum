@@ -148,6 +148,44 @@ func TestExportEndpointRequiresTokenAndWritesBothOutputs(t *testing.T) {
 	}
 }
 
+func TestSelectedRolePreviewsAndWritesOnlyThatOutput(t *testing.T) {
+	temporary := t.TempDir()
+	config := testProcessorConfig(temporary)
+	writeFixtureImage(t, config.sourcePath, 8, 8)
+	app, err := newApplication(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+	input := exportRequest{
+		Role:   "wide",
+		Square: cropRect{X: 1, Y: 1, Width: 6, Height: 6},
+		Wide:   cropRect{X: 0, Y: 1, Width: 8, Height: 6},
+		Format: "png",
+	}
+	request := httptest.NewRequest(http.MethodPost, "http://localhost/api/preview", nil)
+	outputs, err := app.previewOutputs(request, input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(outputs) != 1 || outputs[0].measurement.Role != "wide" {
+		t.Fatalf("expected only the wide preview, got %+v", outputMeasurements(outputs))
+	}
+	if err := writeOutputs(outputs); err != nil {
+		t.Fatal(err)
+	}
+	assertImageDimensions(t, config.wideOutput.path, 4, 3)
+	if _, err := os.Stat(config.squareOutput.path); !errors.Is(err, os.ErrNotExist) {
+		t.Fatal("selected wide export must not write the square output")
+	}
+}
+
+func TestSelectedOutputSpecsRejectsUnknownRole(t *testing.T) {
+	_, err := selectedOutputSpecs("portrait", outputSpec{role: "square"}, outputSpec{role: "wide"})
+	if err == nil {
+		t.Fatal("expected an unknown output role to fail")
+	}
+}
+
 func TestConfigRejectsInvalidSourceReplacedAfterStartup(t *testing.T) {
 	temporary := t.TempDir()
 	config := testProcessorConfig(temporary)
