@@ -128,7 +128,8 @@ func resizeWeights(sourceSize, destinationSize int, filter string) [][]resizeWei
 
 func filterWeight(filter string, distance, scale float64) float64 {
 	if filter == "bilinear" {
-		return max(0, 1-distance)
+		distance *= scale
+		return scale * max(0, 1-distance)
 	}
 	distance *= scale
 	return scale * lanczos3(distance)
