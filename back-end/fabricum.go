@@ -41,6 +41,11 @@ type ProcessedOutput = processing.ProcessedOutput
 type ExportReceipt = cli.ExportReceipt
 type TransformReceipt = cli.TransformReceipt
 type TextureReceipt = cli.TextureReceipt
+type ModelOptimizationRequest = processing.ModelOptimizationRequest
+type StaticPropRequest = processing.StaticPropRequest
+type ModelOutputMeasurement = processing.ModelOutputMeasurement
+type ModelOptimizationResult = processing.ModelOptimizationResult
+type ModelReceipt = cli.ModelReceipt
 type AssetFacts = processing.AssetFacts
 type InspectionReport = processing.InspectionReport
 
@@ -48,6 +53,18 @@ const InspectionSchemaVersion = processing.InspectionSchemaVersion
 const ExportReceiptSchemaVersion = cli.ExportReceiptSchemaVersion
 const TransformReceiptSchemaVersion = cli.TransformReceiptSchemaVersion
 const TextureReceiptSchemaVersion = cli.TextureReceiptSchemaVersion
+const ModelReceiptSchemaVersion = cli.ModelReceiptSchemaVersion
+
+const (
+	ModelCompressionNone    = processing.ModelCompressionNone
+	ModelCompressionMeshopt = processing.ModelCompressionMeshopt
+	ModelTextureNone        = processing.ModelTextureNone
+	ModelTextureKTX2        = processing.ModelTextureKTX2
+	ModelTextureWebP        = processing.ModelTextureWebP
+	ModelTextureETC1S       = processing.ModelTextureETC1S
+	ModelTextureUASTC       = processing.ModelTextureUASTC
+	GltfpackVersion         = processing.GltfpackVersion
+)
 
 const (
 	TextureEncodingETC1S     = processing.TextureEncodingETC1S
@@ -102,6 +119,16 @@ func EncodeTexture(ctx context.Context, request TextureOutputSpec, encoderDirect
 	return processing.EncodeTexture(ctx, request, encoderDirectory)
 }
 
+// OptimizeModel prepares and atomically writes a static model optimization.
+func OptimizeModel(ctx context.Context, request ModelOptimizationRequest) ([]ModelOutputMeasurement, error) {
+	return processing.OptimizeModel(ctx, request)
+}
+
+// PrepareModelOutputs prepares a static model without writing its output files.
+func PrepareModelOutputs(ctx context.Context, request ModelOptimizationRequest) (ModelOptimizationResult, error) {
+	return processing.PrepareModelOutputs(ctx, request)
+}
+
 // TransformFile reads a JSON transform request and writes its versioned
 // receipt to output.
 func TransformFile(ctx context.Context, path string, output io.Writer) error {
@@ -112,6 +139,11 @@ func TransformFile(ctx context.Context, path string, output io.Writer) error {
 // receipt to output.
 func TextureSetFile(ctx context.Context, path string, output io.Writer) error {
 	return cli.RunTextureSetFile(ctx, path, output)
+}
+
+// ModelOptimizationFile reads a JSON model request and writes its receipt.
+func ModelOptimizationFile(ctx context.Context, path string, output io.Writer) error {
+	return cli.RunModelOptimizationFile(ctx, path, output)
 }
 
 // Inspect writes a versioned, machine-readable report for the supplied files.

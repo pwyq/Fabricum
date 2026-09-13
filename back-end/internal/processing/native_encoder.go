@@ -96,7 +96,17 @@ func nativeEncoderCommand(request ExportRequest) (string, []string) {
 }
 
 func findNativeEncoder(name, format, directory string) (string, error) {
+	return findNativeTool(name, format, directory)
+}
+
+func findNativeTool(name, format, directory string) (string, error) {
 	if directory == "" {
+		if bundled := bundledNativeDirectory(name); bundled != "" {
+			path := nativeToolPath(bundled, name)
+			if _, err := exec.LookPath(path); err == nil {
+				return path, nil
+			}
+		}
 		path, err := exec.LookPath(name)
 		if err == nil {
 			return path, nil
@@ -107,16 +117,42 @@ func findNativeEncoder(name, format, directory string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("resolve native codec directory %q: %w", directory, err)
 	}
-	path := filepath.Join(absoluteDirectory, name)
-	if runtime.GOOS == "windows" && filepath.Ext(path) == "" {
-		path += ".exe"
-	}
+	path := nativeToolPath(absoluteDirectory, name)
 	if _, err := exec.LookPath(path); err != nil {
 		return "", missingNativeEncoderError(name, format, absoluteDirectory)
 	}
 	return path, nil
 }
 
+func nativeToolPath(directory, name string) string {
+	path := filepath.Join(directory, name)
+	if runtime.GOOS == "windows" && filepath.Ext(path) == "" {
+		path += ".exe"
+	}
+	return path
+}
+
+func bundledNativeDirectory(name string) string {
+	executable, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	executableDirectory := filepath.Dir(executable)
+	root := filepath.Dir(executableDirectory)
+	candidates := []string{
+		filepath.Join(executableDirectory, "codecs"),
+		executableDirectory,
+		filepath.Join(root, "codecs"),
+		filepath.Join(root, "native"),
+	}
+	for _, candidate := range candidates {
+		if _, err := exec.LookPath(nativeToolPath(candidate, name)); err == nil {
+			return candidate
+		}
+	}
+	return ""
+}
+
 func missingNativeEncoderError(name, format, location string) error {
-	return fmt.Errorf("%s output requires native %s (%s); install the pinned codec tools or set --encoder-directory to their directory", format, name, location)
+	return fmt.Errorf("%s output requires native %s (%s); install the pinned native tools or set --encoder-directory/--gltfpack-directory", format, name, location)
 }

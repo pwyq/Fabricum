@@ -1,6 +1,9 @@
 package processing
 
-const BasisUniversalVersion = "2.0.3"
+const (
+	BasisUniversalVersion = "2.0.3"
+	LibWebPVersion        = "1.6.0"
+)
 
 // EncoderForFormat identifies the encoder that produced a successful output.
 // Native names include the codec library selected by Fabricum's contract.
