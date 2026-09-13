@@ -13,7 +13,6 @@ type fileConfig struct {
 	Sources       []Source `json:"sources"`
 	ExportCommand []string `json:"exportCommand"`
 
-	Mode             string `json:"mode"`
 	Source           string `json:"source"`
 	SourceSize       int    `json:"sourceSize"`
 	SquareSize       int    `json:"squareSize"`
@@ -35,10 +34,22 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 	}
 	flags := flag.NewFlagSet("fabricum", flag.ContinueOnError)
 	flags.SetOutput(output)
+	flags.Usage = func() {
+		fmt.Fprintln(output, "Usage:")
+		fmt.Fprintln(output, "  fabricum")
+		fmt.Fprintln(output, "  fabricum --source path --output path")
+		fmt.Fprintln(output, "  fabricum -s path -o path")
+		fmt.Fprintln(output)
+		fmt.Fprintln(output, "Options:")
+		fmt.Fprintln(output, "  -h, --help")
+		fmt.Fprintln(output, "    \tshow this help")
+		flags.PrintDefaults()
+	}
 	configFile := flags.String("config", "", "JSON configuration file")
-	flags.StringVar(&settings.Mode, "mode", "", "launch mode: gui (default) or cli")
 	flags.StringVar(&settings.Source, "source", "", "input PNG, JPEG, or GIF path")
-	flags.StringVar(&settings.OutputDirectory, "output-dir", "output", "output directory")
+	flags.StringVar(&settings.Source, "s", "", "shorthand for --source")
+	flags.StringVar(&settings.OutputDirectory, "output", "output", "output directory")
+	flags.StringVar(&settings.OutputDirectory, "o", "output", "shorthand for --output")
 	flags.StringVar(&settings.SquareOutput, "square-output", "", "explicit square output path; extension follows selected format")
 	flags.StringVar(&settings.WideOutput, "wide-output", "", "explicit wide output path; extension follows selected format")
 	flags.IntVar(&settings.SourceSize, "source-size", 0, "required square source size; 0 accepts arbitrary dimensions")
@@ -107,13 +118,14 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 			return Config{}, err
 		}
 	}
-	if settings.Mode == "" {
-		settings.Mode = ModeGUI
+	mode := ModeGUI
+	if settings.Source != "" || cliPathFlagProvided(flags) {
+		mode = ModeCLI
 	}
 	if err := validateLocalAddress(settings.Address); err != nil {
 		return Config{}, err
 	}
-	options := Config{Mode: settings.Mode, Address: settings.Address, Source: settings.Source, SourceSize: settings.SourceSize,
+	options := Config{Mode: mode, Address: settings.Address, Source: settings.Source, SourceSize: settings.SourceSize,
 		SquareSize: settings.SquareSize, WideWidth: settings.WideWidth, OutputDirectory: settings.OutputDirectory,
 		SquareOutput: settings.SquareOutput, WideOutput: settings.WideOutput, EncoderDirectory: settings.EncoderDirectory}
 	if settings.Sources != nil {
@@ -126,4 +138,15 @@ func ParseConfig(args []string, output io.Writer) (Config, error) {
 		return Config{}, err
 	}
 	return options, nil
+}
+
+func cliPathFlagProvided(flags *flag.FlagSet) bool {
+	provided := false
+	flags.Visit(func(option *flag.Flag) {
+		switch option.Name {
+		case "source", "s", "output", "o":
+			provided = true
+		}
+	})
+	return provided
 }

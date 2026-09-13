@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -22,7 +23,7 @@ func TestConfigPathsAndCLIOverrideOutsideRepository(t *testing.T) {
 	if err := os.WriteFile(configPath, []byte(`{"source":"arbitrary.png","squareSize":4,"wideWidth":8,"outputDirectory":"deliveries"}`), 0600); err != nil {
 		t.Fatal(err)
 	}
-	options, err := ParseConfig([]string{"-config", configPath, "-square-size", "6"}, io.Discard)
+	options, err := ParseConfig([]string{"--config", configPath, "--square-size", "6"}, io.Discard)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,18 +37,38 @@ func TestConfigPathsAndCLIOverrideOutsideRepository(t *testing.T) {
 	if _, err := NewHandler(options); err != nil {
 		t.Fatal(err)
 	}
-	for _, args := range [][]string{{"-help"}, {"-version"}} {
+	for _, args := range [][]string{{"--help"}, {"-h"}, {"--version"}} {
 		if _, err := ParseConfig(args, io.Discard); !errors.Is(err, flag.ErrHelp) {
 			t.Fatalf("expected clean help exit: %v", err)
 		}
 	}
-	for _, text := range []string{`{"unknown":1}`, `{"source":"x"} {}`, `{"source":"x","wideWidth":7}`} {
+	for _, text := range []string{`{"unknown":1}`, `{"mode":"gui"}`, `{"source":"x"} {}`, `{"source":"x","wideWidth":7}`} {
 		if err := os.WriteFile(configPath, []byte(text), 0600); err != nil {
 			t.Fatal(err)
 		}
 		if _, err := ParseConfig([]string{"-config", configPath}, io.Discard); err == nil {
 			t.Fatalf("accepted invalid config: %s", text)
 		}
+	}
+}
+
+func TestHelpShowsSimplifiedCommands(t *testing.T) {
+	var output bytes.Buffer
+	if _, err := ParseConfig([]string{"--help"}, &output); !errors.Is(err, flag.ErrHelp) {
+		t.Fatalf("expected clean help exit: %v", err)
+	}
+	help := output.String()
+	for _, expected := range []string{
+		"fabricum --source path --output path",
+		"fabricum -s path -o path",
+		"-h, --help",
+	} {
+		if !strings.Contains(help, expected) {
+			t.Fatalf("help is missing %q:\n%s", expected, help)
+		}
+	}
+	if strings.Contains(help, "mode") {
+		t.Fatalf("help still exposes mode selection:\n%s", help)
 	}
 }
 
@@ -131,7 +152,7 @@ func TestInvalidPathsAndOutputCollisions(t *testing.T) {
 	}
 }
 
-func TestParseConfigDefaultsToGUIAndCLIRequiresSource(t *testing.T) {
+func TestParseConfigInfersGUIOrCLIFromPathFlags(t *testing.T) {
 	gui, err := ParseConfig([]string{}, io.Discard)
 	if err != nil {
 		t.Fatal(err)
@@ -152,21 +173,30 @@ func TestParseConfigDefaultsToGUIAndCLIRequiresSource(t *testing.T) {
 		t.Fatalf("expected GUI config endpoint to start without a source, got %d", response.Code)
 	}
 
-	cli, err := ParseConfig([]string{"-mode", "cli"}, io.Discard)
+	cli, err := ParseConfig([]string{"--output", t.TempDir()}, io.Discard)
 	if err == nil {
-		t.Fatal("CLI should require a source")
+		t.Fatal("CLI output without a source should fail")
 	}
 
 	root := t.TempDir()
 	source := filepath.Join(root, "source.png")
 	writeFixtureImage(t, source, 8, 8)
-	cli, err = ParseConfig([]string{
-		"-mode", "cli", "-source", source, "-square-size", "4", "-wide-width", "4",
-	}, io.Discard)
-	if err != nil {
-		t.Fatal(err)
+	for _, args := range [][]string{
+		{"--source", source, "--output", filepath.Join(root, "long"), "--square-size", "4", "--wide-width", "4"},
+		{"-s", source, "-o", filepath.Join(root, "short"), "--square-size", "4", "--wide-width", "4"},
+	} {
+		cli, err = ParseConfig(args, io.Discard)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cli.Mode != ModeCLI {
+			t.Fatalf("expected CLI mode, got %q", cli.Mode)
+		}
+		if cli.OutputDirectory != args[3] {
+			t.Fatalf("expected output %q, got %q", args[3], cli.OutputDirectory)
+		}
 	}
-	if cli.Mode != ModeCLI {
-		t.Fatalf("expected CLI mode, got %q", cli.Mode)
+	if _, err := ParseConfig([]string{"--mode", "cli", "--source", source}, io.Discard); err == nil {
+		t.Fatal("obsolete --mode flag should be rejected")
 	}
 }

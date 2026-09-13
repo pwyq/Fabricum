@@ -2,11 +2,10 @@
 
 Run with JSON settings:
 
-> fabricum -config settings.json
+> fabricum --config settings.json
 
 ```json
 {
-  "mode": "gui",
   "source": "images/sample.png",
   "outputDirectory": "delivery",
   "squareSize": 512,
@@ -15,12 +14,14 @@ Run with JSON settings:
 }
 ```
 
-## Modes
+## Launch behavior
 
-- `gui` is the default. It opens a browser and can start without `source`.
+- A bare launch opens the GUI and can start without `source`.
 - GUI mode exits when its last Fabricum page closes.
 - Without `source`, the browser prompts for a PNG, JPEG, or GIF.
-- `cli` requires `source`, prints the editor URL, and does not open a browser.
+- `--source path --output path` (or `-s path -o path`) automatically uses CLI
+  mode, prints the editor URL, and does not open a browser.
+- `--output` is an output directory and defaults to `output`.
 - Both modes use the interactive editor. CLI mode is not an unattended batch mode.
 
 ## Paths
@@ -29,7 +30,7 @@ Run with JSON settings:
 - CLI paths are relative to the working directory.
 - Explicit flags override JSON values.
 - Unknown JSON properties and trailing JSON are rejected.
-- `outputDirectory` defaults to `output`.
+- `outputDirectory` and `--output` default to `output`.
 - Outputs default to `<name>-square.webp` and `<name>-wide.webp`.
 - `squareOutput` and `wideOutput` set explicit paths.
 - Source and output paths must differ.
@@ -47,8 +48,8 @@ Run with JSON settings:
 
 ## Commands and exit codes
 
-- `-help`: list flags; exit 0.
-- `-version`: print the version; exit 0.
+- `--help` or `-h`: list flags; exit 0.
+- `--version`: print the version; exit 0.
 - Invalid flags or config: exit 2.
 - Startup or listener failure: exit 1.
 

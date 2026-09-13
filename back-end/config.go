@@ -101,7 +101,7 @@ func configure(options Config) (processorConfig, error) {
 	}
 	if options.Source == "" {
 		if mode == ModeCLI {
-			return processorConfig{}, errors.New("source is required in cli mode; pass -source or use -mode gui")
+			return processorConfig{}, errors.New("source is required in cli mode; pass --source or -s")
 		}
 		return config, nil
 	}
