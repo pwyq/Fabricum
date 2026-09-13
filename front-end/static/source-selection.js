@@ -1,4 +1,5 @@
 import { imageMediaType } from "./app-utils.js";
+import { setLiveStatus } from "./ui.js";
 
 export async function requireSource(
   elements,
@@ -34,14 +35,14 @@ export async function requireSource(
     elements.sourceSummary.textContent = "Choose a source image.";
     elements.processorControls.hidden = true;
     elements.workspace.hidden = true;
-    elements.result.textContent = "Choose a source image to begin.";
+    setLiveStatus(elements, "Choose a source image to begin.");
   }
 
   const showEditor = () => {
     elements.sourceSelection.hidden = true;
     elements.processorControls.hidden = false;
     elements.workspace.hidden = false;
-    elements.result.textContent = "Adjust both crops, then export.";
+    setLiveStatus(elements, "Adjust both crops, then export.");
   };
 
   if (hasSourceList) {
@@ -49,11 +50,11 @@ export async function requireSource(
     elements.loadSource.addEventListener("click", async () => {
       const sourcePath = elements.sourceSelector.value;
       if (!sourcePath) {
-        elements.result.textContent = "Choose a source image.";
+        setLiveStatus(elements, "Choose a source image.");
         return;
       }
       elements.loadSource.disabled = true;
-      elements.result.textContent = "Validating source…";
+      setLiveStatus(elements, "Validating source…");
       try {
         const selectedConfig = await fetchJSON("/api/source", {
           method: "POST",
@@ -70,7 +71,7 @@ export async function requireSource(
         showEditor();
         resolveSource(selectedConfig);
       } catch (error) {
-        elements.result.textContent = error.message;
+        setLiveStatus(elements, error.message);
         elements.loadSource.disabled = false;
       }
     });
@@ -85,12 +86,12 @@ export async function requireSource(
       if (!file) return;
       const mediaType = imageMediaType(file);
       if (!mediaType) {
-        elements.result.textContent = "Choose a PNG, JPEG, or GIF image.";
+        setLiveStatus(elements, "Choose a PNG, JPEG, or GIF image.");
         elements.initialSourceFile.value = "";
         return;
       }
       elements.chooseSourceFile.disabled = true;
-      elements.result.textContent = "Validating source image…";
+      setLiveStatus(elements, "Validating source image…");
       try {
         const selectedConfig = await fetchJSON("/api/source-upload", {
           method: "POST",
@@ -104,7 +105,7 @@ export async function requireSource(
         showEditor();
         resolveSource(selectedConfig);
       } catch (error) {
-        elements.result.textContent = error.message;
+        setLiveStatus(elements, error.message);
         elements.chooseSourceFile.disabled = false;
         elements.initialSourceFile.value = "";
       }

@@ -11,16 +11,21 @@ function run(command, args) {
   if (result.status !== 0) process.exit(result.status ?? 1)
 }
 run(process.execPath, ['scripts/check.mjs'])
-const { version } = JSON.parse(readFileSync(resolve(root, 'package.json')))
-if (!/^\d+\.\d+\.\d+$/.test(version)) throw new Error('Expected a stable semantic version')
+const version = readFileSync(resolve(root, 'VERSION'), 'utf8').trim()
+const packageMetadata = JSON.parse(readFileSync(resolve(root, 'package.json')))
+if (packageMetadata.version !== version) throw new Error('Package and VERSION values differ')
+if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(alpha|beta|rc)\.(0|[1-9]\d*))?$/.test(version)) {
+  throw new Error('Expected a supported semantic version')
+}
 mkdirSync(resolve(root, 'bin'), { recursive: true })
 const archive = `fabricum-${version}-source.tar.gz`
 // Exact source allowlist excludes local art, native packages, executables, and git history.
 const sources = [
-  '.editorconfig', '.gitattributes', '.gitignore', 'LICENSE', 'README.md', 'install.sh',
+  '.editorconfig', '.gitattributes', '.gitignore', 'CHANGELOG.md', 'LICENSE', 'README.md', 'VERSION', 'install.sh',
   'docs/README.md', 'docs/configuration.md', 'docs/integration.md',
-  'docs/processing.md', 'docs/development.md', 'docs/dependencies.md',
+  'docs/processing.md', 'docs/development.md', 'docs/dependencies.md', 'docs/release.md',
   'front-end/assets.go', '.github/workflows/build.yml', '.github/workflows/commit-message.yml', '.github/workflows/main-policy.yml',
+  '.github/workflows/release.yml',
   '.githooks/commit-msg', '.githooks/pre-commit', '.githooks/pre-push',
   'scripts/code/check-file-loc.sh', 'scripts/git/install-hooks.mjs', 'scripts/git/protect-main.cjs',
   'scripts/git/validate-commit-message.cjs', 'scripts/git/validate-pr-title.cjs',
@@ -30,7 +35,9 @@ const sources = [
   'back-end/export_handlers.go', 'back-end/processor.go', 'back-end/processor_test.go', 'back-end/run.go', 'back-end/security.go', 'back-end/source_upload_handler.go',
   'back-end/security_test.go', 'back-end/server.go', 'back-end/source_handler.go', 'back-end/cmd/fabricum/main.go',
   'back-end/encoder/encode.mjs', 'scripts/check.mjs', 'scripts/build.mjs', 'scripts/release.mjs',
-  'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/app.css',
+  'scripts/release/extract-release-notes.cjs', 'scripts/release/release.sh',
+  'scripts/release/validate-release-tag.cjs', 'scripts/release/validate-release-tag.test.cjs',
+  'front-end/static/api.js', 'front-end/static/app.js', 'front-end/static/app-utils.js', 'front-end/static/ui.js', 'front-end/static/app.css',
   'front-end/static/preview.css', 'front-end/static/crop.js', 'front-end/static/index.html', 'front-end/static/source-selection.js', 'front-end/tests/crop.test.js',
 ]
 run('tar', ['-czf', `bin/${archive}`, ...sources])

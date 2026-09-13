@@ -194,6 +194,13 @@ func TestImportEndpointReplacesConfiguredSourcePNG(t *testing.T) {
 	if importedConfig.Source.Width != 8 || importedConfig.Source.Height != 8 {
 		t.Fatalf("expected imported 8x8 source, got %dx%d", importedConfig.Source.Width, importedConfig.Source.Height)
 	}
+	info, err := os.Stat(config.sourcePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if importedConfig.Source.Bytes != info.Size() {
+		t.Fatalf("expected source size %d, got %d", info.Size(), importedConfig.Source.Bytes)
+	}
 	imported, err := os.ReadFile(config.sourcePath)
 	if err != nil {
 		t.Fatal(err)

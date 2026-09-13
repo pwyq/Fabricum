@@ -58,17 +58,19 @@ tests, compilation, JS syntax, crop math tests, and version consistency. No UI o
 browser tests are required. Run `npm audit` for the installed dependency graph.
 No JavaScript build framework or TypeScript toolchain is needed.
 
-`node scripts/release.mjs` verifies the checkout and creates a source archive and
+`npm run release:archive` verifies the checkout and creates a source archive and
 SHA-256 file under `bin`. It does not publish, tag, commit, or contact GitHub.
-Use semantic versions starting at `0.1.0`; a future release tag is `v0.1.0`.
-Update both `back-end/config.go` and package metadata/lockfile when changing versions.
+The root `VERSION` file is the release source of truth; `package.json` and
+`back-end/config.go` must retain the same value. Use `npm run release --
+v0.1.0` to validate release metadata and dispatch the CI-authorized release
+workflow. See [the release process](release.md) for the complete policy.
 The Go module currently has the local name `fabricum`; choose a public module
 identity before offering `go install ...@version`.
 
 Renovate configuration is prepared but inactive until a maintainer installs a bot.
 Updates are weekly, delayed 14 days, grouped for minor/patch releases, never
 automerged, and majors require dashboard approval. Review codec output changes
-with dependency updates. Workflow definitions are included; no release service
-is configured.
+with dependency updates. The release workflow is configured to create tags and
+GitHub Releases only after its CI gates pass.
 
 See [dependency review](dependencies.md) for native codec licensing and redistribution.

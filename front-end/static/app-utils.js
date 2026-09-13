@@ -3,7 +3,17 @@ export function replaceExtension(path, format) {
 }
 
 export function formatBytes(bytes) {
-  return `${bytes.toLocaleString()} bytes`;
+  if (!Number.isFinite(bytes)) return "—";
+  if (bytes < 1024) return `${Math.round(bytes).toLocaleString()} bytes`;
+  const units = ["KB", "MB", "GB"];
+  let value = bytes;
+  let unit = "bytes";
+  for (const candidate of units) {
+    value /= 1024;
+    unit = candidate;
+    if (value < 1024 || candidate === units[units.length - 1]) break;
+  }
+  return `${value.toFixed(value >= 10 ? 0 : 1)} ${unit}`;
 }
 
 export function capitalize(value) {
