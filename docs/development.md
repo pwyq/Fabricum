@@ -8,7 +8,7 @@
 - `back-end/fabricum.go`: stable host interface used by the executable and integrations.
 - `back-end/internal/cli`: flags, JSON launch configuration, and export-command integration.
 - `back-end/internal/editor`: local HTTP editor, source handling, security, and GUI lifecycle.
-- `back-end/internal/processing`: crop, resize, encoding, hashing, and delivery file writes.
+- `back-end/internal/processing`: crop, resize, native encoding, hashing, and delivery file writes.
 - `back-end/cmd/fabricum`: executable entry point.
 - Root: Go/npm metadata and repository tooling.
 
@@ -30,6 +30,8 @@ From the repository root:
 - `npm audit`: inspect the installed npm dependency graph.
 - Linux CI also runs Go race tests.
 - No browser runner, frontend framework, or TypeScript toolchain is required.
+- WebP/AVIF behavior tests need the pinned `cwebp` and `avifenc` tools; see
+  [`dependencies.md`](dependencies.md) and [`../native/README.md`](../native/README.md).
 
 ## Git rules
 

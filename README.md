@@ -11,7 +11,8 @@ browser GUI for preparing 2D artwork.
 
 ## Install
 
-Requires Go 1.26.6 and Node.js 24.15 or newer. From the source checkout:
+Requires Go 1.26.6, Node.js 24.15 or newer for repository tooling, and the
+native `cwebp` and `avifenc` tools for WebP/AVIF output. From the source checkout:
 
 > bash install.sh
 

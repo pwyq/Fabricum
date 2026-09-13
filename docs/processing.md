@@ -4,11 +4,15 @@
 
 - Default: WebP, quality 90.
 - PNG: lossless.
-- WebP and AVIF: quality 1–100 or lossless.
+- WebP and AVIF: quality 1–100 or lossless, using the pinned native codec tools.
 - AVIF: 4:4:4 chroma and maximum effort; previews may be slower.
 - New preview requests cancel superseded encoder work.
 - PNG is deterministic with identical input, crop, and toolchain.
-- For repeatable WebP or AVIF, pin Sharp, native codecs, and platform.
+- WebP uses libwebp's exact-transparent-RGB option and lossless alpha.
+- AVIF uses libaom, 8-bit output, 4:4:4 chroma, and lossless alpha when
+  requested.
+- For repeatable WebP or AVIF, use the pinned native codec versions and the
+  same platform/toolchain.
 
 ## File writes
 

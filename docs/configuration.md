@@ -10,7 +10,7 @@ Run with JSON settings:
   "outputDirectory": "delivery",
   "squareSize": 512,
   "wideWidth": 768,
-  "encoderDirectory": "."
+  "encoderDirectory": "native-codecs"
 }
 ```
 
@@ -53,7 +53,8 @@ Run with JSON settings:
 - Invalid flags or config: exit 2.
 - Startup or listener failure: exit 1.
 
-The executable embeds the editor and encoder script. It does not search for a
-game repository or bundle project assets.
+The executable embeds the editor. WebP and AVIF encoding requires the native
+`cwebp` and `avifenc` tools in `encoderDirectory` or `PATH`; it does not search
+for a game repository or bundle project assets.
 
 See [project integration](integration.md) and [processing](processing.md).
