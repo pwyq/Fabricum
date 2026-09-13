@@ -43,6 +43,20 @@ test('pre-push guard rejects main refs and accepts feature refs', () => {
   assert.throws(() => parsePushInput('malformed line'), /Malformed pre-push input/)
 })
 
+test('pre-push hook runs directly in Node without a Bash dependency', () => {
+  const hook = join(__dirname, '../../.githooks/pre-push')
+  const localSha = 'a'.repeat(40)
+  const remoteSha = 'b'.repeat(40)
+  const run = input => spawnSync(process.execPath, [hook], {
+    input,
+    encoding: 'utf8',
+    windowsHide: true,
+  })
+
+  assert.equal(run(`refs/heads/feature ${localSha} refs/heads/feature ${remoteSha}\n`).status, 0)
+  assert.equal(run(`refs/heads/feature ${localSha} refs/heads/main ${remoteSha}\n`).status, 1)
+})
+
 test('pre-commit guard rejects a repository checked out on main', t => {
   const directory = mkdtempSync(join(tmpdir(), 'fabricum-main-guard-'))
   t.after(() => rmSync(directory, { recursive: true, force: true }))

@@ -171,8 +171,7 @@ async function rejectDirectMainPushInCi() {
   return !failed;
 }
 
-async function main() {
-  const command = process.argv[2];
+async function main(command = process.argv[2]) {
   if (command === "commit") return rejectMainCommit() ? 0 : 1;
   if (command === "push") return rejectMainPush() ? 0 : 1;
   if (command === "ci") return (await rejectDirectMainPushInCi()) ? 0 : 1;
@@ -200,4 +199,5 @@ module.exports = {
   isProtectedPush,
   parsePushInput,
   pushedCommitShas,
+  main,
 };
