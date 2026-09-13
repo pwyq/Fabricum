@@ -53,7 +53,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -74,6 +74,8 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Install pinned native codec tools
+        run: node scripts/install-native-codecs.mjs
       - name: Install dependencies
         run: npm ci
 

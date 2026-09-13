@@ -26,6 +26,9 @@ go mod download
 printf 'Installing local Git hooks…\n'
 node scripts/git/install-hooks.mjs
 
+printf 'Installing pinned native codec tools…\n'
+node scripts/install-native-codecs.mjs
+
 printf 'Building the Fabricum executable…\n'
 node scripts/build.mjs
 

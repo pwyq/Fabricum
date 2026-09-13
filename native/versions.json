@@ -1,0 +1,41 @@
+{
+  "webp": {
+    "version": "1.6.0",
+    "source": "https://github.com/webmproject/libwebp/archive/refs/tags/v1.6.0.tar.gz",
+    "linux": {
+      "artifact": "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0-linux-x86-64.tar.gz",
+      "sha256": "1c5ffab71efecefa0e3c23516c3a3a1dccb45cc310ae1095c6f14ae268e38067"
+    },
+    "windows": {
+      "artifact": "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0-windows-x64.zip",
+      "sha256": "48886f506b21f62e4661f0f4cbfca19800897c385128e8902542d29a950c93f1"
+    }
+  },
+  "avif": {
+    "version": "1.4.2",
+    "source": "https://github.com/AOMediaCodec/libavif/archive/refs/tags/v1.4.2.tar.gz",
+    "codec": {
+      "name": "aom",
+      "version": "3.14.1",
+      "source": "https://aomedia.googlesource.com/aom/+/refs/tags/v3.14.1"
+    },
+    "linuxBuild": {
+      "buildSharedLibs": false,
+      "avifBuildApps": true,
+      "avifBuildTests": false,
+      "avifCodecAom": "LOCAL",
+      "avifLibyuv": "OFF",
+      "avifLibsharpyuv": "OFF",
+      "avifJpeg": "OFF",
+      "avifZlibpng": "SYSTEM"
+    },
+    "linux": {
+      "artifact": "https://github.com/AOMediaCodec/libavif/releases/download/v1.4.2/linux-artifacts.zip",
+      "sha256": "faf58a670ffbfcd0e3559e6d37592cff277c447dd39453f1cd1d7d7f5a20b8ef"
+    },
+    "windows": {
+      "artifact": "https://github.com/AOMediaCodec/libavif/releases/download/v1.4.2/windows-artifacts.zip",
+      "sha256": "cb2d9fea43dcbab1d0707e3b37eb7b08070ad2fb60a2c188c39ec12382c0484a"
+    }
+  }
+}
