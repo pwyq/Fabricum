@@ -47,6 +47,10 @@ Create a source archive without publishing:
 
 > npm run release:archive
 
+The archive contains all Git-tracked files from the working tree. Add a new
+project file to Git and it is included automatically; ignored and untracked
+local files are excluded.
+
 ## Gates
 
 - Validate the tag, changelog, and release scripts.

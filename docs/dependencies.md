@@ -20,8 +20,10 @@
 
 ## Distribution
 
-- Source archives include project source, lockfile, and project license.
-- Source archives exclude `node_modules`, codecs, Node, and compiled Go binaries.
+- Source archives include all Git-tracked project files, including the lockfile
+  and project license.
+- Ignored and untracked files such as `node_modules`, codecs, Node, and compiled
+  Go binaries are excluded.
 - Before bundling binaries or native packages, review notices and source/relinking terms.
 - Run a fresh `npm audit` for every distributed build.
 
