@@ -13,7 +13,7 @@ import (
 )
 
 // Version identifies processing behavior in export records.
-const Version = "0.2.1"
+const Version = "0.2.2"
 
 const (
 	// ModeGUI opens the local editor and allows a source to be chosen there.

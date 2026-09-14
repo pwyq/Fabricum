@@ -87,6 +87,7 @@ or more outputs. For example:
     "height": 1024
   },
   "format": "png",
+  "pngMode": "indexed",
   "outputs": [
     {
       "role": "sprite",
@@ -112,9 +113,12 @@ supports `fill` and aspect-preserving `contain`; filters are `nearest`,
 another image with `source` or provide a byte `constant`, so channels such as
 AO, roughness, and zero can be described without a project-specific command.
 
-PNG transforms use deterministic lossless encoding. Transparent outputs retain
-alpha; removing alpha or packing channels produces opaque RGB data. Supported
-source formats are PNG, JPEG, and GIF; GIF transforms use the first frame, or
+PNG transforms use deterministic lossless encoding. Set `pngMode` to `indexed`
+to quantize transformed output to a deterministic palette of at most 256 colors
+before lossless PNG encoding. This mode can reduce sprite delivery bytes, but
+its color quantization is lossy and requires caller-owned quality review.
+Transparent outputs retain alpha; removing alpha or packing channels produces
+opaque RGB data. Supported source formats are PNG, JPEG, and GIF; GIF transforms use the first frame, or
 fail when `singleFrame` is requested for an animation. Transform outputs are
 written atomically and report dimensions, format, filter, alpha presence,
 encoder, byte count, and SHA-256 in the receipt.

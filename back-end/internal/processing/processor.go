@@ -46,7 +46,7 @@ func PrepareOutputs(ctx context.Context, sourcePath string, request ExportReques
 		path := OutputPath(spec.Path, request.Format)
 		outputs = append(outputs, ProcessedOutput{
 			Path: path, Data: data,
-			Measurement: newOutputMeasurement(spec.Role, path, resized, request.Format, request.Quality, request.Lossless, "", crop, data),
+			Measurement: newOutputMeasurement(spec.Role, path, resized, request.Format, request.PNGMode, request.Quality, request.Lossless, "", crop, data),
 		})
 	}
 	return outputs, nil

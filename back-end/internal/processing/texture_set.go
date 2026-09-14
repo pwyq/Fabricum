@@ -223,7 +223,7 @@ func prepareTextureOutput(ctx context.Context, spec TextureOutputSpec, index int
 	if spec.Transform.Crop != nil {
 		crop = *spec.Transform.Crop
 	}
-	measurement := newOutputMeasurement(textureOutputRole(spec, index), path, imageOutput, "ktx2", encoding.Quality, false, filter, crop, data)
+	measurement := newOutputMeasurement(textureOutputRole(spec, index), path, imageOutput, "ktx2", "", encoding.Quality, false, filter, crop, data)
 	measurement.Encoding = encoding.Encoding
 	measurement.MipLevels = encoding.MipLevels
 	measurement.TransferFunction = encoding.TransferFunction

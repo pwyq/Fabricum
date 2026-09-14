@@ -3,11 +3,14 @@
 ## Formats
 
 - Default: WebP, quality 90.
-- PNG: lossless.
+- PNG: lossless encoding, with optional indexed color quantization.
 - WebP and AVIF: quality 1–100 or lossless, using the pinned native codec tools.
 - AVIF: 4:4:4 chroma and maximum effort; previews may be slower.
 - New preview requests cancel superseded encoder work.
 - PNG is deterministic with identical input, crop, and toolchain.
+- Indexed PNG mode uses an adaptive palette of at most 256 colors, preserves a
+  fully transparent entry, and quantizes colors deterministically before PNG
+  encoding. Callers own visual-quality acceptance for this lossy color step.
 - WebP uses libwebp's exact-transparent-RGB option and lossless alpha.
 - AVIF uses libaom, 8-bit output, 4:4:4 chroma, and lossless alpha when
   requested.
