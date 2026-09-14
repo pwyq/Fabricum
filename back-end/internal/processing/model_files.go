@@ -106,7 +106,11 @@ func inspectModelOutput(path string, data []byte, format string) (AssetFacts, ma
 	} else {
 		object, err = decodeModelObject(data)
 		if err == nil {
-			facts, err = inspectGLTF(path, data, nil)
+			var binaryData []byte
+			binaryData, err = modelGLTFBuffer(path, object)
+			if err == nil {
+				facts, err = inspectGLTF(path, data, binaryData)
+			}
 		}
 	}
 	if err != nil {
@@ -115,6 +119,40 @@ func inspectModelOutput(path string, data []byte, format string) (AssetFacts, ma
 	facts.Format = format
 	facts.Bytes = int64(len(data))
 	return facts, object, nil
+}
+
+func modelGLTFBuffer(path string, object map[string]json.RawMessage) ([]byte, error) {
+	entries, err := modelArray(object, "buffers")
+	if err != nil {
+		return nil, err
+	}
+	if len(entries) == 0 {
+		return nil, nil
+	}
+	_, present := entries[0]["uri"]
+	if !present {
+		return nil, nil
+	}
+	value, err := modelString(entries[0], "uri")
+	if err != nil {
+		return nil, err
+	}
+	if strings.HasPrefix(strings.ToLower(value), "data:") {
+		return decodeDataURI(value)
+	}
+	decoded, err := url.PathUnescape(value)
+	if err != nil || filepath.IsAbs(decoded) || strings.Contains(decoded, "://") {
+		return nil, fmt.Errorf("gltf output has an unsupported buffer URI %q", value)
+	}
+	bufferPath := filepath.Join(filepath.Dir(path), filepath.FromSlash(decoded))
+	if !modelPathInside(filepath.Dir(path), bufferPath) {
+		return nil, fmt.Errorf("gltf output buffer URI %q escapes its workspace", value)
+	}
+	data, err := os.ReadFile(bufferPath)
+	if err != nil {
+		return nil, fmt.Errorf("read glTF output buffer %q: %w", value, err)
+	}
+	return data, nil
 }
 
 type modelResource struct {

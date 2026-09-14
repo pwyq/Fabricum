@@ -125,6 +125,41 @@ func TestMirroredWindingRepairsNonIndexedTriangles(t *testing.T) {
 	}
 }
 
+func TestInspectLooseModelOutputLoadsEmbeddedTextureBuffer(t *testing.T) {
+	root := t.TempDir()
+	texturePath := filepath.Join(root, "texture.png")
+	writeInspectionPNG(t, texturePath, false)
+	texture, err := os.ReadFile(texturePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bufferPath := filepath.Join(root, "mesh.bin")
+	if err := os.WriteFile(bufferPath, texture, 0600); err != nil {
+		t.Fatal(err)
+	}
+	object := map[string]any{
+		"asset":       map[string]string{"version": "2.0"},
+		"buffers":     []any{map[string]any{"byteLength": len(texture), "uri": "mesh.bin"}},
+		"bufferViews": []any{map[string]any{"buffer": 0, "byteOffset": 0, "byteLength": len(texture)}},
+		"images":      []any{map[string]any{"bufferView": 0, "mimeType": "image/png"}},
+	}
+	data, err := json.Marshal(object)
+	if err != nil {
+		t.Fatal(err)
+	}
+	outputPath := filepath.Join(root, "result.gltf")
+	if err := os.WriteFile(outputPath, data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	facts, _, err := inspectModelOutput(outputPath, data, "gltf")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(facts.Textures) != 1 || facts.Textures[0] != (TextureFacts{Width: 4, Height: 3}) {
+		t.Fatalf("unexpected embedded texture facts: %+v", facts.Textures)
+	}
+}
+
 func writeSyntheticStaticModel(t *testing.T, path string) {
 	data := make([]byte, 36+6)
 	for index, value := range []float32{1, 2, 3, 2, 2, 3, 1, 4, 5} {
