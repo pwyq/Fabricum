@@ -214,7 +214,15 @@ func inspectByFormat(path string, data []byte, format string) (AssetFacts, error
 	case "ktx2":
 		return inspectKTX2(data)
 	case "gltf":
-		return inspectGLTF(path, data, nil)
+		object, err := decodeModelObject(data)
+		if err != nil {
+			return AssetFacts{}, err
+		}
+		binaryData, err := modelGLTFBuffer(path, object)
+		if err != nil {
+			return AssetFacts{}, err
+		}
+		return inspectGLTF(path, data, binaryData)
 	case "glb":
 		return inspectGLB(path, data)
 	default:

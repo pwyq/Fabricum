@@ -192,16 +192,20 @@ func patchKTX2Metadata(data []byte, options TextureEncodingOptions) error {
 	if uint64(dfdOffset) > uint64(len(data)) || uint64(dfdLength) > uint64(len(data))-uint64(dfdOffset) {
 		return fmt.Errorf("basisu KTX2 descriptor exceeds file bounds")
 	}
-	if dfdLength < 24 {
+	if dfdLength < 12 {
 		return fmt.Errorf("basisu KTX2 descriptor is too short")
 	}
 	descriptor := data[int(dfdOffset):int(uint64(dfdOffset)+uint64(dfdLength))]
-	blockSize := int(binary.LittleEndian.Uint16(descriptor[6:8]))
-	if blockSize < 24 || blockSize > len(descriptor) {
+	dfdTotalSize := binary.LittleEndian.Uint32(descriptor[:4])
+	if uint64(dfdTotalSize) != uint64(dfdLength) {
+		return fmt.Errorf("basisu KTX2 descriptor has an invalid total size")
+	}
+	blockSize := int(binary.LittleEndian.Uint16(descriptor[10:12]))
+	if blockSize < 24 || blockSize > len(descriptor)-4 {
 		return fmt.Errorf("basisu KTX2 descriptor has an invalid block size")
 	}
 	transfer := map[string]byte{TextureTransferLinear: 1, TextureTransferSRGB: 2}[options.TransferFunction]
 	primaries := texturePrimaries[options.ColorPrimaries]
-	descriptor[9], descriptor[10] = primaries, transfer
+	descriptor[13], descriptor[14] = primaries, transfer
 	return nil
 }

@@ -53,7 +53,7 @@ func validateModelReceipt(receipt fabricum.ModelReceipt, compression, output str
 		if measurement.Path == filepath.ToSlash(output) {
 			mainFound = true
 			if measurement.Bounds == nil || measurement.TriangleCount < 1 || measurement.MaterialCount != 1 || math.Abs(measurement.Bounds.Min[1]) > 0.0001 || math.Abs(measurement.Bounds.Min[0]+measurement.Bounds.Max[0]) > 0.0001 || math.Abs(measurement.Bounds.Min[2]+measurement.Bounds.Max[2]) > 0.0001 {
-				return fmt.Errorf("model bounds or counts do not match the centered prop contract: %+v", measurement)
+				return fmt.Errorf("model bounds or counts do not match the centered prop contract: bounds=%+v triangles=%d materials=%d", measurement.Bounds, measurement.TriangleCount, measurement.MaterialCount)
 			}
 			for _, extension := range measurement.UsedExtensions {
 				if extension == "EXT_meshopt_compression" {

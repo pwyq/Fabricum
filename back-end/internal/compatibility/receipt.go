@@ -32,6 +32,9 @@ func writeJSON(path string, value any) error {
 	if err != nil {
 		return fmt.Errorf("encode %s: %w", filepath.Base(path), err)
 	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create directory for %s: %w", filepath.Base(path), err)
+	}
 	if err := os.WriteFile(path, append(data, '\n'), 0600); err != nil {
 		return fmt.Errorf("write %s: %w", filepath.Base(path), err)
 	}

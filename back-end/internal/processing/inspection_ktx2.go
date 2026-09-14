@@ -51,14 +51,18 @@ func inspectKTX2(data []byte) (AssetFacts, error) {
 }
 
 func parseKTX2Descriptor(data []byte, vkFormat, supercompression uint32) (string, string, string, error) {
-	if len(data) < 24 {
+	if len(data) < 12 {
 		return "", "", "", errors.New("KTX2 data format descriptor is too short")
 	}
-	blockSize := int(binary.LittleEndian.Uint16(data[6:8]))
-	if blockSize < 24 || blockSize > len(data) {
+	dfdTotalSize := binary.LittleEndian.Uint32(data[:4])
+	if uint64(dfdTotalSize) != uint64(len(data)) {
+		return "", "", "", errors.New("invalid KTX2 data format descriptor total size")
+	}
+	blockSize := int(binary.LittleEndian.Uint16(data[10:12]))
+	if blockSize < 24 || blockSize > len(data)-4 {
 		return "", "", "", errors.New("invalid KTX2 data format descriptor size")
 	}
-	model, primaries, transfer := data[8], data[9], data[10]
+	model, primaries, transfer := data[12], data[13], data[14]
 	encoding, err := ktx2Encoding(model, vkFormat, supercompression)
 	if err != nil {
 		return "", "", "", err

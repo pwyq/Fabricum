@@ -124,6 +124,55 @@ func TestInspectFilesReturnsBoundedPerFileFailures(t *testing.T) {
 	}
 }
 
+func TestInspectLooseGLTFReadsExternalBinaryBufferForImages(t *testing.T) {
+	root := t.TempDir()
+	imagePath := filepath.Join(root, "texture.png")
+	writeInspectionPNG(t, imagePath, false)
+	imageData, err := os.ReadFile(imagePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	bufferPath := filepath.Join(root, "model.bin")
+	writeInspectionFile(t, bufferPath, imageData)
+	document := map[string]any{
+		"asset":       map[string]string{"version": "2.0"},
+		"buffers":     []any{map[string]any{"uri": "model.bin", "byteLength": len(imageData)}},
+		"bufferViews": []any{map[string]any{"buffer": 0, "byteLength": len(imageData)}},
+		"images":      []any{map[string]any{"bufferView": 0, "mimeType": "image/png"}},
+		"textures":    []any{map[string]any{"source": 0}},
+	}
+	data, err := json.Marshal(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	gltfPath := filepath.Join(root, "model.gltf")
+	writeInspectionFile(t, gltfPath, data)
+	results, err := InspectFiles([]string{gltfPath})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results) != 1 || results[0].Error != "" || results[0].Format != "gltf" || len(results[0].Textures) != 1 || results[0].Textures[0] != (TextureFacts{Width: 4, Height: 3}) {
+		t.Fatalf("unexpected loose glTF facts: %+v", results)
+	}
+}
+
+func TestInspectGLTFAppliesSceneTransformsToBounds(t *testing.T) {
+	document := glTFDocument{
+		Meshes:    []gltfMesh{{Primitives: []gltfPrimitive{{Attributes: map[string]int{"POSITION": 0}}}}},
+		Accessors: []gltfAccessor{{Count: 3, Type: "VEC3", Min: []float64{1, 2, 3}, Max: []float64{2, 4, 5}}},
+		Nodes:     []map[string]json.RawMessage{{"mesh": json.RawMessage("0"), "scale": json.RawMessage("[-1, 1, 1]")}},
+		Scenes:    []map[string]json.RawMessage{{"nodes": json.RawMessage("[0]")}},
+		Scene:     func() *int { value := 0; return &value }(),
+	}
+	_, _, bounds, err := gltfMeshFacts(document)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bounds == nil || bounds.Min != [3]float64{-2, 2, 3} || bounds.Max != [3]float64{-1, 4, 5} {
+		t.Fatalf("transformed bounds = %+v", bounds)
+	}
+}
+
 func TestInspectWebPExtendedHeaderReportsCanvasDimensions(t *testing.T) {
 	width, height := 0x1234, 0x2345
 	canvas := []byte{0, 0, 0, 0, byte(width - 1), byte((width - 1) >> 8), byte((width - 1) >> 16), byte(height - 1), byte((height - 1) >> 8), byte((height - 1) >> 16)}
@@ -248,21 +297,22 @@ func syntheticAVIF(width, height int, alpha bool) []byte {
 }
 
 func syntheticKTX2(width, height, levels int) []byte {
-	data := make([]byte, 80+levels*24+24)
+	data := make([]byte, 80+levels*24+28)
 	copy(data, ktx2Magic)
 	binary.LittleEndian.PutUint32(data[20:24], uint32(width))
 	binary.LittleEndian.PutUint32(data[24:28], uint32(height))
 	binary.LittleEndian.PutUint32(data[40:44], uint32(levels))
 	binary.LittleEndian.PutUint32(data[48:52], uint32(80+levels*24))
-	binary.LittleEndian.PutUint32(data[52:56], 24)
+	binary.LittleEndian.PutUint32(data[52:56], 28)
 	binary.LittleEndian.PutUint32(data[44:48], 2)
 	for index := 0; index < levels; index++ {
 		offset := 80 + index*24
 		binary.LittleEndian.PutUint64(data[offset:offset+8], uint64(len(data)))
 	}
 	dfd := data[80+levels*24:]
-	binary.LittleEndian.PutUint16(dfd[6:8], 24)
-	dfd[8], dfd[9], dfd[10] = 166, 1, 2
+	binary.LittleEndian.PutUint32(dfd[0:4], 28)
+	binary.LittleEndian.PutUint16(dfd[10:12], 24)
+	dfd[12], dfd[13], dfd[14] = 166, 1, 2
 	return data
 }
 
