@@ -11,12 +11,20 @@ import (
 )
 
 type exportResponse struct {
-	Outputs []processing.OutputMeasurement `json:"outputs"`
+	SchemaVersion int                            `json:"schemaVersion"`
+	Processor     string                         `json:"processor"`
+	Source        string                         `json:"source"`
+	Request       processing.ExportRequest       `json:"request"`
+	Outputs       []processing.OutputMeasurement `json:"outputs"`
 }
 
 type previewResponse struct {
-	Outputs  []processing.OutputMeasurement `json:"outputs"`
-	DataURLs map[string]string              `json:"dataUrls"`
+	SchemaVersion int                            `json:"schemaVersion"`
+	Processor     string                         `json:"processor"`
+	Source        string                         `json:"source"`
+	Request       processing.ExportRequest       `json:"request"`
+	Outputs       []processing.OutputMeasurement `json:"outputs"`
+	DataURLs      map[string]string              `json:"dataUrls"`
 }
 
 type previewCache struct {
@@ -51,7 +59,10 @@ func (app *application) handlePreview(response http.ResponseWriter, request *htt
 		mimeType := "image/" + output.Measurement.Format
 		dataURLs[output.Measurement.Role] = "data:" + mimeType + ";base64," + base64.StdEncoding.EncodeToString(output.Data)
 	}
-	writeJSON(response, http.StatusOK, previewResponse{Outputs: processing.OutputMeasurements(outputs), DataURLs: dataURLs})
+	writeJSON(response, http.StatusOK, previewResponse{
+		SchemaVersion: 1, Processor: "fabricum/" + Version, Source: app.config.sourcePath, Request: input,
+		Outputs: processing.OutputMeasurements(outputs), DataURLs: dataURLs,
+	})
 }
 
 func (app *application) handleExport(response http.ResponseWriter, request *http.Request) {
@@ -76,7 +87,10 @@ func (app *application) handleExport(response http.ResponseWriter, request *http
 		writeError(response, http.StatusUnprocessableEntity, err.Error())
 		return
 	}
-	writeJSON(response, http.StatusOK, exportResponse{Outputs: processing.OutputMeasurements(outputs)})
+	writeJSON(response, http.StatusOK, exportResponse{
+		SchemaVersion: 1, Processor: "fabricum/" + Version, Source: app.config.sourcePath, Request: input,
+		Outputs: processing.OutputMeasurements(outputs),
+	})
 }
 
 func (app *application) previewOutputs(request *http.Request, input processing.ExportRequest) ([]processing.ProcessedOutput, error) {

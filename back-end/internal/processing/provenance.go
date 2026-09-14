@@ -2,7 +2,10 @@ package processing
 
 const (
 	BasisUniversalVersion = "2.0.3"
+	LibAVIFVersion        = "1.4.2"
+	LibAOMVersion         = "3.14.1"
 	LibWebPVersion        = "1.6.0"
+	ProcessorName         = "fabricum"
 )
 
 // EncoderForFormat identifies the encoder that produced a successful output.
@@ -26,8 +29,29 @@ func EncoderForFormat(format string) string {
 // a format. A fresh map is returned so receipt callers cannot mutate shared
 // provenance.
 func EncoderVersionsForFormat(format string) map[string]string {
-	if format != "ktx2" {
+	switch format {
+	case "webp":
+		return map[string]string{"cwebp": LibWebPVersion}
+	case "avif":
+		return map[string]string{"avifenc": LibAVIFVersion, "libaom": LibAOMVersion}
+	case "ktx2":
+		return map[string]string{"basisu": BasisUniversalVersion}
+	default:
 		return nil
 	}
-	return map[string]string{"basisu": BasisUniversalVersion}
+}
+
+// EncoderVersionForFormat identifies the primary bundled encoder version for
+// one output format. Formats with no separately pinned encoder return empty.
+func EncoderVersionForFormat(format string) string {
+	switch format {
+	case "webp":
+		return LibWebPVersion
+	case "avif":
+		return LibAVIFVersion
+	case "ktx2":
+		return BasisUniversalVersion
+	default:
+		return ""
+	}
 }

@@ -551,8 +551,9 @@ func newOutputMeasurement(role, path string, output image.Image, format string, 
 	hash := sha256Bytes(data)
 	return OutputMeasurement{
 		Role: role, Path: filepath.ToSlash(path), Width: output.Bounds().Dx(), Height: output.Bounds().Dy(),
-		Format: format, Encoder: EncoderForFormat(format), HasAlpha: !imageOpaque(output), Filter: filter,
-		Quality: quality, Lossless: lossless, Bytes: len(data), SHA256: hash, Crop: crop,
+		Format: format, Encoder: EncoderForFormat(format), EncoderVersion: EncoderVersionForFormat(format),
+		Processor: ProcessorName, NativeEncoderVersions: EncoderVersionsForFormat(format), HasAlpha: !imageOpaque(output),
+		Filter: filter, Quality: quality, Lossless: lossless, Bytes: len(data), SHA256: hash, Crop: crop,
 	}
 }
 
