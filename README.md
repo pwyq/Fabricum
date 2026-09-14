@@ -40,6 +40,10 @@ Machine-readable asset inspection:
 
 > bin\fabricum.exe inspect image.png model.glb texture.ktx2
 
+Node-free compatibility check:
+
+> bin\fabricum.exe compatibility-check
+
 Noninteractive image transforms:
 
 > bin\fabricum.exe transform transform.json
@@ -52,6 +56,6 @@ Short flags are also available: `-s path -o path`. A bare launch opens the GUI;
 supplying a source or output path automatically selects CLI mode.
 
 See [documentation](docs/README.md) for configuration, project integration,
-processing details, and development.
+processing details, the compatibility check, and development.
 
 [Apache-2.0 license](LICENSE).

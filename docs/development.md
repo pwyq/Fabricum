@@ -25,9 +25,13 @@ From the repository root:
 
 > node scripts/build.mjs
 
+> bin/fabricum compatibility-check
+
 - `install.sh`: install dependencies, configure hooks, and build.
 - `check.mjs`: formatting, syntax, vet, tests, compilation, and version checks.
 - `build.mjs`: build the embedded executable.
+- `compatibility-check`: generate disposable fixtures and prove every native
+  processing path without a browser, Node, or Sharp.
 - `npm audit`: inspect the installed npm dependency graph.
 - Linux CI also runs Go race tests.
 - No browser runner, frontend framework, or TypeScript toolchain is required.
