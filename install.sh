@@ -11,7 +11,7 @@ require_command() {
   fi
 }
 
-for command in node npm go; do
+for command in node npm go cmake; do
   require_command "$command"
 done
 
@@ -26,14 +26,9 @@ go mod download
 printf 'Installing local Git hooks…\n'
 node scripts/git/install-hooks.mjs
 
-printf 'Building the Fabricum executable…\n'
-node scripts/build.mjs
+printf 'Installing pinned native codec tools…\n'
+node scripts/install-native-codecs.mjs
 
-EXECUTABLE="$ROOT_DIR/bin/fabricum"
-if [[ -f "$ROOT_DIR/bin/fabricum.exe" ]]; then
-  EXECUTABLE="$ROOT_DIR/bin/fabricum.exe"
-fi
-
-printf '\nFabricum is ready.\n'
-printf 'GUI:  %s\n' "$EXECUTABLE"
-printf 'Run the executable directly to open the GUI, or pass --source and --output for path-driven use.\n'
+printf '\nFabricum development environment is ready.\n'
+printf 'Build a development executable with: npm run build\n'
+printf 'Build the standalone release executable with: npm run release:binary\n'

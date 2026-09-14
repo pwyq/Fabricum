@@ -24,7 +24,7 @@ const files = goFiles('front-end').concat(goFiles('back-end'))
 const formatted = spawnSync('gofmt', ['-l', ...files], { cwd: root, encoding: 'utf8', windowsHide: true })
 if (formatted.error) throw formatted.error
 if (formatted.status !== 0 || formatted.stdout.trim()) throw new Error('Run gofmt: '+formatted.stdout+formatted.stderr)
-for (const directory of ['front-end/static', 'back-end/internal/processing/encoder', 'scripts', 'scripts/git', 'scripts/release', 'front-end/tests']) {
+for (const directory of ['front-end/static', 'scripts', 'scripts/git', 'scripts/release', 'front-end/tests']) {
   for (const name of readdirSync(resolve(root,directory)).filter(n => /\.[cm]?js$/.test(n))) run(process.execPath,['--check',directory+'/'+name])
 }
 run('go',['vet','./...'])

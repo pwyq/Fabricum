@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fabricum/back-end/internal/editor"
+	"fabricum/back-end/internal/processing"
 	"flag"
 	"image"
 	"image/color"
@@ -129,8 +130,23 @@ func TestConfigSourceListAndExportCommand(t *testing.T) {
 	if err := json.Unmarshal(receiptBytes, &receipt); err != nil {
 		t.Fatal(err)
 	}
-	if receipt.SchemaVersion != 1 || receipt.Source != source || len(receipt.Outputs) != 2 || receipt.Processor != "fabricum/"+editor.Version {
+	if receipt.SchemaVersion != ExportReceiptSchemaVersion || receipt.Source != source || len(receipt.Outputs) != 2 || receipt.Processor != "fabricum/"+editor.Version {
 		t.Fatalf("unexpected receipt: %+v", receipt)
+	}
+	for _, output := range receipt.Outputs {
+		if output.Bytes <= 0 || len(output.SHA256) != 64 || output.Encoder != processing.EncoderForFormat("png") {
+			t.Fatalf("receipt is missing output provenance: %+v", output)
+		}
+	}
+	var legacy struct {
+		SchemaVersion int `json:"schemaVersion"`
+		Outputs       []struct {
+			Bytes  int    `json:"bytes"`
+			SHA256 string `json:"sha256"`
+		} `json:"outputs"`
+	}
+	if err := json.Unmarshal(receiptBytes, &legacy); err != nil || legacy.SchemaVersion != ExportReceiptSchemaVersion || len(legacy.Outputs) != 2 || legacy.Outputs[0].Bytes <= 0 || len(legacy.Outputs[0].SHA256) != 64 {
+		t.Fatalf("version 1 receipt is not compatible with legacy fields: %+v, %v", legacy, err)
 	}
 	assertImageDimensions(t, filepath.Join(root, "square.png"), 4, 4)
 	assertImageDimensions(t, filepath.Join(root, "wide.png"), 4, 3)

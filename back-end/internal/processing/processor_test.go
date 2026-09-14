@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 )
@@ -73,17 +74,18 @@ func TestValidateEncodingOptions(t *testing.T) {
 }
 
 func TestProcessOutputsEncodesWebPAndAVIF(t *testing.T) {
+	for _, encoder := range []string{"cwebp", "avifenc"} {
+		if _, err := exec.LookPath(encoder); err != nil {
+			t.Skipf("native codec tool %s is not installed", encoder)
+		}
+	}
 	temporary := t.TempDir()
 	sourcePath := filepath.Join(temporary, "source.png")
 	writeFixtureImage(t, sourcePath, 8, 8)
-	encoderDirectory, err := filepath.Abs("../../..")
-	if err != nil {
-		t.Fatal(err)
-	}
 	spec := OutputSpec{Role: "square", Path: filepath.Join(temporary, "square.png"), Width: 4, Height: 4}
 	for _, format := range []string{"webp", "avif"} {
 		request := ExportRequest{Square: CropRect{Width: 8, Height: 8}, Format: format, Quality: 95}
-		outputs, err := processOutputs(sourcePath, request, []OutputSpec{spec}, encoderDirectory)
+		outputs, err := processOutputs(sourcePath, request, []OutputSpec{spec}, "")
 		if err != nil {
 			t.Fatalf("encode %s: %v", format, err)
 		}

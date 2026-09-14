@@ -10,7 +10,7 @@ Run with JSON settings:
   "outputDirectory": "delivery",
   "squareSize": 512,
   "wideWidth": 768,
-  "encoderDirectory": "."
+  "encoderDirectory": "native-codecs"
 }
 ```
 
@@ -21,8 +21,14 @@ Run with JSON settings:
 - Without `source`, the browser prompts for a PNG, JPEG, or GIF.
 - `--source path --output path` (or `-s path -o path`) automatically uses CLI
   mode, prints the editor URL, and does not open a browser.
+- `fabricum transform request.json` runs a noninteractive transform and writes
+  its versioned receipt as JSON to stdout. Use `-` instead of a request path to
+  read JSON from stdin; relative paths are resolved from the request file.
+- `fabricum texture-set request.json` builds loose KTX2 outputs and writes its
+  versioned receipt as JSON to stdout. `texture` and `ktx2` are aliases.
 - `--output` is an output directory and defaults to `output`.
-- Both modes use the interactive editor. CLI mode is not an unattended batch mode.
+- GUI and source-driven modes use the interactive editor. `transform` and
+  `texture-set` are unattended noninteractive commands.
 
 ## Paths
 
@@ -53,7 +59,68 @@ Run with JSON settings:
 - Invalid flags or config: exit 2.
 - Startup or listener failure: exit 1.
 
-The executable embeds the editor and encoder script. It does not search for a
-game repository or bundle project assets.
+## Asset inspection
+
+Use `fabricum inspect path [path ...]` (or `fabricum --inspect path ...`) for a
+bounded, noninteractive JSON report. Results use schema version 1, are emitted
+in input order, and contain project-neutral file facts under `assets`. The
+invocation accepts at most 1024 paths; each file is limited to 256 MiB and
+each failure message is limited to 512 bytes. A report is written even when a
+file is missing, malformed, mismatched with its extension, or unsupported; the
+process exits 1 if any result contains `error`.
+
+Inspection never calculates content hashes and never writes its inputs.
+
+## Noninteractive transforms
+
+Transform requests are project-neutral JSON descriptions of one source and one
+or more outputs. For example:
+
+```json
+{
+  "source": "images/hero.png",
+  "constraints": {
+    "format": "png",
+    "singleFrame": true,
+    "hasAlpha": true,
+    "width": 1024,
+    "height": 1024
+  },
+  "format": "png",
+  "outputs": [
+    {
+      "role": "sprite",
+      "path": "delivery/hero.png",
+      "transform": {
+        "resize": {
+          "width": 256,
+          "height": 256,
+          "fit": "contain",
+          "filter": "lanczos3"
+        }
+      }
+    }
+  ]
+}
+```
+
+Spatial operations run as crop, resize, then transparent padding. Resize
+supports `fill` and aspect-preserving `contain`; filters are `nearest`,
+`bilinear`, and `lanczos3`. Color operations support `removeAlpha`,
+`grayscale`, a selected `channel` (`red`, `green`, `blue`, `alpha`, or
+`gray`), and generic RGB `pack` inputs. A pack input can read a channel from
+another image with `source` or provide a byte `constant`, so channels such as
+AO, roughness, and zero can be described without a project-specific command.
+
+PNG transforms use deterministic lossless encoding. Transparent outputs retain
+alpha; removing alpha or packing channels produces opaque RGB data. Supported
+source formats are PNG, JPEG, and GIF; GIF transforms use the first frame, or
+fail when `singleFrame` is requested for an animation. Transform outputs are
+written atomically and report dimensions, format, filter, alpha presence,
+encoder, byte count, and SHA-256 in the receipt.
+
+The executable embeds the editor. WebP and AVIF encoding requires the native
+`cwebp` and `avifenc` tools in `encoderDirectory` or `PATH`; it does not search
+for a game repository or bundle project assets.
 
 See [project integration](integration.md) and [processing](processing.md).

@@ -1,39 +1,62 @@
 # Dependencies
 
-## Runtime
+## Runtime and build tools
 
 | Dependency | Purpose | License notes |
 | --- | --- | --- |
 | Go 1.26.6 | Server, image processing, PNG, hashing, files, and tests. No third-party Go modules. | BSD-3-Clause. Preserve the Go license when redistributing binaries. |
-| Node.js ≥24.15 | Sharp host, export commands, tests, and scripts. PNG processing does not need Node. | Includes MIT and third-party notices. Not redistributed here. |
-| Sharp 0.35.3 | WebP and AVIF encoding. The only direct npm dependency. | Apache-2.0; bundled native libraries use other licenses. |
+| `cwebp` from libwebp 1.6.0 | WebP preview and export encoding. | BSD-3-Clause and libsharpyuv notice. |
+| `avifenc` from libavif 1.4.2 | AVIF preview and export container encoding. | BSD license and upstream notices. |
+| libaom 3.14.1 | The only AV1 encoder enabled for libavif. | AOMedia license and patent notice. |
+| `basisu` from Basis Universal 2.0.3 | Loose ETC1S and UASTC-Zstandard KTX2 encoding and mipmap generation. | Apache-2.0 and upstream Basis Universal notice; bundled Zstandard is covered by the upstream source notice. |
+| `gltfpack` from meshoptimizer 1.2 | Static model optimization, optional EXT_meshopt compression, Basis KTX2 texture compression, and WebP texture compression. | MIT meshoptimizer license plus the bundled Basis Universal, libwebp, cgltf, fast_obj, and sdefl notices. |
+| Node.js >=24.15 | Repository scripts, frontend tests, and optional export hooks. It is not used by image encoding. | Node and hook-owned notices apply. Not required by the encoder path. |
 
-## Native packages
+The native versions, URLs, Windows artifact digest, selected AV1 codec, and
+Linux build flags are pinned in [`../native/versions.json`](../native/versions.json).
+Required attributions and upstream notice links are in
+[`../native/NOTICE.md`](../native/NOTICE.md). Review the upstream license and
+patent terms again before distributing native binaries.
 
-- Sharp selects platform-specific native packages.
-- Native packages include libvips, libheif, glib, and other codec libraries.
-- Licenses include LGPL, BSD, MIT, MPL-2.0, font, and image-library terms.
-- Codec patent rights cannot be inferred from npm metadata.
-- Review the exact package notices for every distributed platform.
-- Keep the lockfile and upstream notices with installed dependencies.
-- The project Apache-2.0 license does not relicense dependencies.
+## Native build inputs
+
+- `cwebp` is built from or taken from the official libwebp 1.6.0 release.
+- `avifenc` is built from libavif 1.4.2 with `AVIF_CODEC_AOM=LOCAL`; libavif's
+  pinned local dependency is libaom 3.14.1.
+- libavif is invoked with the `aom` codec explicitly. rav1e, SVT-AV1, and
+  decoder-only codecs are not part of Fabricum's encoding contract.
+- `basisu` is built from the pinned Basis Universal 2.0.3 source archive with
+  its in-tree Zstandard implementation. The KTX2 path invokes it with
+  `-etc1s` or `-uastc -ktx2_zstandard_level 6`, generated mipmaps, and no
+  internal multithreading.
+- The command-line integration invokes native tools as subprocesses. Release
+  builds append compressed copies to Fabricum; source builds discover tools in
+  an explicit directory, `bin/codecs`, or `PATH`. Static CGO integration is not
+  required for single-file distribution.
 
 ## Distribution
 
-- Source archives include all Git-tracked project files, including the lockfile
-  and project license.
-- Ignored and untracked files such as `node_modules`, codecs, Node, and compiled
-  Go binaries are excluded.
-- Before bundling binaries or native packages, review notices and source/relinking terms.
-- Run a fresh `npm audit` for every distributed build.
+- Source archives include all Git-tracked project files, including the lockfile,
+  native version manifest, native notice, and project license.
+- Release executables contain `cwebp`, `avifenc`, `basisu`, `gltfpack`, any
+  required runtime libraries, `native/NOTICE.md`, `native/PATENTS.md`, and
+  `native/versions.json`. Fabricum extracts only runtime files into a verified,
+  content-addressed user cache. Run `fabricum third-party-notices` to print the
+  embedded license and dependency inventory.
+- Decoder-only `dwebp` and `avifdec` executables are used by development tests
+  but are not embedded in releases.
+- The project Apache-2.0 license does not relicense any codec dependency.
+- gltfpack must be built with meshoptimizer compression (`-c`) as an opt-in
+  EXT_meshopt path. Draco is not built, shipped, or emitted by Fabricum.
 
 ## References
 
-- [Sharp installation and platform packages](https://sharp.pixelplumbing.com/install/)
-- [Sharp license](https://github.com/lovell/sharp/blob/main/LICENSE)
+- [libwebp cwebp options](https://developers.google.com/speed/webp/docs/cwebp)
+- [libwebp license](https://github.com/webmproject/libwebp/blob/v1.6.0/COPYING)
+- [libavif build and codec selection](https://github.com/AOMediaCodec/libavif/tree/v1.4.2)
+- [libavif license](https://github.com/AOMediaCodec/libavif/blob/v1.4.2/LICENSE)
+- [libaom license](https://aomedia.googlesource.com/aom/+/v3.14.1/LICENSE)
+- [Basis Universal license](https://github.com/BinomialLLC/basis_universal/blob/v2_0_3/LICENSE)
+- [Basis Universal notice](https://github.com/BinomialLLC/basis_universal/blob/v2_0_3/NOTICE)
 - [Go license](https://go.dev/LICENSE)
-- [Node license](https://github.com/nodejs/node/blob/main/LICENSE)
-- [Renovate configuration](https://docs.renovatebot.com/configuration-options/)
-
-Installed package README and LICENSE files are authoritative. Review them again
-after dependency updates.
+- [Node license](https://github.com/nodejs/node/blob/v24.15.0/LICENSE)

@@ -58,6 +58,10 @@ func nrgbaAt(source image.Image, x, y int) color.NRGBA {
 	return color.NRGBAModel.Convert(source.At(x+source.Bounds().Min.X, y+source.Bounds().Min.Y)).(color.NRGBA)
 }
 
+func nrgbaAtAbsolute(source image.Image, x, y int) color.NRGBA {
+	return color.NRGBAModel.Convert(source.At(x, y)).(color.NRGBA)
+}
+
 func interpolateColor(left, right color.NRGBA, weight float64) color.NRGBA {
 	return color.NRGBA{
 		R: interpolateChannel(left.R, right.R, weight), G: interpolateChannel(left.G, right.G, weight),

@@ -51,9 +51,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            platform: linux-x64
+          - os: windows-latest
+            platform: windows-x64
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
@@ -74,6 +78,10 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Install pinned native codec tools
+        run: node scripts/install-native-codecs.mjs
+        env:
+          FABRICUM_NATIVE_OUTPUT_DIR: ${{ runner.temp }}/fabricum-codecs
       - name: Install dependencies
         run: npm ci
 
@@ -84,12 +92,22 @@ jobs:
       - name: Check formatting, syntax, behavior, and compilation
         run: node scripts/check.mjs
 
-      - name: Build standalone CLI with embedded frontend
-        run: node scripts/build.mjs
-
       - name: Run race tests
         if: runner.os == 'Linux'
         run: go test -race ./...
+
+      - name: Build and test standalone release binary
+        env:
+          FABRICUM_NATIVE_OUTPUT_DIR: ${{ runner.temp }}/fabricum-codecs
+          FABRICUM_RELEASE_PLATFORM: ${{ matrix.platform }}
+        run: npm run release:binary
+
+      - name: Upload standalone release binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: fabricum-${{ matrix.platform }}
+          path: bin/fabricum-*-${{ matrix.platform }}*
+          if-no-files-found: error
 
   tag-and-release:
     name: Create tag and GitHub Release
@@ -121,6 +139,13 @@ jobs:
           RELEASE_TAG: ${{ inputs.version_tag }}
         run: node scripts/release/extract-release-notes.cjs "$RELEASE_TAG" --output release-notes.md
 
+      - name: Download release binaries
+        uses: actions/download-artifact@v4
+        with:
+          pattern: fabricum-*
+          path: release-assets
+          merge-multiple: true
+
       - name: Create and push annotated tag
         env:
           RELEASE_TAG: ${{ inputs.version_tag }}
@@ -145,3 +170,4 @@ jobs:
           name: ${{ inputs.version_tag }}
           body_path: release-notes.md
           prerelease: ${{ contains(inputs.version_tag, '-') }}
+          files: release-assets/*

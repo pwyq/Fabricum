@@ -170,9 +170,22 @@ func executableEncoderDirectory() string {
 	if err != nil {
 		return ""
 	}
-	root := filepath.Dir(filepath.Dir(executable))
-	if _, err := os.Stat(filepath.Join(root, "node_modules", "sharp")); err != nil {
-		return ""
+	directory := filepath.Join(filepath.Dir(executable), "codecs")
+	if nativeToolsPresent(directory) {
+		return directory
 	}
-	return root
+	return ""
+}
+
+func nativeToolsPresent(directory string) bool {
+	for _, name := range []string{"cwebp", "avifenc"} {
+		path := filepath.Join(directory, name)
+		if runtime.GOOS == "windows" {
+			path += ".exe"
+		}
+		if _, err := os.Stat(path); err != nil {
+			return false
+		}
+	}
+	return true
 }

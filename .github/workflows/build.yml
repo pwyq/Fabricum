@@ -22,7 +22,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -39,15 +39,17 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
-      - name: Install encoder dependencies
+      - name: Install pinned native codec tools
+        run: node scripts/install-native-codecs.mjs
+      - name: Install repository dependencies
         run: npm ci
       - name: Check formatting, syntax, behavior, and compilation
         run: node scripts/check.mjs
       - name: Check file LOC limits
         shell: bash
         run: bash scripts/code/check-file-loc.sh
-      - name: Build standalone CLI with embedded frontend
-        run: node scripts/build.mjs
+      - name: Build and test standalone binary
+        run: npm run release:binary
       - name: Run race tests
         if: runner.os == 'Linux'
         run: go test -race ./...

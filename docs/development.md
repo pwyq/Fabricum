@@ -8,7 +8,8 @@
 - `back-end/fabricum.go`: stable host interface used by the executable and integrations.
 - `back-end/internal/cli`: flags, JSON launch configuration, and export-command integration.
 - `back-end/internal/editor`: local HTTP editor, source handling, security, and GUI lifecycle.
-- `back-end/internal/processing`: crop, resize, encoding, hashing, and delivery file writes.
+- `back-end/internal/processing`: crop, resize, native encoding, loose KTX2
+  texture sets, static glTF optimization, hashing, and delivery file writes.
 - `back-end/cmd/fabricum`: executable entry point.
 - Root: Go/npm metadata and repository tooling.
 
@@ -24,12 +25,22 @@ From the repository root:
 
 > node scripts/build.mjs
 
-- `install.sh`: install dependencies, configure hooks, and build.
+> bin/fabricum compatibility-check
+
+- `install.sh`: install development dependencies and configure hooks.
 - `check.mjs`: formatting, syntax, vet, tests, compilation, and version checks.
 - `build.mjs`: build the embedded executable.
+- `compatibility-check`: generate disposable fixtures and prove every native
+  processing path without a browser, Node, or Sharp.
 - `npm audit`: inspect the installed npm dependency graph.
 - Linux CI also runs Go race tests.
 - No browser runner, frontend framework, or TypeScript toolchain is required.
+- WebP/AVIF behavior tests need the pinned `cwebp` and `avifenc` tools; see
+  [`dependencies.md`](dependencies.md) and [`../native/README.md`](../native/README.md).
+- Loose KTX2 behavior tests additionally need the pinned `basisu` build; the
+  native installer builds it from source with CMake.
+- Static model behavior tests use a gltfpack-compatible native executable; the
+  native installer builds the pinned full gltfpack tool with CMake.
 
 ## Git rules
 
@@ -55,7 +66,11 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
 - `VERSION` is authoritative.
 - `package.json` and `back-end/internal/editor/config.go` must match it.
 - `npm run release:archive` creates a source archive and SHA-256 file in `bin`.
-- Archives do not publish, tag, commit, or contact GitHub.
+- `npm run release:binary` compiles, packages, and clean-checks one standalone
+  executable for the current platform; it requires all four pinned native tools.
+- Local release commands do not publish, tag, commit, or contact GitHub.
+- Published standalone executables support Linux x64 and Windows x64. macOS is not a
+  supported release target until its native dependencies receive the same checks.
 - The Go module name is local; choose a public identity before supporting `go install`.
 - Renovate is inactive until installed.
 - Renovate waits 14 days, groups minor/patch updates, and never automerges.

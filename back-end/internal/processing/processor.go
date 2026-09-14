@@ -2,12 +2,9 @@ package processing
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"image"
 	"os"
-	"path/filepath"
 )
 
 func processOutputs(sourcePath string, request ExportRequest, specs []OutputSpec, encoderDirectory string) ([]OutputMeasurement, error) {
@@ -46,15 +43,10 @@ func PrepareOutputs(ctx context.Context, sourcePath string, request ExportReques
 		if err != nil {
 			return nil, fmt.Errorf("encode %s output: %w", spec.Role, err)
 		}
-		hash := sha256.Sum256(data)
 		path := OutputPath(spec.Path, request.Format)
 		outputs = append(outputs, ProcessedOutput{
 			Path: path, Data: data,
-			Measurement: OutputMeasurement{
-				Role: spec.Role, Path: filepath.ToSlash(path), Width: spec.Width, Height: spec.Height,
-				Format: request.Format, Quality: request.Quality, Lossless: request.Lossless,
-				Bytes: len(data), SHA256: hex.EncodeToString(hash[:]), Crop: crop,
-			},
+			Measurement: newOutputMeasurement(spec.Role, path, resized, request.Format, request.Quality, request.Lossless, "", crop, data),
 		})
 	}
 	return outputs, nil
