@@ -36,7 +36,7 @@
     },
     "linux": {
       "artifact": "https://github.com/AOMediaCodec/libavif/releases/download/v1.4.2/linux-artifacts.zip",
-      "sha256": "faf58a670ffbfcd0e3559e6d37592cff277c447dd39453f1cd1d7d7f5a20b8ef"
+      "sha256": "faf58a670ffbfdc0e3559e6d37592cff277c447dd39453f1cd1d7d7f5a20b8ef"
     },
     "windows": {
       "artifact": "https://github.com/AOMediaCodec/libavif/releases/download/v1.4.2/windows-artifacts.zip",
