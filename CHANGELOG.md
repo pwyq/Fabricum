@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.2.0 - Standalone native release binaries
+
+2026-09-13
+
+### Added
+
+- Added standalone Windows x64 and Linux x64 release binaries with embedded native tools and runtime libraries.
+- Added machine-readable asset inspection, deterministic image transforms, loose KTX2 texture-set encoding, and static glTF optimization.
+- Added self-describing processing receipts and a node-free compatibility check covering every supported asset workflow.
+- Added embedded third-party notices and a content-addressed, verified native-tool cache.
+
+### Changed
+
+- Replaced Node and Sharp in the processing runtime with pinned native `cwebp`, `avifenc`, `basisu`, and `gltfpack` executables.
+- Release downloads are now single executables that require no source checkout, Node.js installation, npm packages, or sidecar codec directory.
+
+### Fixed
+
+- Corrected transformed glTF bounds, external loose-glTF buffer inspection, KTX2 descriptor parsing, mirrored model winding, and extended WebP dimensions.
+
 ## v0.1.0 - Initial Fabricum release
 
 2026-09-12
