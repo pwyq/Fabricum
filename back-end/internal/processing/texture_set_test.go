@@ -15,7 +15,7 @@ func TestTextureContractUsesFullMipsAndBoundedWorkers(t *testing.T) {
 	if got := generatedMipLevels(1024, 1024); got != 11 {
 		t.Fatalf("generated mip count = %d, want 11", got)
 	}
-	options := TextureEncodingOptions{Encoding: TextureEncodingUASTCZstd, MipLevels: 11, TransferFunction: TextureTransferLinear, ColorPrimaries: TexturePrimariesBT709, ZstdLevel: 6}
+	options := TextureEncodingOptions{Encoding: TextureEncodingUASTCZstd, MipLevels: 11, TransferFunction: TextureTransferLinear, ColorPrimaries: TexturePrimariesUnspecified, ZstdLevel: 6}
 	normalized, err := normalizeTextureEncoding(options, 1024, 1024)
 	if err != nil {
 		t.Fatal(err)
@@ -40,7 +40,7 @@ func TestTextureContractUsesFullMipsAndBoundedWorkers(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if facts.TransferFunction != TextureTransferLinear || facts.ColorPrimaries != TexturePrimariesBT709 {
+	if facts.TransferFunction != TextureTransferLinear || facts.ColorPrimaries != TexturePrimariesUnspecified {
 		t.Fatalf("patched KTX2 metadata = %+v", facts)
 	}
 }
@@ -103,8 +103,8 @@ func TestSyntheticMaterialSetUsesBothKTX2Contracts(t *testing.T) {
 	})
 	request := TextureSetRequest{MaxWorkers: 1, EncoderDirectory: encoderDirectory, RequiredRoles: []string{"base-color", "normal", "arm"}, Outputs: []TextureOutputSpec{
 		{Role: "base-color", Source: base, Path: filepath.Join(root, "base.ktx2"), Encoding: TextureEncodingOptions{Encoding: TextureEncodingETC1S, MipLevels: 3, TransferFunction: TextureTransferSRGB, ColorPrimaries: TexturePrimariesBT709}},
-		{Role: "normal", Source: normal, Path: filepath.Join(root, "normal.ktx2"), Encoding: TextureEncodingOptions{Encoding: TextureEncodingUASTCZstd, MipLevels: 3, TransferFunction: TextureTransferLinear, ColorPrimaries: TexturePrimariesBT709, ZstdLevel: 6}},
-		{Role: "arm", Source: base, Path: filepath.Join(root, "arm.ktx2"), Transform: ImageTransform{Pack: &ChannelPack{Red: ChannelInput{Source: ao, Channel: "red"}, Green: ChannelInput{Source: roughness, Channel: "red"}, Blue: ChannelInput{Constant: uint8Pointer(0)}}}, Encoding: TextureEncodingOptions{Encoding: TextureEncodingUASTCZstd, MipLevels: 3, TransferFunction: TextureTransferLinear, ColorPrimaries: TexturePrimariesBT709, ZstdLevel: 6}},
+		{Role: "normal", Source: normal, Path: filepath.Join(root, "normal.ktx2"), Encoding: TextureEncodingOptions{Encoding: TextureEncodingUASTCZstd, MipLevels: 3, TransferFunction: TextureTransferLinear, ColorPrimaries: TexturePrimariesUnspecified, ZstdLevel: 6}},
+		{Role: "arm", Source: base, Path: filepath.Join(root, "arm.ktx2"), Transform: ImageTransform{Pack: &ChannelPack{Red: ChannelInput{Source: ao, Channel: "red"}, Green: ChannelInput{Source: roughness, Channel: "red"}, Blue: ChannelInput{Constant: uint8Pointer(0)}}}, Encoding: TextureEncodingOptions{Encoding: TextureEncodingUASTCZstd, MipLevels: 3, TransferFunction: TextureTransferLinear, ColorPrimaries: TexturePrimariesUnspecified, ZstdLevel: 6}},
 	}}
 	first, err := PrepareTextureSetOutputs(context.Background(), request)
 	if err != nil {

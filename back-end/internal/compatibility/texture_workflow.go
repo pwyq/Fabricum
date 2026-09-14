@@ -16,12 +16,12 @@ func runTextureWorkflow(ctx context.Context, fixture fixtures) (fabricum.Texture
 				Encoding: fabricum.TextureEncodingETC1S, MipLevels: 11, TransferFunction: fabricum.TextureTransferSRGB, ColorPrimaries: fabricum.TexturePrimariesBT709,
 			}},
 			{Role: "normal", Source: fixture.Normal, Path: filepath.Join(fixture.Root, "material", "normal.ktx2"), Encoding: fabricum.TextureEncodingOptions{
-				Encoding: fabricum.TextureEncodingUASTCZstd, MipLevels: 11, TransferFunction: fabricum.TextureTransferLinear, ColorPrimaries: fabricum.TexturePrimariesBT709, ZstdLevel: 6,
+				Encoding: fabricum.TextureEncodingUASTCZstd, MipLevels: 11, TransferFunction: fabricum.TextureTransferLinear, ColorPrimaries: fabricum.TexturePrimariesUnspecified, ZstdLevel: 6,
 			}},
 			{Role: "arm", Source: fixture.Source, Path: filepath.Join(fixture.Root, "material", "arm.ktx2"), Transform: fabricum.ImageTransform{Pack: &fabricum.ChannelPack{
 				Red: fabricum.ChannelInput{Source: fixture.AO, Channel: "red"}, Green: fabricum.ChannelInput{Source: fixture.Roughness, Channel: "red"}, Blue: fabricum.ChannelInput{Constant: bytePointer(0)},
 			}}, Encoding: fabricum.TextureEncodingOptions{
-				Encoding: fabricum.TextureEncodingUASTCZstd, MipLevels: 11, TransferFunction: fabricum.TextureTransferLinear, ColorPrimaries: fabricum.TexturePrimariesBT709, ZstdLevel: 6,
+				Encoding: fabricum.TextureEncodingUASTCZstd, MipLevels: 11, TransferFunction: fabricum.TextureTransferLinear, ColorPrimaries: fabricum.TexturePrimariesUnspecified, ZstdLevel: 6,
 			}},
 		},
 	}
@@ -37,15 +37,15 @@ func runTextureWorkflow(ctx context.Context, fixture fixtures) (fabricum.Texture
 		return fabricum.TextureReceipt{}, fmt.Errorf("material set returned an incomplete receipt: %+v", receipt)
 	}
 	expected := map[string]struct {
-		encoding, transfer string
+		encoding, transfer, primaries string
 	}{
-		"base-color": {fabricum.TextureEncodingETC1S, fabricum.TextureTransferSRGB},
-		"normal":     {fabricum.TextureEncodingUASTCZstd, fabricum.TextureTransferLinear},
-		"arm":        {fabricum.TextureEncodingUASTCZstd, fabricum.TextureTransferLinear},
+		"base-color": {fabricum.TextureEncodingETC1S, fabricum.TextureTransferSRGB, fabricum.TexturePrimariesBT709},
+		"normal":     {fabricum.TextureEncodingUASTCZstd, fabricum.TextureTransferLinear, fabricum.TexturePrimariesUnspecified},
+		"arm":        {fabricum.TextureEncodingUASTCZstd, fabricum.TextureTransferLinear, fabricum.TexturePrimariesUnspecified},
 	}
 	for _, output := range receipt.Outputs {
 		want, ok := expected[output.Role]
-		if !ok || output.Width != 1024 || output.Height != 1024 || output.MipLevels != 11 || output.Encoding != want.encoding || output.TransferFunction != want.transfer || output.ColorPrimaries != fabricum.TexturePrimariesBT709 {
+		if !ok || output.Width != 1024 || output.Height != 1024 || output.MipLevels != 11 || output.Encoding != want.encoding || output.TransferFunction != want.transfer || output.ColorPrimaries != want.primaries {
 			return fabricum.TextureReceipt{}, fmt.Errorf("material output does not match contract: %+v", output)
 		}
 		if err := checkImageMeasurement(output); err != nil {

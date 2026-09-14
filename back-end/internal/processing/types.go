@@ -131,11 +131,12 @@ type TextureSetRequest struct {
 }
 
 const (
-	TextureEncodingETC1S     = "etc1s"
-	TextureEncodingUASTCZstd = "uastc-zstd"
-	TextureTransferLinear    = "linear"
-	TextureTransferSRGB      = "srgb"
-	TexturePrimariesBT709    = "bt709"
+	TextureEncodingETC1S        = "etc1s"
+	TextureEncodingUASTCZstd    = "uastc-zstd"
+	TextureTransferLinear       = "linear"
+	TextureTransferSRGB         = "srgb"
+	TexturePrimariesUnspecified = "unspecified"
+	TexturePrimariesBT709       = "bt709"
 )
 
 // These aliases keep the KTX2/material terminology available to integrations

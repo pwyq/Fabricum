@@ -20,7 +20,8 @@
 builds one or more loose KTX2 files from ordinary image sources. Each output
 can select `etc1s` or `uastc-zstd`, transfer function, color primaries, full
 generated mipmaps, and a quality level. UASTC uses Zstandard level 6 by
-default. `maxWorkers` bounds concurrent encodes; set it to `1` for a
+default. Use unspecified primaries for non-color data such as normal and ARM
+textures. `maxWorkers` bounds concurrent encodes; set it to `1` for a
 reproducible single-worker game-asset run.
 
 Texture outputs reuse the deterministic transform and channel-pack operations.

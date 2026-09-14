@@ -119,6 +119,8 @@ func ktx2TransferFunction(value byte) string {
 
 func ktx2ColorPrimaries(value byte) string {
 	switch value {
+	case 0:
+		return "unspecified"
 	case 1:
 		return "bt709"
 	case 2:

@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.2.1 - Unspecified texture primaries
+
+2026-09-14
+
+### Fixed
+
+- Accepted and reported unspecified KTX2 color primaries for non-color texture data.
+- Covered linear normal and ARM textures in the standalone compatibility check.
+
 ## v0.2.0 - Standalone native release binaries
 
 2026-09-13

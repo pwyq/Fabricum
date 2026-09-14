@@ -21,6 +21,7 @@ const (
 )
 
 var texturePrimaries = map[string]byte{
+	"unspecified": 0,
 	"bt709":       1,
 	"bt601-ebu":   2,
 	"bt601-smpte": 3,
