@@ -44,6 +44,7 @@ func ParseConfig(args []string, output io.Writer) (editor.Config, error) {
 		fmt.Fprintln(output, "  fabricum transform request.json")
 		fmt.Fprintln(output, "  fabricum texture-set request.json")
 		fmt.Fprintln(output, "  fabricum gltfpack request.json")
+		fmt.Fprintln(output, "  fabricum compatibility-check")
 		fmt.Fprintln(output)
 		fmt.Fprintln(output, "Options:")
 		fmt.Fprintln(output, "  -h, --help")
