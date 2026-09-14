@@ -488,10 +488,19 @@ func transformModelPositions(document *modelDocument, matrix modelMatrix, center
 	}
 	var bounds Bounds
 	initialized := false
-	for _, position := range positions {
+	positionBounds := make([]Bounds, len(positions))
+	positionInitialized := make([]bool, len(positions))
+	for positionIndex, position := range positions {
 		for index := 0; index < position.count; index++ {
 			x, y, z := modelPosition(position, index)
 			x, y, z = modelTransformPoint(matrix, x, y, z)
+			if !positionInitialized[positionIndex] {
+				positionBounds[positionIndex].Min, positionBounds[positionIndex].Max = [3]float64{x, y, z}, [3]float64{x, y, z}
+				positionInitialized[positionIndex] = true
+			} else {
+				positionBounds[positionIndex].Min[0], positionBounds[positionIndex].Min[1], positionBounds[positionIndex].Min[2] = minFloat(positionBounds[positionIndex].Min[0], x), minFloat(positionBounds[positionIndex].Min[1], y), minFloat(positionBounds[positionIndex].Min[2], z)
+				positionBounds[positionIndex].Max[0], positionBounds[positionIndex].Max[1], positionBounds[positionIndex].Max[2] = maxFloat(positionBounds[positionIndex].Max[0], x), maxFloat(positionBounds[positionIndex].Max[1], y), maxFloat(positionBounds[positionIndex].Max[2], z)
+			}
 			if !initialized {
 				bounds.Min, bounds.Max = [3]float64{x, y, z}, [3]float64{x, y, z}
 				initialized = true
@@ -508,15 +517,14 @@ func transformModelPositions(document *modelDocument, matrix modelMatrix, center
 	if center {
 		translation = [3]float64{(bounds.Min[0] + bounds.Max[0]) / 2, bounds.Min[1], (bounds.Min[2] + bounds.Max[2]) / 2}
 	}
-	for index := range positions {
-		position := positions[index]
+	for index, position := range positions {
 		for vertex := 0; vertex < position.count; vertex++ {
 			x, y, z := modelPosition(position, vertex)
 			x, y, z = modelTransformPoint(matrix, x, y, z)
 			modelWritePosition(position, vertex, x-translation[0], y-translation[1], z-translation[2])
 		}
-		minimum := [3]float64{bounds.Min[0] - translation[0], bounds.Min[1] - translation[1], bounds.Min[2] - translation[2]}
-		maximum := [3]float64{bounds.Max[0] - translation[0], bounds.Max[1] - translation[1], bounds.Max[2] - translation[2]}
+		minimum := [3]float64{positionBounds[index].Min[0] - translation[0], positionBounds[index].Min[1] - translation[1], positionBounds[index].Min[2] - translation[2]}
+		maximum := [3]float64{positionBounds[index].Max[0] - translation[0], positionBounds[index].Max[1] - translation[1], positionBounds[index].Max[2] - translation[2]}
 		if err := setModelValue(position.object, "min", minimum[:]); err != nil {
 			return err
 		}
@@ -553,6 +561,7 @@ func repairModelWinding(document *modelDocument) error {
 	if err != nil {
 		return err
 	}
+	reversed := make(map[int]struct{})
 	for meshIndex, mesh := range meshes {
 		primitives, err := modelArray(mesh, "primitives")
 		if err != nil {
@@ -575,8 +584,11 @@ func repairModelWinding(document *modelDocument) error {
 				if err != nil {
 					return err
 				}
-				if err := reverseModelIndexAccessor(document, index); err != nil {
-					return fmt.Errorf("mesh %d primitive %d: %w", meshIndex, primitiveIndex, err)
+				if _, done := reversed[index]; !done {
+					if err := reverseModelIndexAccessor(document, index); err != nil {
+						return fmt.Errorf("mesh %d primitive %d: %w", meshIndex, primitiveIndex, err)
+					}
+					reversed[index] = struct{}{}
 				}
 				continue
 			}
@@ -597,6 +609,9 @@ func repairModelWinding(document *modelDocument) error {
 			index, err := appendModelIndices(document, count)
 			if err != nil {
 				return err
+			}
+			if err := reverseModelIndexAccessor(document, index); err != nil {
+				return fmt.Errorf("mesh %d primitive %d: %w", meshIndex, primitiveIndex, err)
 			}
 			if err := setModelValue(primitive, "indices", index); err != nil {
 				return err

@@ -83,6 +83,48 @@ func TestStaticModelPreprocessingUsesPinnedToolContract(t *testing.T) {
 	}
 }
 
+func TestMirroredWindingRepairsNonIndexedTriangles(t *testing.T) {
+	root := t.TempDir()
+	modelPath := filepath.Join(root, "non-indexed.gltf")
+	writeSyntheticStaticModel(t, modelPath)
+	document, err := loadModelDocument(modelPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	meshes, err := modelArray(document.Object, "meshes")
+	if err != nil {
+		t.Fatal(err)
+	}
+	primitives, err := modelArray(meshes[0], "primitives")
+	if err != nil {
+		t.Fatal(err)
+	}
+	delete(primitives[0], "indices")
+	if err := setModelArray(meshes[0], "primitives", primitives); err != nil {
+		t.Fatal(err)
+	}
+	if err := setModelArray(document.Object, "meshes", meshes); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := prepareModelGeometry(&document, ModelOptimizationRequest{BakeRootTransform: true}); err != nil {
+		t.Fatal(err)
+	}
+	meshes, _ = modelArray(document.Object, "meshes")
+	primitives, _ = modelArray(meshes[0], "primitives")
+	var index int
+	if err := json.Unmarshal(primitives[0]["indices"], &index); err != nil {
+		t.Fatal(err)
+	}
+	accessors, _ := modelArray(document.Object, "accessors")
+	views, _ := modelArray(document.Object, "bufferViews")
+	viewIndex, _, _ := modelInt(accessors[index], "bufferView")
+	viewOffset, _, _ := modelInt(views[viewIndex], "byteOffset")
+	data := document.Buffers[0]
+	if readModelIndex(data[viewOffset:viewOffset+4], 5125) != 0 || readModelIndex(data[viewOffset+4:viewOffset+8], 5125) != 2 || readModelIndex(data[viewOffset+8:viewOffset+12], 5125) != 1 {
+		t.Fatal("mirrored non-indexed triangle winding was not repaired")
+	}
+}
+
 func writeSyntheticStaticModel(t *testing.T, path string) {
 	data := make([]byte, 36+6)
 	for index, value := range []float32{1, 2, 3, 2, 2, 3, 1, 4, 5} {
