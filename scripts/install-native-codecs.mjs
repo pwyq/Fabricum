@@ -7,7 +7,9 @@ import { spawnSync } from 'node:child_process'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const versions = JSON.parse(await readFile(join(root, 'native', 'versions.json'), 'utf8'))
-const outputDirectory = process.env.RUNNER_TEMP
+const outputDirectory = process.env.FABRICUM_NATIVE_OUTPUT_DIR
+  ? resolve(root, process.env.FABRICUM_NATIVE_OUTPUT_DIR)
+  : process.env.RUNNER_TEMP
   ? join(process.env.RUNNER_TEMP, 'fabricum-codecs')
   : join(root, 'bin', 'codecs')
 
@@ -17,10 +19,42 @@ function run(command, args, cwd = root) {
   if (result.status !== 0) throw new Error(`${command} failed with status ${result.status}`)
 }
 
+function cmakeRuntimeOptions() {
+  return process.platform === 'win32' ? ['-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded'] : []
+}
+
+function errorDetail(error) {
+  const detail = error instanceof Error ? error.message : String(error)
+  const cause = error && typeof error === 'object' && error.cause instanceof Error ? ` (${error.cause.message})` : ''
+  return `${detail}${cause}`
+}
+
 async function download(url, path) {
-  const response = await fetch(url)
-  if (!response.ok) throw new Error(`download failed (${response.status}): ${url}`)
-  await writeFile(path, Buffer.from(await response.arrayBuffer()))
+  const attempts = 3
+  let lastError
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    let response
+    try {
+      response = await fetch(url)
+    } catch (error) {
+      lastError = error
+    }
+    if (response && !response.ok) throw new Error(`download failed (${response.status}): ${url}`)
+    if (response) {
+      try {
+        await writeFile(path, Buffer.from(await response.arrayBuffer()))
+        return
+      } catch (error) {
+        lastError = error
+      }
+    }
+    if (attempt < attempts) {
+      const delay = attempt * 1000
+      console.warn(`Download attempt ${attempt}/${attempts} failed for ${url}: ${errorDetail(lastError)}; retrying in ${delay}ms`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+  throw new Error(`download failed for ${url} after ${attempts} attempts: ${errorDetail(lastError)}`, { cause: lastError })
 }
 
 async function verify(path, expected) {
@@ -34,7 +68,10 @@ async function extract(archive, destination) {
     run('unzip', ['-q', archive, '-d', destination])
     return
   }
-  run('tar', ['-xf', archive, '-C', destination])
+  const tar = process.platform === 'win32'
+    ? join(process.env.SystemRoot || process.env.WINDIR || 'C:\\Windows', 'System32', 'tar.exe')
+    : 'tar'
+  run(tar, ['-xf', archive, '-C', destination])
 }
 
 async function findFile(directory, filename) {
@@ -60,6 +97,7 @@ async function installWindows(workspace) {
   await extract(webpArchive, join(workspace, 'webp'))
   await extract(avifArchive, join(workspace, 'avif'))
   await copyExecutables(workspace, [join(workspace, 'webp'), join(workspace, 'avif')], true)
+  await copyRuntimeLibraries([join(workspace, 'webp'), join(workspace, 'avif')])
 }
 
 async function installLinux(workspace) {
@@ -72,6 +110,7 @@ async function installLinux(workspace) {
   await extract(webpArchive, join(workspace, 'webp'))
   await extract(avifArchive, join(workspace, 'avif'))
   await copyExecutables(workspace, [join(workspace, 'webp'), join(workspace, 'avif')], true)
+  await copyRuntimeLibraries([join(workspace, 'webp'), join(workspace, 'avif')])
 }
 
 async function installBasis(workspace) {
@@ -82,9 +121,10 @@ async function installBasis(workspace) {
   await extract(archive, sourceDirectory)
   const source = join(sourceDirectory, 'basis_universal-2_0_3')
   const build = join(workspace, 'basis-build')
-  run('cmake', ['-S', source, '-B', build, `-DCMAKE_BUILD_TYPE=${versions.basisu.build.type}`])
+  run('cmake', ['-S', source, '-B', build, `-DCMAKE_BUILD_TYPE=${versions.basisu.build.type}`, ...cmakeRuntimeOptions()])
   run('cmake', ['--build', build, '--config', versions.basisu.build.type, '--target', versions.basisu.build.target, '--parallel', '2'])
   await copyExecutables(workspace, [build, source], false, ['basisu'])
+  await copyRuntimeLibraries([build])
 }
 
 async function installGltfpack(workspace) {
@@ -111,15 +151,22 @@ async function installGltfpack(workspace) {
     `-DMESHOPT_GLTFPACK_BASISU_PATH=${basisSource}`,
     `-DMESHOPT_GLTFPACK_LIBWEBP_PATH=${webpSource}`,
     `-DCMAKE_BUILD_TYPE=${versions.meshoptimizer.build.type}`,
+    ...cmakeRuntimeOptions(),
   ])
   run('cmake', ['--build', build, '--config', versions.meshoptimizer.build.type, '--target', versions.meshoptimizer.build.target, '--parallel', '2'])
   await copyExecutables(workspace, [build], false, ['gltfpack'])
+  await copyRuntimeLibraries([build])
 }
 
 async function copyExecutables(workspace, searchDirectories, includeDecoders = false, additional = []) {
-  const filenames = [...(process.platform === 'win32'
-    ? ['cwebp.exe', ...(includeDecoders ? ['dwebp.exe'] : []), 'avifenc.exe', ...(includeDecoders ? ['avifdec.exe'] : [])]
-    : ['cwebp', ...(includeDecoders ? ['dwebp'] : []), 'avifenc', ...(includeDecoders ? ['avifdec'] : [])]), ...additional.map(filename => process.platform === 'win32' ? `${filename}.exe` : filename)]
+  const filenames = [
+    ...(includeDecoders
+      ? (process.platform === 'win32'
+        ? ['cwebp.exe', 'dwebp.exe', 'avifenc.exe', 'avifdec.exe']
+        : ['cwebp', 'dwebp', 'avifenc', 'avifdec'])
+      : []),
+    ...additional.map(filename => process.platform === 'win32' ? `${filename}.exe` : filename),
+  ]
   for (const filename of filenames) {
     let source = ''
     for (const directory of searchDirectories) {
@@ -128,8 +175,26 @@ async function copyExecutables(workspace, searchDirectories, includeDecoders = f
     }
     if (!source) throw new Error(`native codec build did not produce ${filename}`)
     const destination = join(outputDirectory, filename)
-    await cp(source, destination)
+    await cp(source, destination, { dereference: true })
     if (process.platform !== 'win32') await chmod(destination, 0o755)
+  }
+}
+
+async function copyRuntimeLibraries(searchDirectories) {
+  for (const directory of searchDirectories) await copyRuntimeLibrariesFrom(directory)
+}
+
+async function copyRuntimeLibrariesFrom(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const source = join(directory, entry.name)
+    if (entry.isDirectory()) {
+      await copyRuntimeLibrariesFrom(source)
+      continue
+    }
+    const isLibrary = process.platform === 'win32'
+      ? entry.name.toLowerCase().endsWith('.dll')
+      : /\.so(?:\.\d+)*$/.test(entry.name)
+    if (isLibrary) await cp(source, join(outputDirectory, entry.name), { dereference: true })
   }
 }
 

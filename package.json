@@ -14,6 +14,7 @@
     "native:install": "node scripts/install-native-codecs.mjs",
     "release": "bash scripts/release/release.sh",
     "release:archive": "node scripts/release.mjs",
+    "release:binary": "node scripts/release/binary.mjs",
     "scripts:test": "node --test --test-isolation=none scripts/**/*.test.cjs"
   },
   "description": "A game asset processing and optimization toolkit"

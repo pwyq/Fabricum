@@ -48,16 +48,8 @@ jobs:
       - name: Check file LOC limits
         shell: bash
         run: bash scripts/code/check-file-loc.sh
-      - name: Build standalone CLI with embedded frontend
-        run: node scripts/build.mjs
-      - name: Run node-free compatibility check
-        shell: bash
-        run: |
-          if [ "$RUNNER_OS" = "Windows" ]; then
-            ./bin/fabricum.exe compatibility-check > compatibility-receipt.json
-          else
-            ./bin/fabricum compatibility-check > compatibility-receipt.json
-          fi
+      - name: Build and test standalone binary
+        run: npm run release:binary
       - name: Run race tests
         if: runner.os == 'Linux'
         run: go test -race ./...
