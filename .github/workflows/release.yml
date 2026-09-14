@@ -103,7 +103,7 @@ jobs:
         run: npm run release:binary
 
       - name: Upload standalone release binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fabricum-${{ matrix.platform }}
           path: bin/fabricum-*-${{ matrix.platform }}*
@@ -140,7 +140,7 @@ jobs:
         run: node scripts/release/extract-release-notes.cjs "$RELEASE_TAG" --output release-notes.md
 
       - name: Download release binaries
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: fabricum-*
           path: release-assets
