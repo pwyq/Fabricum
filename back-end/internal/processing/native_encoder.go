@@ -3,6 +3,8 @@ package processing
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fabricum/back-end/internal/bundledtools"
 	"fmt"
 	"os"
 	"os/exec"
@@ -38,17 +40,20 @@ func encodeNative(ctx context.Context, pngInput []byte, request ExportRequest, e
 	}
 	command := exec.CommandContext(ctx, executable, args...)
 	command.Dir = temporary
+	command.Env = nativeToolEnvironment(executable)
 	var stderr bytes.Buffer
 	command.Stderr = &stderr
-	if err := command.Run(); err != nil {
+	if err := command.Start(); err != nil {
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			return nil, fmt.Errorf("%s encoding canceled: %w", request.Format, ctxErr)
 		}
-		message := strings.TrimSpace(stderr.String())
-		if message != "" {
-			return nil, fmt.Errorf("%s encoder failed: %w: %s", request.Format, err, message)
+		return nil, nativeToolStartError(request.Format, executableName, executable, err)
+	}
+	if err := command.Wait(); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, fmt.Errorf("%s encoding canceled: %w", request.Format, ctxErr)
 		}
-		return nil, fmt.Errorf("%s encoder failed: %w", request.Format, err)
+		return nil, nativeToolRunError(request.Format, executableName, executable, err, stderr.String())
 	}
 	data, err := os.ReadFile(outputPath)
 	if err != nil {
@@ -100,26 +105,38 @@ func findNativeEncoder(name, format, directory string) (string, error) {
 }
 
 func findNativeTool(name, format, directory string) (string, error) {
-	if directory == "" {
-		if bundled := bundledNativeDirectory(name); bundled != "" {
-			path := nativeToolPath(bundled, name)
-			if _, err := exec.LookPath(path); err == nil {
-				return path, nil
-			}
+	if directory != "" {
+		absoluteDirectory, err := filepath.Abs(directory)
+		if err != nil {
+			return "", fmt.Errorf("resolve native codec directory %q: %w", directory, err)
 		}
-		path, err := exec.LookPath(name)
-		if err == nil {
-			return path, nil
+		return findNativeToolInDirectory(name, format, absoluteDirectory)
+	}
+	if embedded, err := bundledtools.Tool(name); err == nil {
+		return embedded, nil
+	} else if !errors.Is(err, bundledtools.ErrNotBundled) {
+		return "", fmt.Errorf("prepare embedded native %s for %s output: %w", name, format, err)
+	}
+	if bundled := bundledNativeDirectory(name); bundled != "" {
+		return findNativeToolInDirectory(name, format, bundled)
+	}
+	path, err := exec.LookPath(name)
+	if err == nil {
+		return path, nil
+	}
+	return "", missingNativeEncoderError(name, format, "PATH")
+}
+
+func findNativeToolInDirectory(name, format, directory string) (string, error) {
+	path := nativeToolPath(directory, name)
+	if _, err := os.Stat(path); err != nil {
+		if os.IsNotExist(err) {
+			return "", missingNativeEncoderError(name, format, path)
 		}
-		return "", missingNativeEncoderError(name, format, "PATH")
+		return "", fmt.Errorf("inspect native %s for %s output at %s: %w", name, format, path, err)
 	}
-	absoluteDirectory, err := filepath.Abs(directory)
-	if err != nil {
-		return "", fmt.Errorf("resolve native codec directory %q: %w", directory, err)
-	}
-	path := nativeToolPath(absoluteDirectory, name)
 	if _, err := exec.LookPath(path); err != nil {
-		return "", missingNativeEncoderError(name, format, absoluteDirectory)
+		return "", fmt.Errorf("native %s for %s output at %s is not executable: %w", name, format, path, err)
 	}
 	return path, nil
 }
@@ -132,27 +149,66 @@ func nativeToolPath(directory, name string) string {
 	return path
 }
 
+func nativeToolEnvironment(executable string) []string {
+	if runtime.GOOS != "linux" {
+		return nil
+	}
+	libraryPath := filepath.Dir(executable)
+	if existing := os.Getenv("LD_LIBRARY_PATH"); existing != "" {
+		libraryPath += string(os.PathListSeparator) + existing
+	}
+	environment := make([]string, 0, len(os.Environ())+1)
+	for _, variable := range os.Environ() {
+		if strings.HasPrefix(variable, "LD_LIBRARY_PATH=") {
+			continue
+		}
+		environment = append(environment, variable)
+	}
+	return append(environment, "LD_LIBRARY_PATH="+libraryPath)
+}
+
 func bundledNativeDirectory(name string) string {
 	executable, err := os.Executable()
 	if err != nil {
 		return ""
 	}
 	executableDirectory := filepath.Dir(executable)
-	root := filepath.Dir(executableDirectory)
-	candidates := []string{
-		filepath.Join(executableDirectory, "codecs"),
-		executableDirectory,
-		filepath.Join(root, "codecs"),
-		filepath.Join(root, "native"),
-	}
-	for _, candidate := range candidates {
-		if _, err := exec.LookPath(nativeToolPath(candidate, name)); err == nil {
-			return candidate
-		}
+	candidate := filepath.Join(executableDirectory, "codecs")
+	if _, err := os.Stat(nativeToolPath(candidate, name)); err == nil {
+		return candidate
 	}
 	return ""
 }
 
 func missingNativeEncoderError(name, format, location string) error {
+	if location != "PATH" {
+		return fmt.Errorf("%s output requires native %s at %s; use the matching standalone release or set --encoder-directory", format, name, location)
+	}
 	return fmt.Errorf("%s output requires native %s (%s); install the pinned native tools or set --encoder-directory/--gltfpack-directory", format, name, location)
+}
+
+func nativeToolRunError(format, name, executable string, err error, detail string) error {
+	detail = strings.TrimSpace(detail)
+	suffix := ""
+	if detail != "" {
+		suffix = ": " + detail
+	}
+	if looksLikeIncompatibleNativeTool(err) {
+		return fmt.Errorf("%s output could not start native %s at %s; the bundled file or one of its runtime libraries is missing or incompatible: %w%s", format, name, executable, err, suffix)
+	}
+	return fmt.Errorf("%s output failed using native %s at %s: %w%s", format, name, executable, err, suffix)
+}
+
+func nativeToolStartError(format, name, executable string, err error) error {
+	return fmt.Errorf("%s output could not start native %s at %s; the bundled file or one of its runtime libraries is missing or incompatible: %w", format, name, executable, err)
+}
+
+func looksLikeIncompatibleNativeTool(err error) bool {
+	message := strings.ToLower(err.Error())
+	for _, phrase := range []string{"exec format error", "bad exe format", "not a valid win32 application", "cannot execute binary file", "no such file or directory"} {
+		if strings.Contains(message, phrase) {
+			return true
+		}
+	}
+	return false
 }

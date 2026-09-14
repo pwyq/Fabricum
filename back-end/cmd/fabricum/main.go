@@ -8,11 +8,25 @@ import (
 	"os"
 
 	"fabricum/back-end"
+	"fabricum/back-end/internal/bundledtools"
 	"fabricum/back-end/internal/compatibility"
 )
 
 func main() {
 	args := os.Args[1:]
+	if noticesInvocation(args) {
+		if len(args) != 1 {
+			fmt.Fprintln(os.Stderr, "fabricum: third-party-notices does not accept arguments")
+			os.Exit(2)
+		}
+		notices, err := bundledtools.Notices()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "fabricum:", err)
+			os.Exit(1)
+		}
+		fmt.Fprint(os.Stdout, notices)
+		return
+	}
 	if compatibilityInvocation(args) {
 		if len(args) != 1 {
 			fmt.Fprintln(os.Stderr, "fabricum: compatibility-check does not accept arguments")
@@ -64,6 +78,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, "fabricum:", err)
 		os.Exit(1)
 	}
+}
+
+func noticesInvocation(args []string) bool {
+	return len(args) > 0 && (args[0] == "third-party-notices" || args[0] == "licenses")
 }
 
 func compatibilityInvocation(args []string) bool {

@@ -189,17 +189,20 @@ func findGltfpack(request ModelOptimizationRequest) (string, error) {
 func runGltfpack(ctx context.Context, executable string, request ModelOptimizationRequest, inputPath, outputPath, directory string) ([]byte, error) {
 	command := exec.CommandContext(ctx, executable, modelGltfpackArgs(request, inputPath, outputPath)...)
 	command.Dir = directory
+	command.Env = nativeToolEnvironment(executable)
 	var stderr bytes.Buffer
 	command.Stderr = &stderr
-	if err := command.Run(); err != nil {
+	if err := command.Start(); err != nil {
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			return nil, fmt.Errorf("gltfpack optimization canceled: %w", ctxErr)
 		}
-		message := strings.TrimSpace(stderr.String())
-		if message != "" {
-			return nil, fmt.Errorf("gltfpack failed: %w: %s", err, message)
+		return nil, nativeToolStartError("model", "gltfpack", executable, err)
+	}
+	if err := command.Wait(); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, fmt.Errorf("gltfpack optimization canceled: %w", ctxErr)
 		}
-		return nil, fmt.Errorf("gltfpack failed: %w", err)
+		return nil, nativeToolRunError("model", "gltfpack", executable, err, stderr.String())
 	}
 	return stderr.Bytes(), nil
 }

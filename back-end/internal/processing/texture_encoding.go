@@ -136,17 +136,20 @@ func runBasisU(ctx context.Context, pngInput []byte, options TextureEncodingOpti
 	}
 	command := exec.CommandContext(ctx, executable, basisUArgs(options, inputPath, outputPath)...)
 	command.Dir = temporary
+	command.Env = nativeToolEnvironment(executable)
 	var stderr bytes.Buffer
 	command.Stderr = &stderr
-	if err := command.Run(); err != nil {
+	if err := command.Start(); err != nil {
 		if ctxErr := ctx.Err(); ctxErr != nil {
 			return nil, fmt.Errorf("ktx2 encoding canceled: %w", ctxErr)
 		}
-		message := strings.TrimSpace(stderr.String())
-		if message != "" {
-			return nil, fmt.Errorf("basisu encoder failed: %w: %s", err, message)
+		return nil, nativeToolStartError("ktx2", "basisu", executable, err)
+	}
+	if err := command.Wait(); err != nil {
+		if ctxErr := ctx.Err(); ctxErr != nil {
+			return nil, fmt.Errorf("ktx2 encoding canceled: %w", ctxErr)
 		}
-		return nil, fmt.Errorf("basisu encoder failed: %w", err)
+		return nil, nativeToolRunError("ktx2", "basisu", executable, err, stderr.String())
 	}
 	data, err := os.ReadFile(outputPath)
 	if err != nil {

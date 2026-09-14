@@ -170,11 +170,9 @@ func executableEncoderDirectory() string {
 	if err != nil {
 		return ""
 	}
-	root := filepath.Dir(filepath.Dir(executable))
-	for _, directory := range []string{filepath.Join(root, "codecs"), filepath.Join(root, "native"), filepath.Join(filepath.Dir(executable), "codecs"), filepath.Dir(executable)} {
-		if nativeToolsPresent(directory) {
-			return directory
-		}
+	directory := filepath.Join(filepath.Dir(executable), "codecs")
+	if nativeToolsPresent(directory) {
+		return directory
 	}
 	return ""
 }
