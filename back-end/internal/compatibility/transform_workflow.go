@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"image/color"
 	"image/png"
 	"io"
@@ -18,6 +19,7 @@ func runSpriteWorkflow(ctx context.Context, fixture fixtures) (fabricum.Transfor
 		Source:      fixture.Transparent,
 		Constraints: fabricum.SourceConstraints{Format: "png", SingleFrame: true, Width: 160, Height: 80},
 		Format:      "png",
+		PNGMode:     fabricum.PNGModeIndexed,
 		Outputs: []fabricum.TransformOutputSpec{
 			{Role: "sprite-256", Path: filepath.Join(fixture.Root, "sprites", "sprite-256.png"), Transform: fabricum.ImageTransform{
 				Resize: &fabricum.ResizeSpec{Width: 256, Height: 256, Fit: "contain", Filter: "lanczos3"},
@@ -52,6 +54,9 @@ func runSpriteWorkflow(ctx context.Context, fixture fixtures) (fabricum.Transfor
 		}
 		if decoded.Bounds().Dx() != output.Width || decoded.Bounds().Dy() != output.Height {
 			return fabricum.TransformReceipt{}, fmt.Errorf("%s dimensions do not match receipt", output.Role)
+		}
+		if _, ok := decoded.(*image.Paletted); !ok {
+			return fabricum.TransformReceipt{}, fmt.Errorf("%s is not palette encoded", output.Role)
 		}
 		if alphaAt(decoded, 0, 0) != 0 || alphaAt(decoded, output.Width/2, output.Height/2) == 0 {
 			return fabricum.TransformReceipt{}, fmt.Errorf("%s does not contain transparent padding around an opaque sprite", output.Role)

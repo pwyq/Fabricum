@@ -51,7 +51,7 @@ func PrepareTransformOutputs(ctx context.Context, request TransformRequest) ([]P
 			return nil, fmt.Errorf("output %s: %w", outputRole(spec, index), err)
 		}
 		data, err := encodeOutput(ctx, imageOutput, ExportRequest{
-			Format: request.Format, Quality: request.Quality, Lossless: request.Lossless,
+			Format: request.Format, PNGMode: request.PNGMode, Quality: request.Quality, Lossless: request.Lossless,
 		}, request.EncoderDirectory)
 		if err != nil {
 			return nil, fmt.Errorf("encode %s output: %w", outputRole(spec, index), err)
@@ -64,7 +64,7 @@ func PrepareTransformOutputs(ctx context.Context, request TransformRequest) ([]P
 		outputs = append(outputs, ProcessedOutput{
 			Path:        path,
 			Data:        data,
-			Measurement: newOutputMeasurement(outputRole(spec, index), path, imageOutput, request.Format, request.Quality, request.Lossless, filter, crop, data),
+			Measurement: newOutputMeasurement(outputRole(spec, index), path, imageOutput, request.Format, request.PNGMode, request.Quality, request.Lossless, filter, crop, data),
 		})
 	}
 	return outputs, nil

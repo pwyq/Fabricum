@@ -17,6 +17,8 @@ const (
 	ModeCLI = editor.ModeCLI
 )
 
+const PNGModeIndexed = processing.PNGModeIndexed
+
 type Source = editor.Source
 type Config = editor.Config
 type ExportRequest = processing.ExportRequest

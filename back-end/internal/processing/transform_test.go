@@ -145,6 +145,60 @@ func TestTransformChannelAndAlphaOperations(t *testing.T) {
 	})
 }
 
+func TestTransformIndexedPNGIsDeterministicAndPaletteEncoded(t *testing.T) {
+	root := t.TempDir()
+	source := filepath.Join(root, "source.png")
+	writeTransformFixture(t, source, 32, 32, func(x, y int) color.NRGBA {
+		return color.NRGBA{
+			R: uint8(x * 8),
+			G: uint8(y * 8),
+			B: uint8((x + y) * 4),
+			A: uint8((x*3 + y*5) % 256),
+		}
+	})
+	request := TransformRequest{
+		Source: source, Format: "png", PNGMode: PNGModeIndexed,
+		Outputs: []TransformOutputSpec{{Role: "sprite", Path: filepath.Join(root, "sprite.png")}},
+	}
+	first, err := PrepareTransformOutputs(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := PrepareTransformOutputs(context.Background(), request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(first[0].Data, second[0].Data) {
+		t.Fatal("indexed PNG output is not deterministic")
+	}
+	decoded, err := png.Decode(bytes.NewReader(first[0].Data))
+	if err != nil {
+		t.Fatal(err)
+	}
+	paletted, ok := decoded.(*image.Paletted)
+	if !ok || len(paletted.Palette) > 256 {
+		t.Fatalf("decoded indexed PNG = %T with %d colors", decoded, len(paletted.Palette))
+	}
+	var absoluteError int
+	for y := 0; y < 32; y++ {
+		for x := 0; x < 32; x++ {
+			want := color.NRGBA{R: uint8(x * 8), G: uint8(y * 8), B: uint8((x + y) * 4), A: uint8((x*3 + y*5) % 256)}
+			got := color.NRGBAModel.Convert(decoded.At(x, y)).(color.NRGBA)
+			for _, difference := range []int{
+				int(got.R)*int(got.A)/255 - int(want.R)*int(want.A)/255,
+				int(got.G)*int(got.A)/255 - int(want.G)*int(want.A)/255,
+				int(got.B)*int(got.A)/255 - int(want.B)*int(want.A)/255,
+				int(got.A) - int(want.A),
+			} {
+				absoluteError += max(difference, -difference)
+			}
+		}
+	}
+	if meanError := float64(absoluteError) / (32 * 32 * 4); meanError > 4 {
+		t.Fatalf("indexed PNG mean premultiplied RGBA error = %.3f, want <= 4", meanError)
+	}
+}
+
 func TestTransformRejectsInvalidSourceAndOperations(t *testing.T) {
 	root := t.TempDir()
 	source := filepath.Join(root, "source.png")
@@ -153,6 +207,8 @@ func TestTransformRejectsInvalidSourceAndOperations(t *testing.T) {
 		{Source: source, Format: "png", Constraints: SourceConstraints{Format: "jpeg"}, Outputs: []TransformOutputSpec{{Path: filepath.Join(root, "out.png")}}},
 		{Source: source, Format: "png", Constraints: SourceConstraints{Width: 3, Height: 3}, Outputs: []TransformOutputSpec{{Path: filepath.Join(root, "out.png")}}},
 		{Source: source, Format: "png", Outputs: []TransformOutputSpec{{Path: filepath.Join(root, "out.png"), Transform: ImageTransform{Resize: &ResizeSpec{Width: 1, Height: 1, Fit: "cover"}}}}},
+		{Source: source, Format: "png", PNGMode: "unknown", Outputs: []TransformOutputSpec{{Path: filepath.Join(root, "out.png")}}},
+		{Source: source, Format: "webp", Quality: 90, PNGMode: PNGModeIndexed, Outputs: []TransformOutputSpec{{Path: filepath.Join(root, "out.webp")}}},
 	}
 	for _, request := range cases {
 		if _, err := PrepareTransformOutputs(context.Background(), request); err == nil {

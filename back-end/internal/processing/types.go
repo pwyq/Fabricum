@@ -12,6 +12,7 @@ type ExportRequest struct {
 	Square   CropRect `json:"square"`
 	Wide     CropRect `json:"wide"`
 	Format   string   `json:"format"`
+	PNGMode  string   `json:"pngMode,omitempty"`
 	Quality  int      `json:"quality"`
 	Lossless bool     `json:"lossless"`
 }
@@ -89,6 +90,7 @@ type TransformRequest struct {
 	SourceConstraints *SourceConstraints    `json:"sourceConstraints,omitempty"`
 	Outputs           []TransformOutputSpec `json:"outputs"`
 	Format            string                `json:"format"`
+	PNGMode           string                `json:"pngMode,omitempty"`
 	Quality           int                   `json:"quality,omitempty"`
 	Lossless          bool                  `json:"lossless,omitempty"`
 	EncoderDirectory  string                `json:"encoderDirectory,omitempty"`
@@ -159,6 +161,7 @@ type OutputMeasurement struct {
 	Width                 int               `json:"width"`
 	Height                int               `json:"height"`
 	Format                string            `json:"format"`
+	PNGMode               string            `json:"pngMode,omitempty"`
 	Encoder               string            `json:"encoder"`
 	EncoderVersion        string            `json:"encoderVersion,omitempty"`
 	Processor             string            `json:"processor,omitempty"`
@@ -175,6 +178,8 @@ type OutputMeasurement struct {
 	SHA256                string            `json:"sha256"`
 	Crop                  CropRect          `json:"crop"`
 }
+
+const PNGModeIndexed = "indexed"
 
 type ProcessedOutput struct {
 	Measurement OutputMeasurement

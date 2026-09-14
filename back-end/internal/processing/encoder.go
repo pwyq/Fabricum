@@ -18,7 +18,13 @@ func validateEncodingOptions(request ExportRequest) error {
 		if request.Quality != 0 || request.Lossless {
 			return errors.New("PNG does not accept quality or lossless options")
 		}
+		if request.PNGMode != "" && request.PNGMode != PNGModeIndexed {
+			return errors.New("PNG mode must be indexed when set")
+		}
 		return nil
+	}
+	if request.PNGMode != "" {
+		return errors.New("PNG mode is only valid for PNG output")
 	}
 	if request.Quality < 1 || request.Quality > 100 {
 		return errors.New("quality must be between 1 and 100")
@@ -35,6 +41,9 @@ func encodeOutput(ctx context.Context, source image.Image, request ExportRequest
 		return nil, err
 	}
 	compression := png.BestCompression
+	if request.Format == "png" && request.PNGMode == PNGModeIndexed {
+		return encodeIndexedPNG(source, compression)
+	}
 	if request.Format != "png" {
 		compression = png.BestSpeed
 	}

@@ -7,11 +7,11 @@ import (
 	"path/filepath"
 )
 
-func newOutputMeasurement(role, path string, output image.Image, format string, quality int, lossless bool, filter string, crop CropRect, data []byte) OutputMeasurement {
+func newOutputMeasurement(role, path string, output image.Image, format, pngMode string, quality int, lossless bool, filter string, crop CropRect, data []byte) OutputMeasurement {
 	hash := sha256Bytes(data)
 	return OutputMeasurement{
 		Role: role, Path: filepath.ToSlash(path), Width: output.Bounds().Dx(), Height: output.Bounds().Dy(),
-		Format: format, Encoder: EncoderForFormat(format), EncoderVersion: EncoderVersionForFormat(format),
+		Format: format, PNGMode: pngMode, Encoder: EncoderForFormat(format), EncoderVersion: EncoderVersionForFormat(format),
 		Processor: ProcessorName, NativeEncoderVersions: EncoderVersionsForFormat(format), HasAlpha: !imageOpaque(output),
 		Filter: filter, Quality: quality, Lossless: lossless, Bytes: len(data), SHA256: hash, Crop: crop,
 	}

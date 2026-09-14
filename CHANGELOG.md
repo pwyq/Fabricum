@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.2.2 - Indexed PNG output
+
+2026-09-14
+
+### Added
+
+- Added opt-in, deterministic indexed PNG output with adaptive palettes of up to 256 colors.
+- Added compatibility and regression coverage for palette encoding, transparency, quality, and invalid PNG modes.
+
+### Changed
+
+- Documented indexed PNG as a lossy, caller-approved optimization for size-sensitive image deliveries.
+
 ## v0.2.1 - Unspecified texture primaries
 
 2026-09-14

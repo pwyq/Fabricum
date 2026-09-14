@@ -20,7 +20,7 @@ The check creates disposable, deterministic fixtures and removes them after a
 successful run. It exercises:
 
 - browserless preview and export for 512×512 and 768×576 PNG, WebP, and AVIF;
-- contained transparent 256×256 and 512×512 PNG sprites;
+- contained transparent 256×256 and 512×512 indexed PNG sprites;
 - a complete 1024×1024 ETC1S base-color and UASTC-Zstandard normal/ARM set;
 - ordered inspection of PNG, JPEG, GIF, WebP, AVIF, KTX2, glTF, GLB, and BIN;
 - static-prop transforms, centering, mirrored winding repair, material

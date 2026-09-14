@@ -30,7 +30,7 @@ func validateTransformRequest(request TransformRequest) error {
 	if len(request.Outputs) > maxTransformOutputs {
 		return fmt.Errorf("at most %d transform outputs are allowed", maxTransformOutputs)
 	}
-	if err := validateEncodingOptions(ExportRequest{Format: request.Format, Quality: request.Quality, Lossless: request.Lossless}); err != nil {
+	if err := validateEncodingOptions(ExportRequest{Format: request.Format, PNGMode: request.PNGMode, Quality: request.Quality, Lossless: request.Lossless}); err != nil {
 		return err
 	}
 	constraints := request.effectiveConstraints()
