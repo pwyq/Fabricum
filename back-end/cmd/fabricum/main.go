@@ -8,10 +8,22 @@ import (
 	"os"
 
 	"fabricum/back-end"
+	"fabricum/back-end/internal/compatibility"
 )
 
 func main() {
 	args := os.Args[1:]
+	if compatibilityInvocation(args) {
+		if len(args) != 1 {
+			fmt.Fprintln(os.Stderr, "fabricum: compatibility-check does not accept arguments")
+			os.Exit(2)
+		}
+		if err := compatibility.Run(context.Background(), os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, "fabricum:", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if requestPath, ok := transformInvocation(args); ok {
 		if err := fabricum.TransformFile(context.Background(), requestPath, os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "fabricum:", err)
@@ -52,6 +64,10 @@ func main() {
 		fmt.Fprintln(os.Stderr, "fabricum:", err)
 		os.Exit(1)
 	}
+}
+
+func compatibilityInvocation(args []string) bool {
+	return len(args) > 0 && (args[0] == "compatibility-check" || args[0] == "--compatibility-check")
 }
 
 func inspectionInvocation(args []string) ([]string, bool) {
