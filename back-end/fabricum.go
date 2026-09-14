@@ -67,11 +67,12 @@ const (
 )
 
 const (
-	TextureEncodingETC1S     = processing.TextureEncodingETC1S
-	TextureEncodingUASTCZstd = processing.TextureEncodingUASTCZstd
-	TextureTransferLinear    = processing.TextureTransferLinear
-	TextureTransferSRGB      = processing.TextureTransferSRGB
-	TexturePrimariesBT709    = processing.TexturePrimariesBT709
+	TextureEncodingETC1S        = processing.TextureEncodingETC1S
+	TextureEncodingUASTCZstd    = processing.TextureEncodingUASTCZstd
+	TextureTransferLinear       = processing.TextureTransferLinear
+	TextureTransferSRGB         = processing.TextureTransferSRGB
+	TexturePrimariesUnspecified = processing.TexturePrimariesUnspecified
+	TexturePrimariesBT709       = processing.TexturePrimariesBT709
 )
 
 func ParseConfig(args []string, output io.Writer) (Config, error) {

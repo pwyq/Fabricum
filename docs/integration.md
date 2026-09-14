@@ -87,7 +87,7 @@ encoding options.
         "encoding": "uastc-zstd",
         "mipLevels": 11,
         "transferFunction": "linear",
-        "colorPrimaries": "bt709"
+        "colorPrimaries": "unspecified"
       }
     },
     {
@@ -105,7 +105,7 @@ encoding options.
         "encoding": "uastc-zstd",
         "mipLevels": 11,
         "transferFunction": "linear",
-        "colorPrimaries": "bt709"
+        "colorPrimaries": "unspecified"
       }
     }
   ]
