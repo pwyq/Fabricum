@@ -129,9 +129,10 @@ Fabricum does not assign project-specific semantic names.
 Set `compression` to `meshopt` for meshoptimizer compression, or to `none`
 when the target loader requires ordinary unextended geometry. Set
 `textureCompression` to `ktx2` or `webp` only when the target loader supports
-the corresponding glTF extension. The native gltfpack executable is resolved
-from the installed bundle's `codecs` directory before falling back to `PATH`;
-Node and an npm-installed gltfpack are not involved.
+the corresponding glTF extension. Release binaries extract their embedded
+gltfpack into a content-addressed user cache. Source builds use an explicitly
+configured directory, a `codecs` directory beside Fabricum, or `PATH`; Node
+and an npm-installed gltfpack are not involved.
 
 The model receipt is schema version 1. It reports the Fabricum processor,
 gltfpack tool version, request, every main/sidecar output's byte count and

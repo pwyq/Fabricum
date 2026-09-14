@@ -13,14 +13,27 @@ browser GUI for preparing 2D artwork.
 
 ## Install
 
-Requires Go 1.26.6, Node.js 24.15 or newer for repository tooling, CMake for
-the pinned Basis Universal build, and the native `cwebp`, `avifenc`, and
-`basisu` tools. From the source checkout:
+Prebuilt standalone executables support Windows x64 and Linux x64. Each
+executable contains its required native tools, so running a release does not
+require Node.js, Go, CMake, an npm install, or a separate codecs directory.
+
+Source development requires Go 1.26.6, Node.js 24.15 or newer, and CMake.
+Set up the development environment from the source checkout:
 
 > bash install.sh
 
-The executable is written to `bin/fabricum.exe` on Windows or `bin/fabricum`
-on Linux/macOS. Add `bin` to your PATH to use the `fabricum` command anywhere.
+Compile the final standalone executable for the current platform:
+
+> npm run release:binary
+
+The result is written to `bin/fabricum-<version>-windows-x64.exe` on Windows or
+`bin/fabricum-<version>-linux-x64` on Linux. This is the complete release
+artifact. For a quicker development build that uses the locally installed
+native tools, run `npm run build`; its unversioned output is removed by the
+next release build.
+
+macOS is not a supported release platform until its native binary and clean
+compatibility checks are available.
 
 ## Use
 
@@ -39,10 +52,6 @@ CLI mode (Unix):
 Machine-readable asset inspection:
 
 > bin\fabricum.exe inspect image.png model.glb texture.ktx2
-
-Node-free compatibility check:
-
-> bin\fabricum.exe compatibility-check
 
 Noninteractive image transforms:
 

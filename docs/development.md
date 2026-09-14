@@ -27,7 +27,7 @@ From the repository root:
 
 > bin/fabricum compatibility-check
 
-- `install.sh`: install dependencies, configure hooks, and build.
+- `install.sh`: install development dependencies and configure hooks.
 - `check.mjs`: formatting, syntax, vet, tests, compilation, and version checks.
 - `build.mjs`: build the embedded executable.
 - `compatibility-check`: generate disposable fixtures and prove every native
@@ -66,7 +66,11 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
 - `VERSION` is authoritative.
 - `package.json` and `back-end/internal/editor/config.go` must match it.
 - `npm run release:archive` creates a source archive and SHA-256 file in `bin`.
-- Archives do not publish, tag, commit, or contact GitHub.
+- `npm run release:binary` compiles, packages, and clean-checks one standalone
+  executable for the current platform; it requires all four pinned native tools.
+- Local release commands do not publish, tag, commit, or contact GitHub.
+- Published standalone executables support Linux x64 and Windows x64. macOS is not a
+  supported release target until its native dependencies receive the same checks.
 - The Go module name is local; choose a public identity before supporting `go install`.
 - Renovate is inactive until installed.
 - Renovate waits 14 days, groups minor/patch updates, and never automerges.

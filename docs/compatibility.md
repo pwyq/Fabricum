@@ -8,8 +8,13 @@ bin/fabricum compatibility-check > compatibility-receipt.json
 ```
 
 On Windows, run `bin\fabricum.exe compatibility-check` instead. The native
-`cwebp`, `avifenc`, `basisu`, and `gltfpack` tools must be beside the
-executable in `codecs`, or available on `PATH`.
+`cwebp`, `avifenc`, `basisu`, and `gltfpack` tools are extracted from an
+official release executable. A source/developer build resolves them from an
+explicit directory, the `codecs` directory beside the executable, or `PATH`.
+
+The embedded payload is content-addressed and each cached file is verified
+before use. An invalid or unwritable cache returns a precise diagnostic and is
+never replaced by a tool found through the working directory or `PATH`.
 
 The check creates disposable, deterministic fixtures and removes them after a
 successful run. It exercises:
@@ -28,6 +33,6 @@ Inspection facts intentionally contain no content hashes. A nonzero exit means
 a fixture assertion failed or a required native tool is unavailable.
 
 The fixtures contain no project artwork, manifests, runtime groups, delivery
-policy, or project naming conventions. The command uses only the Go
-executable and bundled/native codec tools; it does not start a browser or
-invoke Node or Sharp.
+policy, or project naming conventions. The release check copies only the
+standalone executable into a temporary directory and clears `PATH`; it does
+not start a browser or invoke Node or Sharp.

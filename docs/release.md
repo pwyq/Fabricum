@@ -43,13 +43,44 @@ Monitor CI:
 
 > gh run watch
 
-Create a source archive without publishing:
+Create a source archive for local inspection without publishing it:
 
 > npm run release:archive
 
-The archive contains all Git-tracked files from the working tree. Add a new
-project file to Git and it is included automatically; ignored and untracked
-local files are excluded.
+After building the executable and installing the pinned native tools, create
+and clean-check a standalone binary for the current platform with:
+
+> npm run release:binary
+
+The command writes the platform binary and its SHA-256 file to `bin`.
+It does not publish or contact GitHub.
+
+## Standalone binaries
+
+The release workflow builds and tests one executable for each supported platform:
+
+- `fabricum-<version>-linux-x64`
+- `fabricum-<version>-windows-x64.exe`
+
+Each executable contains compressed copies of `cwebp`, `avifenc`, `basisu`,
+`gltfpack`, required native runtime libraries, the project license, and the
+third-party notice, patent, and version inventory. Decoder-only tools are not
+included. `fabricum third-party-notices` prints the embedded legal inventory.
+The expected standalone binary size is 15–50 MiB.
+
+Before upload, the workflow copies only the executable into a temporary
+directory and runs `compatibility-check` with an empty `PATH`. This proves
+inspection, PNG/WebP/AVIF output, loose KTX2 encoding, and glTF optimization
+without a source checkout, package installation, Node, Sharp, or a sidecar
+codec directory.
+
+At runtime, Fabricum verifies and extracts the embedded tools into a
+content-addressed directory under the current user's cache. The release
+download itself remains one executable per platform.
+
+Only Linux x64 and Windows x64 are declared release platforms. macOS source
+builds are not published until equivalent standalone-binary and compatibility
+checks exist.
 
 ## Gates
 
@@ -57,6 +88,7 @@ local files are excluded.
 - Run formatting, syntax, vet, tests, file-size checks, builds, and Linux races.
 - Test on Ubuntu and Windows.
 - Revalidate the tag and extract matching changelog notes.
-- Create the annotated tag and GitHub Release.
+- Build, clean-check, and upload each standalone executable and its SHA-256 file.
+- Create the annotated tag and GitHub Release with both platform executables.
 - Create no tag when a gate fails.
 - Accept a retry only when an existing tag targets the same commit.

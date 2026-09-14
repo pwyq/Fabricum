@@ -29,17 +29,22 @@ patent terms again before distributing native binaries.
   its in-tree Zstandard implementation. The KTX2 path invokes it with
   `-etc1s` or `-uastc -ktx2_zstandard_level 6`, generated mipmaps, and no
   internal multithreading.
-- The command-line integration uses dynamically discoverable native tools. The
-  native installer places the statically linked gltfpack build beside the
-  other tools in `bin/codecs`; static CGO integration remains deferred.
+- The command-line integration invokes native tools as subprocesses. Release
+  builds append compressed copies to Fabricum; source builds discover tools in
+  an explicit directory, `bin/codecs`, or `PATH`. Static CGO integration is not
+  required for single-file distribution.
 
 ## Distribution
 
 - Source archives include all Git-tracked project files, including the lockfile,
   native version manifest, native notice, and project license.
-- Native executables and their runtime libraries are not currently bundled in
-  the Go binary. A release that bundles them must include the notices from
-  `native/NOTICE.md` and the corresponding upstream source/relinking terms.
+- Release executables contain `cwebp`, `avifenc`, `basisu`, `gltfpack`, any
+  required runtime libraries, `native/NOTICE.md`, `native/PATENTS.md`, and
+  `native/versions.json`. Fabricum extracts only runtime files into a verified,
+  content-addressed user cache. Run `fabricum third-party-notices` to print the
+  embedded license and dependency inventory.
+- Decoder-only `dwebp` and `avifdec` executables are used by development tests
+  but are not embedded in releases.
 - The project Apache-2.0 license does not relicense any codec dependency.
 - gltfpack must be built with meshoptimizer compression (`-c`) as an opt-in
   EXT_meshopt path. Draco is not built, shipped, or emitted by Fabricum.
