@@ -1,5 +1,25 @@
 # Changelog
 
+## v0.2.4 - Source selection and export controls
+
+2026-09-30
+
+### Added
+
+- Added reselectable configured-source and local-image workflows.
+- Added concise success and failure notifications after exports.
+- Exposed opt-in indexed color PNG output in the editor with explicit preview and result labels.
+
+### Changed
+
+- Exported the selected square or wide role independently.
+- Marked AVIF as slow and shortened long source paths while retaining the complete path in a tooltip.
+
+### Fixed
+
+- Restored source controls on fresh loads and allowed both the dropdown and change-source action to switch images reliably.
+- Kept long source paths and native selectors contained within the source bar.
+
 ## v0.2.2 - Indexed PNG output
 
 2026-09-14
