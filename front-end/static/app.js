@@ -93,6 +93,7 @@ const config = await requireSource(
   initialConfig,
   fetchJSON,
   () => window.location.assign("/?selected=1"),
+  () => window.location.assign("/?imported=1"),
 );
 const specs = Object.fromEntries(
   config.outputs.map((output) => [output.role, output]),

@@ -31,3 +31,13 @@ export function imageMediaType(file) {
     ".gif": "image/gif",
   }[extension] ?? "";
 }
+
+export function sourceLabel(path) {
+  const parts = path.split(/[\\/]/).filter(Boolean);
+  if (parts.length < 2) return path;
+  return `${parts.at(-2)}/${parts.at(-1)}`;
+}
+
+export function sameSourcePath(left, right) {
+  return left.replaceAll("\\", "/") === right.replaceAll("\\", "/");
+}

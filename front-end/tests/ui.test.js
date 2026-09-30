@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { sameSourcePath, sourceLabel } from "../static/app-utils.js";
 import { createPreviewChangeHandler, exportRequest } from "../static/ui.js";
 
 function previewCanvas() {
@@ -81,4 +82,18 @@ test("requests only the selected output role", () => {
   assert.equal(request.role, "wide");
   assert.equal(request.format, "webp");
   assert.equal(request.quality, 84);
+});
+
+test("uses concise source labels and matches Windows path separators", () => {
+  assert.equal(
+    sourceLabel("D:\\GitHub\\belludum-bot\\art-source\\units\\bamboo-raft\\original.png"),
+    "bamboo-raft/original.png",
+  );
+  assert.equal(
+    sameSourcePath(
+      "D:\\GitHub\\belludum-bot\\art-source\\units\\bamboo-raft\\original.png",
+      "D:/GitHub/belludum-bot/art-source/units/bamboo-raft/original.png",
+    ),
+    true,
+  );
 });
