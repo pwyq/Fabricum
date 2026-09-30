@@ -6,6 +6,7 @@ import {
   encodingLabel,
   formatBytes,
   imageMediaType,
+  sourceSummaryPath,
 } from "/app-utils.js";
 import {
   createPreviewChangeHandler,
@@ -105,7 +106,8 @@ const specs = Object.fromEntries(
 );
 const sizeComparison = createSizeComparison(elements, config.source.bytes);
 elements.processorVersion.textContent = config.processor;
-elements.sourceSummary.textContent = `${config.source.path} · ${config.source.width}×${config.source.height} · ${formatBytes(config.source.bytes)}`;
+elements.sourceSummary.textContent = `${sourceSummaryPath(config.source.path)} · ${config.source.width}×${config.source.height} · ${formatBytes(config.source.bytes)}`;
+elements.sourceSummary.title = config.source.path;
 elements.sourceSize.textContent = formatBytes(config.source.bytes);
 elements.sourceDimensions.textContent = `${config.source.width}×${config.source.height}`;
 sizeComparison.reset();

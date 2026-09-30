@@ -4,6 +4,7 @@ import {
   encodingLabel,
   sameSourcePath,
   sourceLabel,
+  sourceSummaryPath,
 } from "../static/app-utils.js";
 import { createPreviewChangeHandler, exportRequest } from "../static/ui.js";
 
@@ -111,6 +112,14 @@ test("uses concise source labels and matches Windows path separators", () => {
   assert.equal(
     sourceLabel("D:\\GitHub\\belludum-bot\\art-source\\units\\bamboo-raft\\original.png"),
     "bamboo-raft/original.png",
+  );
+  assert.equal(
+    sourceSummaryPath("D:\\GitHub\\belludum-bot\\art-source\\units\\bamboo-raft\\original.png"),
+    "D:\\GitHub\\...\\original.png",
+  );
+  assert.equal(
+    sourceSummaryPath("/workspace/art-source/units/bamboo-raft/original.png"),
+    "/workspace/.../original.png",
   );
   assert.equal(
     sameSourcePath(

@@ -348,6 +348,10 @@ h3 {
   min-width: 0;
 }
 
+.source-identity > div {
+  min-width: 0;
+}
+
 .source-identity h2 {
   font-size: 16px;
 }
@@ -421,6 +425,7 @@ h3 {
 
 .source-picker {
   gap: 7px;
+  min-width: 0;
 }
 
 .source-upload {
@@ -431,6 +436,8 @@ h3 {
 
 .source-picker select {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

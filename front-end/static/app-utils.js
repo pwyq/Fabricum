@@ -44,6 +44,16 @@ export function sourceLabel(path) {
   return `${parts.at(-2)}/${parts.at(-1)}`;
 }
 
+export function sourceSummaryPath(path) {
+  const parts = path.split(/[\\/]/).filter(Boolean);
+  if (parts.length <= 3) return path;
+  const separator = path.includes("\\") ? "\\" : "/";
+  const isUNC = path.startsWith("\\\\");
+  const prefixLength = /^[A-Za-z]:[\\/]/.test(path) || isUNC ? 2 : 1;
+  const leadingSeparator = isUNC ? "\\\\" : path.startsWith("/") ? "/" : "";
+  return `${leadingSeparator}${parts.slice(0, prefixLength).join(separator)}${separator}...${separator}${parts.at(-1)}`;
+}
+
 export function sameSourcePath(left, right) {
   return left.replaceAll("\\", "/") === right.replaceAll("\\", "/");
 }
