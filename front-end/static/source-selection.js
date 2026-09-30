@@ -82,6 +82,7 @@ export async function requireSource(
         resolveSource(selectedConfig);
       } catch (error) {
         setLiveStatus(elements, error.message);
+      } finally {
         elements.loadSource.disabled = false;
       }
     });

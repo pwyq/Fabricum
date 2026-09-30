@@ -45,6 +45,7 @@ const elements = {
   sourceFile: document.querySelector("#source-file"),
   export: document.querySelector("#export"),
   exportLabel: document.querySelector("#export-label"),
+  notification: document.querySelector("#notification"),
   format: document.querySelector("#format"),
   quality: document.querySelector("#quality"),
   qualityValue: document.querySelector("#quality-value"),
@@ -77,6 +78,7 @@ let previewTimer;
 let previewController;
 let previewSequence = 0;
 let hasEncodedPreview = false;
+let notificationTimer;
 if (new URLSearchParams(window.location.search).has("imported")) {
   setLiveStatus(elements, "Source image imported. Both crop frames were reset for the new dimensions.");
 } else if (new URLSearchParams(window.location.search).has("selected")) {
@@ -197,12 +199,24 @@ elements.export.addEventListener("click", async () => {
         )
         .join("\n\n"),
     );
+    showNotification("Export succeeded.", "success");
   } catch (error) {
     setLiveStatus(elements, error.message);
+    showNotification("Export failed.", "error");
   } finally {
     elements.export.disabled = !hasEncodedPreview;
   }
 });
+
+function showNotification(message, tone) {
+  clearTimeout(notificationTimer);
+  elements.notification.textContent = message;
+  elements.notification.className = `notification notification--${tone}`;
+  elements.notification.hidden = false;
+  notificationTimer = setTimeout(() => {
+    elements.notification.hidden = true;
+  }, 3000);
+}
 
 function handleExportOptionChange() {
   updateExportControls(elements, config.outputs);
