@@ -20,6 +20,12 @@ export function capitalize(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+export function encodingLabel(format, pngMode = "") {
+  return format === "png" && pngMode === "indexed"
+    ? "PNG · indexed"
+    : format.toUpperCase();
+}
+
 export function imageMediaType(file) {
   const type = file?.type?.toLowerCase();
   if (["image/png", "image/jpeg", "image/gif"].includes(type)) return type;
@@ -30,4 +36,24 @@ export function imageMediaType(file) {
     ".jpeg": "image/jpeg",
     ".gif": "image/gif",
   }[extension] ?? "";
+}
+
+export function sourceLabel(path) {
+  const parts = path.split(/[\\/]/).filter(Boolean);
+  if (parts.length < 2) return path;
+  return `${parts.at(-2)}/${parts.at(-1)}`;
+}
+
+export function sourceSummaryPath(path) {
+  const parts = path.split(/[\\/]/).filter(Boolean);
+  if (parts.length <= 3) return path;
+  const separator = path.includes("\\") ? "\\" : "/";
+  const isUNC = path.startsWith("\\\\");
+  const prefixLength = /^[A-Za-z]:[\\/]/.test(path) || isUNC ? 2 : 1;
+  const leadingSeparator = isUNC ? "\\\\" : path.startsWith("/") ? "/" : "";
+  return `${leadingSeparator}${parts.slice(0, prefixLength).join(separator)}${separator}...${separator}${parts.at(-1)}`;
+}
+
+export function sameSourcePath(left, right) {
+  return left.replaceAll("\\", "/") === right.replaceAll("\\", "/");
 }

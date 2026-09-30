@@ -3,8 +3,10 @@ import { createCropEditor } from "/crop.js";
 import { requireSource } from "/source-selection.js";
 import {
   capitalize,
+  encodingLabel,
   formatBytes,
   imageMediaType,
+  sourceSummaryPath,
 } from "/app-utils.js";
 import {
   createPreviewChangeHandler,
@@ -45,7 +47,10 @@ const elements = {
   sourceFile: document.querySelector("#source-file"),
   export: document.querySelector("#export"),
   exportLabel: document.querySelector("#export-label"),
+  notification: document.querySelector("#notification"),
   format: document.querySelector("#format"),
+  pngMode: document.querySelector("#png-mode"),
+  pngModeSetting: document.querySelector("#png-mode-setting"),
   quality: document.querySelector("#quality"),
   qualityValue: document.querySelector("#quality-value"),
   lossless: document.querySelector("#lossless"),
@@ -77,6 +82,7 @@ let previewTimer;
 let previewController;
 let previewSequence = 0;
 let hasEncodedPreview = false;
+let notificationTimer;
 if (new URLSearchParams(window.location.search).has("imported")) {
   setLiveStatus(elements, "Source image imported. Both crop frames were reset for the new dimensions.");
 } else if (new URLSearchParams(window.location.search).has("selected")) {
@@ -93,13 +99,15 @@ const config = await requireSource(
   initialConfig,
   fetchJSON,
   () => window.location.assign("/?selected=1"),
+  () => window.location.assign("/?imported=1"),
 );
 const specs = Object.fromEntries(
   config.outputs.map((output) => [output.role, output]),
 );
 const sizeComparison = createSizeComparison(elements, config.source.bytes);
 elements.processorVersion.textContent = config.processor;
-elements.sourceSummary.textContent = `${config.source.path} · ${config.source.width}×${config.source.height} · ${formatBytes(config.source.bytes)}`;
+elements.sourceSummary.textContent = `${sourceSummaryPath(config.source.path)} · ${config.source.width}×${config.source.height} · ${formatBytes(config.source.bytes)}`;
+elements.sourceSummary.title = config.source.path;
 elements.sourceSize.textContent = formatBytes(config.source.bytes);
 elements.sourceDimensions.textContent = `${config.source.width}×${config.source.height}`;
 sizeComparison.reset();
@@ -137,6 +145,7 @@ elements.cropRole.addEventListener("change", () => {
 
 elements.import.addEventListener("click", () => elements.sourceFile.click());
 elements.format.addEventListener("change", handleExportOptionChange);
+elements.pngMode.addEventListener("change", handleExportOptionChange);
 elements.quality.addEventListener("input", handleExportOptionChange);
 elements.lossless.addEventListener("change", handleExportOptionChange);
 elements.sourceFile.addEventListener("change", async () => {
@@ -192,16 +201,28 @@ elements.export.addEventListener("click", async () => {
       response.outputs
         .map(
           (output) =>
-            `${capitalize(output.role)}: ${output.width}×${output.height} ${output.format.toUpperCase()}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
+            `${capitalize(output.role)}: ${output.width}×${output.height} ${encodingLabel(output.format, output.pngMode)}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
         )
         .join("\n\n"),
     );
+    showNotification("Export succeeded.", "success");
   } catch (error) {
     setLiveStatus(elements, error.message);
+    showNotification("Export failed.", "error");
   } finally {
     elements.export.disabled = !hasEncodedPreview;
   }
 });
+
+function showNotification(message, tone) {
+  clearTimeout(notificationTimer);
+  elements.notification.textContent = message;
+  elements.notification.className = `notification notification--${tone}`;
+  elements.notification.hidden = false;
+  notificationTimer = setTimeout(() => {
+    elements.notification.hidden = true;
+  }, 3000);
+}
 
 function handleExportOptionChange() {
   updateExportControls(elements, config.outputs);
@@ -218,8 +239,9 @@ function scheduleEncodedPreview() {
   sizeComparison.reset("Rendering encoded sizes…");
   setLiveStatus(elements, "Rendering preview…");
   const output = specs[elements.cropRole.value];
+  const pngMode = elements.format.value === "png" && elements.pngMode.checked ? "indexed" : "";
   document.querySelector(`#${output.role}-size`).textContent =
-    `${output.width}×${output.height} ${elements.format.value.toUpperCase()} · estimating…`;
+    `${output.width}×${output.height} ${encodingLabel(elements.format.value, pngMode)} · estimating…`;
   const sequence = ++previewSequence;
   previewTimer = setTimeout(() => loadEncodedPreview(sequence), 450);
 }
@@ -248,11 +270,11 @@ async function loadEncodedPreview(sequence) {
       } catch {
         setLiveStatus(
           elements,
-          `${output.format.toUpperCase()} preview cannot be decoded by this browser. The exact encoded size is still available.`,
+          `${encodingLabel(output.format, output.pngMode)} preview cannot be decoded by this browser. The exact encoded size is still available.`,
         );
       }
       document.querySelector(`#${output.role}-size`).textContent =
-        `${output.width}×${output.height} ${output.format.toUpperCase()} · ${formatBytes(output.bytes)}`;
+        `${output.width}×${output.height} ${encodingLabel(output.format, output.pngMode)} · ${formatBytes(output.bytes)}`;
     }
     sizeComparison.update(response.outputs);
     hasEncodedPreview = true;

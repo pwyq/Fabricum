@@ -96,6 +96,27 @@ output {
   border: 0;
 }
 
+.notification {
+  position: fixed;
+  z-index: 30;
+  right: 20px;
+  bottom: 20px;
+  padding: 10px 14px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.notification--success {
+  background: var(--success);
+}
+
+.notification--error {
+  background: var(--danger);
+}
+
 .skip-link {
   position: fixed;
   z-index: 20;
@@ -327,6 +348,10 @@ h3 {
   min-width: 0;
 }
 
+.source-identity > div {
+  min-width: 0;
+}
+
 .source-identity h2 {
   font-size: 16px;
 }
@@ -400,6 +425,7 @@ h3 {
 
 .source-picker {
   gap: 7px;
+  min-width: 0;
 }
 
 .source-upload {
@@ -410,6 +436,8 @@ h3 {
 
 .source-picker select {
   flex: 1;
+  min-width: 0;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -750,6 +778,14 @@ input[type="range"] {
 
 .toggle-copy {
   min-width: 0;
+}
+
+.setting-hint {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
 }
 
 .toggle {

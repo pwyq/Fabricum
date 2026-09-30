@@ -128,8 +128,16 @@
                   <select id="format">
                     <option value="png">PNG</option>
                     <option value="webp" selected>WebP</option>
-                    <option value="avif">AVIF</option>
+                    <option value="avif">AVIF (slow)</option>
                   </select>
+                </label>
+
+                <label id="png-mode-setting" class="toggle-card" for="png-mode" title="Limit PNG output to an adaptive palette of at most 256 colors." hidden>
+                  <span class="toggle-copy">
+                    <span class="setting-label">Indexed color</span>
+                    <small class="setting-hint">Usually smaller, but may change colors.</small>
+                  </span>
+                  <span class="toggle"><input id="png-mode" type="checkbox" /><span class="toggle-track"></span></span>
                 </label>
 
                 <label class="setting-card" for="quality" title="Higher quality keeps more detail and usually creates a larger file.">
@@ -215,6 +223,7 @@
           </aside>
         </section>
 
+        <div id="notification" class="notification" role="status" aria-live="polite" aria-atomic="true" hidden></div>
         <div id="live-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
       </main>
 
