@@ -20,6 +20,12 @@ export function capitalize(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
+export function encodingLabel(format, pngMode = "") {
+  return format === "png" && pngMode === "indexed"
+    ? "PNG · indexed"
+    : format.toUpperCase();
+}
+
 export function imageMediaType(file) {
   const type = file?.type?.toLowerCase();
   if (["image/png", "image/jpeg", "image/gif"].includes(type)) return type;

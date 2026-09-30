@@ -773,6 +773,14 @@ input[type="range"] {
   min-width: 0;
 }
 
+.setting-hint {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .toggle {
   position: relative;
   flex: 0 0 38px;

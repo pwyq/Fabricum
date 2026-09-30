@@ -3,6 +3,7 @@ import { createCropEditor } from "/crop.js";
 import { requireSource } from "/source-selection.js";
 import {
   capitalize,
+  encodingLabel,
   formatBytes,
   imageMediaType,
 } from "/app-utils.js";
@@ -47,6 +48,8 @@ const elements = {
   exportLabel: document.querySelector("#export-label"),
   notification: document.querySelector("#notification"),
   format: document.querySelector("#format"),
+  pngMode: document.querySelector("#png-mode"),
+  pngModeSetting: document.querySelector("#png-mode-setting"),
   quality: document.querySelector("#quality"),
   qualityValue: document.querySelector("#quality-value"),
   lossless: document.querySelector("#lossless"),
@@ -140,6 +143,7 @@ elements.cropRole.addEventListener("change", () => {
 
 elements.import.addEventListener("click", () => elements.sourceFile.click());
 elements.format.addEventListener("change", handleExportOptionChange);
+elements.pngMode.addEventListener("change", handleExportOptionChange);
 elements.quality.addEventListener("input", handleExportOptionChange);
 elements.lossless.addEventListener("change", handleExportOptionChange);
 elements.sourceFile.addEventListener("change", async () => {
@@ -195,7 +199,7 @@ elements.export.addEventListener("click", async () => {
       response.outputs
         .map(
           (output) =>
-            `${capitalize(output.role)}: ${output.width}×${output.height} ${output.format.toUpperCase()}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
+            `${capitalize(output.role)}: ${output.width}×${output.height} ${encodingLabel(output.format, output.pngMode)}, ${formatBytes(output.bytes)}\n${output.path}\nSHA-256 ${output.sha256}`,
         )
         .join("\n\n"),
     );
@@ -233,8 +237,9 @@ function scheduleEncodedPreview() {
   sizeComparison.reset("Rendering encoded sizes…");
   setLiveStatus(elements, "Rendering preview…");
   const output = specs[elements.cropRole.value];
+  const pngMode = elements.format.value === "png" && elements.pngMode.checked ? "indexed" : "";
   document.querySelector(`#${output.role}-size`).textContent =
-    `${output.width}×${output.height} ${elements.format.value.toUpperCase()} · estimating…`;
+    `${output.width}×${output.height} ${encodingLabel(elements.format.value, pngMode)} · estimating…`;
   const sequence = ++previewSequence;
   previewTimer = setTimeout(() => loadEncodedPreview(sequence), 450);
 }
@@ -263,11 +268,11 @@ async function loadEncodedPreview(sequence) {
       } catch {
         setLiveStatus(
           elements,
-          `${output.format.toUpperCase()} preview cannot be decoded by this browser. The exact encoded size is still available.`,
+          `${encodingLabel(output.format, output.pngMode)} preview cannot be decoded by this browser. The exact encoded size is still available.`,
         );
       }
       document.querySelector(`#${output.role}-size`).textContent =
-        `${output.width}×${output.height} ${output.format.toUpperCase()} · ${formatBytes(output.bytes)}`;
+        `${output.width}×${output.height} ${encodingLabel(output.format, output.pngMode)} · ${formatBytes(output.bytes)}`;
     }
     sizeComparison.update(response.outputs);
     hasEncodedPreview = true;

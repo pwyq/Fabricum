@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { sameSourcePath, sourceLabel } from "../static/app-utils.js";
+import {
+  encodingLabel,
+  sameSourcePath,
+  sourceLabel,
+} from "../static/app-utils.js";
 import { createPreviewChangeHandler, exportRequest } from "../static/ui.js";
 
 function previewCanvas() {
@@ -82,6 +86,25 @@ test("requests only the selected output role", () => {
   assert.equal(request.role, "wide");
   assert.equal(request.format, "webp");
   assert.equal(request.quality, 84);
+});
+
+test("requests and labels indexed PNG explicitly", () => {
+  const request = exportRequest(
+    {
+      cropRole: { value: "square" },
+      format: { value: "png" },
+      pngMode: { checked: true },
+      quality: { value: "90" },
+      lossless: { checked: false },
+    },
+    {
+      square: { x: 1, y: 1, width: 6, height: 6 },
+      wide: { x: 0, y: 1, width: 8, height: 6 },
+    },
+  );
+
+  assert.equal(request.pngMode, "indexed");
+  assert.equal(encodingLabel(request.format, request.pngMode), "PNG · indexed");
 });
 
 test("uses concise source labels and matches Windows path separators", () => {

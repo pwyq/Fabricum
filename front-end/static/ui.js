@@ -1,4 +1,9 @@
-import { capitalize, formatBytes, replaceExtension } from "./app-utils.js";
+import {
+  capitalize,
+  encodingLabel,
+  formatBytes,
+  replaceExtension,
+} from "./app-utils.js";
 
 export function createSizeComparison(elements, sourceBytes) {
   return {
@@ -82,13 +87,16 @@ export function setWorkflowStep(elements, activeStep) {
 export function updateExportControls(elements, outputs) {
   const format = elements.format.value;
   const activeRole = elements.cropRole.value;
+  const pngMode = format === "png" && elements.pngMode.checked ? "indexed" : "";
   const hasQuality = format !== "png" && !elements.lossless.checked;
+  elements.pngModeSetting.hidden = format !== "png";
+  elements.pngMode.disabled = format !== "png";
   elements.quality.disabled = !hasQuality;
   elements.lossless.disabled = format === "png";
   elements.qualityValue.textContent = hasQuality ? elements.quality.value : "—";
   for (const output of outputs) {
     document.querySelector(`#${output.role}-size`).textContent =
-      `${output.width}×${output.height} ${format.toUpperCase()} · estimating…`;
+      `${output.width}×${output.height} ${encodingLabel(format, pngMode)} · estimating…`;
     document.querySelector(`#${output.role}-path`).textContent = replaceExtension(
       output.path,
       format,
@@ -107,10 +115,12 @@ export function showImmediatePreviews(elements, outputs, activeRole) {
 
 export function exportRequest(elements, crops) {
   const format = elements.format.value;
+  const pngMode = format === "png" && elements.pngMode.checked ? "indexed" : "";
   return {
     role: elements.cropRole.value,
     ...crops,
     format,
+    ...(pngMode ? { pngMode } : {}),
     quality: format === "png" ? 0 : Number(elements.quality.value),
     lossless: format === "png" ? false : elements.lossless.checked,
   };
