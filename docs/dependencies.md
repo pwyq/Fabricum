@@ -4,7 +4,7 @@
 
 | Dependency | Purpose | License notes |
 | --- | --- | --- |
-| `oxipng` 10.2.1 | Offline lossless PNG file optimization. | MIT; dependency and static runtime license texts embedded from `native/OXIPNG-LICENSES.txt`. |
+| `oxipng` 10.2.1 | Offline lossless PNG file optimization. | MIT; dependency and static runtime notices consolidated in `native/NOTICE.md` and embedded in releases. |
 | Rust 1.88.0 and MinGW GCC | Windows Oxipng source build with static runtime; build tools are not distributed. | Rust MIT/Apache-2.0, MinGW CRT ZPL/BSD, GCC runtime exception; runtime notices are embedded. |
 | Go 1.26.6 | Server, image processing, PNG, hashing, files, and tests. No third-party Go modules. | BSD-3-Clause. Preserve the Go license when redistributing binaries. |
 | `cwebp` from libwebp 1.6.0 | WebP preview and export encoding. | BSD-3-Clause and libsharpyuv notice. |

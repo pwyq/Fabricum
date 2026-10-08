@@ -44,6 +44,10 @@ the pinned compiler and GNU target with:
 rustup toolchain install 1.88.0-x86_64-pc-windows-msvc --profile minimal --target x86_64-pc-windows-gnu
 ```
 
+For MSYS2 UCRT64, install `mingw-w64-ucrt-x86_64-gcc` and add the installation's
+`ucrt64/bin` directory to `PATH`. Both Windows CI workflows install this package
+explicitly and use the MSYS2 setup action's reported installation directory.
+
 The installer builds the GNU target with a static CRT; the upstream MSVC binary
 is not used because it requires an additional Visual C runtime DLL. Windows
 release tests verify that Oxipng imports only system libraries.

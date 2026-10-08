@@ -40,11 +40,10 @@ runtime. Source builds may install the pinned tool with `native:install`.
 Only Windows x64 and Linux x64 are supported release platforms.
 
 Oxipng is MIT licensed; its Rust dependencies include MIT/Apache-2.0 packages,
-libdeflate (MIT), and Rust Zopfli (Apache-2.0). The complete license texts for
-the upstream locked registry dependencies, including optional/test packages,
-Rust/musl runtime terms, and Windows MinGW CRT/GCC runtime terms are recorded in
-`native/OXIPNG-LICENSES.txt` and embedded in releases. MinGW CRT includes ZPL/BSD
-terms; GCC runtime redistribution uses its runtime exception.
+libdeflate (MIT), and Rust Zopfli (Apache-2.0). Dependency and static runtime
+notices are consolidated in `native/NOTICE.md` and embedded in releases.
+MinGW CRT includes ZPL/BSD terms; GCC runtime redistribution uses its runtime
+exception.
 
 ## Preservation contract
 
