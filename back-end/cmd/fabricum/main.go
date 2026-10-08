@@ -14,6 +14,13 @@ import (
 
 func main() {
 	args := os.Args[1:]
+	if len(args) > 0 && args[0] == "optimize-png" {
+		if err := fabricum.OptimizePNGArgs(context.Background(), args[1:], os.Stdout); err != nil && !errors.Is(err, flag.ErrHelp) {
+			fmt.Fprintln(os.Stderr, "fabricum:", err)
+			os.Exit(1)
+		}
+		return
+	}
 	if noticesInvocation(args) {
 		if len(args) != 1 {
 			fmt.Fprintln(os.Stderr, "fabricum: third-party-notices does not accept arguments")

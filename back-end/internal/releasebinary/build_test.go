@@ -34,12 +34,16 @@ func testBuild(t *testing.T, platform, suffix, library string) {
 	if err := os.WriteFile(filepath.Join(native, library), []byte("library"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	for source := range metadataFiles {
+	for _, source := range []string{"LICENSE", "native/NOTICE.md", "native/README.md", "native/versions.json"} {
+		data, err := os.ReadFile(filepath.Join("..", "..", "..", filepath.FromSlash(source)))
+		if err != nil {
+			t.Fatal(err)
+		}
 		path := filepath.Join(root, filepath.FromSlash(source))
 		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 			t.Fatal(err)
 		}
-		if err := os.WriteFile(path, []byte(source), 0o600); err != nil {
+		if err := os.WriteFile(path, data, 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -70,6 +74,11 @@ func testBuild(t *testing.T, platform, suffix, library string) {
 	}
 	if !names["payload/"+library] {
 		t.Fatal("runtime library was not embedded")
+	}
+	for _, notice := range []string{"licenses/LICENSE", "licenses/THIRD-PARTY-NOTICES.md", "licenses/NATIVE-TOOLS.md", "licenses/versions.json"} {
+		if !names[notice] {
+			t.Errorf("missing embedded notice %s", notice)
+		}
 	}
 	if entries, err := os.ReadDir(filepath.Dir(output)); err != nil || len(entries) != 1 {
 		t.Fatalf("release output is not one file: %v, %v", entries, err)

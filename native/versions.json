@@ -1,8 +1,22 @@
 {
+  "oxipng": {
+    "version": "10.2.1",
+    "licenseName": "MIT",
+    "source": "https://github.com/oxipng/oxipng/archive/refs/tags/v10.2.1.tar.gz",
+    "sourceSha256": "460ccfcdcc9c3877b9f7fae1dfd4f2a3f93d3b2a2af3e3b62ca32b163f923cca",
+    "linux": {
+      "artifact": "https://github.com/oxipng/oxipng/releases/download/v10.2.1/oxipng-10.2.1-x86_64-unknown-linux-musl.tar.gz",
+      "sha256": "1813750ef592c5350ca79c88f98b2c0876d05c826dc7156245256d4255c1ad17"
+    },
+    "windows": {
+      "toolchain": "1.88.0-x86_64-pc-windows-msvc",
+      "target": "x86_64-pc-windows-gnu",
+      "crtStatic": true
+    }
+  },
   "webp": {
     "version": "1.6.0",
     "licenseName": "BSD-3-Clause",
-    "patentInformation": "native/PATENTS.md#libwebp-160",
     "source": "https://github.com/webmproject/libwebp/archive/refs/tags/v1.6.0.tar.gz",
     "sourceSha256": "93a852c2b3efafee3723efd4636de855b46f9fe1efddd607e1f42f60fc8f2136",
     "linux": {
@@ -17,7 +31,6 @@
   "avif": {
     "version": "1.4.2",
     "licenseName": "BSD-2-Clause",
-    "patentInformation": "native/PATENTS.md#libavif-142",
     "source": "https://github.com/AOMediaCodec/libavif/archive/refs/tags/v1.4.2.tar.gz",
     "codec": {
       "name": "aom",
@@ -46,7 +59,6 @@
   "basisu": {
     "version": "2.0.3",
     "licenseName": "Apache-2.0",
-    "patentInformation": "native/PATENTS.md#basis-universal-203",
     "revision": "21fb6e2",
     "source": "https://github.com/BinomialLLC/basis_universal/archive/refs/tags/v2_0_3.tar.gz",
     "sha256": "eb9ac9ec933524b3c97720368b5cb423fa8767bfc409029d4864063e0d078bec",
@@ -61,7 +73,6 @@
   "meshoptimizer": {
     "version": "1.2",
     "licenseName": "MIT",
-    "patentInformation": "native/PATENTS.md#meshoptimizer-12",
     "source": "https://github.com/zeux/meshoptimizer/archive/refs/tags/v1.2.tar.gz",
     "sha256": "e40f71b809cdf3361b9a4def85fd44534e8733ce29d4b943c145b76859e4c2b4",
     "build": {

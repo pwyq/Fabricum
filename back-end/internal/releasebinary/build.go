@@ -11,12 +11,11 @@ import (
 	"time"
 )
 
-var requiredTools = []string{"avifenc", "basisu", "cwebp", "gltfpack"}
+var requiredTools = []string{"avifenc", "basisu", "cwebp", "gltfpack", "oxipng"}
 
 var metadataFiles = map[string]string{
 	"LICENSE":              "licenses/LICENSE",
 	"native/NOTICE.md":     "licenses/THIRD-PARTY-NOTICES.md",
-	"native/PATENTS.md":    "licenses/PATENTS.md",
 	"native/README.md":     "licenses/NATIVE-TOOLS.md",
 	"native/versions.json": "licenses/versions.json",
 }

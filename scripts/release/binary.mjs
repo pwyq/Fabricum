@@ -40,6 +40,10 @@ function validateReceipt(data) {
   for (const format of ['png', 'webp', 'avif']) if (!imageFormats.has(format)) throw new Error(`compatibility receipt omitted ${format} image processing`)
   if (!Array.isArray(receipt.materialSet.outputs) || receipt.materialSet.outputs.length < 3) throw new Error('compatibility receipt omitted loose KTX2 processing')
   if (receipt.models.length === 0) throw new Error('compatibility receipt omitted glTF optimization')
+  const optimizedPNG = receipt.pngOptimization?.files?.[0]
+  if (!optimizedPNG?.changed || optimizedPNG.savingsBytes <= 0 || optimizedPNG.optimizer !== 'oxipng' || !optimizedPNG.optimizerVersion) {
+    throw new Error('compatibility receipt omitted lossless PNG size reduction')
+  }
   const inspectedFormats = new Set((receipt.inspection.assets || []).map(asset => asset.format))
   for (const format of ['png', 'webp', 'avif', 'ktx2', 'gltf']) if (!inspectedFormats.has(format)) throw new Error(`compatibility receipt omitted ${format} inspection`)
 }
@@ -65,9 +69,9 @@ function checkStandaloneBinary(binary, executableName) {
     if (result.error) throw new Error(`standalone binary could not start: ${result.error.message}`)
     if (result.status !== 0) throw new Error(`standalone compatibility check failed: ${(result.stderr || '').trim()}`)
     validateReceipt(result.stdout)
-    const notices = spawnSync(isolated, ['third-party-notices'], { cwd: directory, env: environment, encoding: 'utf8', windowsHide: true })
+    const notices = spawnSync(isolated, ['third-party-notices'], { cwd: directory, env: environment, encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 })
     if (notices.error || notices.status !== 0 || !notices.stdout.includes('THIRD-PARTY-NOTICES.md')) {
-      throw new Error(`standalone binary did not expose its embedded notices: ${(notices.stderr || '').trim()}`)
+      throw new Error(`standalone binary did not expose its embedded notices: ${notices.error?.message || (notices.stderr || '').trim()}`)
     }
   } finally {
     rmSync(directory, { recursive: true, force: true })

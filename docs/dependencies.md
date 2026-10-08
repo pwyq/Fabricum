@@ -4,6 +4,8 @@
 
 | Dependency | Purpose | License notes |
 | --- | --- | --- |
+| `oxipng` 10.2.1 | Offline lossless PNG file optimization. | MIT; dependency and static runtime notices consolidated in `native/NOTICE.md` and embedded in releases. |
+| Rust 1.88.0 and MinGW GCC | Windows Oxipng source build with static runtime; build tools are not distributed. | Rust MIT/Apache-2.0, MinGW CRT ZPL/BSD, GCC runtime exception; runtime notices are embedded. |
 | Go 1.26.6 | Server, image processing, PNG, hashing, files, and tests. No third-party Go modules. | BSD-3-Clause. Preserve the Go license when redistributing binaries. |
 | `cwebp` from libwebp 1.6.0 | WebP preview and export encoding. | BSD-3-Clause and libsharpyuv notice. |
 | `avifenc` from libavif 1.4.2 | AVIF preview and export container encoding. | BSD license and upstream notices. |
@@ -14,7 +16,7 @@
 
 The native versions, URLs, Windows artifact digest, selected AV1 codec, and
 Linux build flags are pinned in [`../native/versions.json`](../native/versions.json).
-Required attributions and upstream notice links are in
+Required attributions, upstream notices, and patent-information links are in
 [`../native/NOTICE.md`](../native/NOTICE.md). Review the upstream license and
 patent terms again before distributing native binaries.
 
@@ -38,8 +40,8 @@ patent terms again before distributing native binaries.
 
 - Source archives include all Git-tracked project files, including the lockfile,
   native version manifest, native notice, and project license.
-- Release executables contain `cwebp`, `avifenc`, `basisu`, `gltfpack`, any
-  required runtime libraries, `native/NOTICE.md`, `native/PATENTS.md`, and
+- Release executables contain `cwebp`, `avifenc`, `basisu`, `gltfpack`, `oxipng`, any
+  required runtime libraries, `native/NOTICE.md`, and
   `native/versions.json`. Fabricum extracts only runtime files into a verified,
   content-addressed user cache. Run `fabricum third-party-notices` to print the
   embedded license and dependency inventory.

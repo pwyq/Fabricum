@@ -7,6 +7,7 @@ browser GUI for preparing 2D artwork.
 
 - Crop source image visually into square and 4:3 artwork.
 - Run deterministic noninteractive 2D transforms, including channel packing.
+- Optimize existing PNG files losslessly and offline, preserving color information.
 - Build loose ETC1S and UASTC-Zstandard KTX2 texture sets from ordinary images.
 - Export PNG, WebP, or AVIF, with quality and lossless options, reducing file sizes up to 95%
 - Preview encoded images and exact file sizes before exporting.
@@ -18,6 +19,8 @@ executable contains its required native tools, so running a release does not
 require Node.js, Go, CMake, an npm install, or a separate codecs directory.
 
 Source development requires Go 1.26.6, Node.js 24.15 or newer, and CMake.
+Windows native PNG builds also require Rust/rustup and MinGW GCC; see
+[native tools](native/README.md).
 Set up the development environment from the source checkout:
 
 > bash install.sh
@@ -56,6 +59,12 @@ Machine-readable asset inspection:
 Noninteractive image transforms:
 
 > bin\fabricum.exe transform transform.json
+
+Lossless optimization of existing PNG files:
+
+> bin\fabricum.exe optimize-png image.png another.png
+
+See [PNG optimization](docs/png-optimization.md) for metadata options and JSON results.
 
 Loose KTX2 texture sets:
 

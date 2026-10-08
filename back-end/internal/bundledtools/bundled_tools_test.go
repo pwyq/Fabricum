@@ -48,9 +48,15 @@ func TestExecutableWithoutPayloadIsNotBundled(t *testing.T) {
 	}
 }
 
-func TestReadsNoticesWithoutExtractingThem(t *testing.T) {
+func TestReadsConsolidatedNoticesWithoutExtractingThem(t *testing.T) {
 	files := map[string]string{"payload/cwebp": "encoder"}
-	for _, name := range noticeFiles {
+	expectedNotices := []string{
+		"licenses/LICENSE",
+		"licenses/THIRD-PARTY-NOTICES.md",
+		"licenses/NATIVE-TOOLS.md",
+		"licenses/versions.json",
+	}
+	for _, name := range expectedNotices {
 		files[name] = "contents of " + name
 	}
 	executable := appendedArchive(t, files)
@@ -58,10 +64,21 @@ func TestReadsNoticesWithoutExtractingThem(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range noticeFiles {
-		if !strings.Contains(notices, name) {
+	for _, name := range expectedNotices {
+		if !strings.Contains(notices, "contents of "+name) {
 			t.Errorf("notice output omitted %s", name)
 		}
+	}
+}
+
+func TestRejectsMissingConsolidatedNotice(t *testing.T) {
+	executable := appendedArchive(t, map[string]string{
+		"licenses/LICENSE":         "license",
+		"licenses/NATIVE-TOOLS.md": "tools",
+		"licenses/versions.json":   "versions",
+	})
+	if _, err := noticesFrom(executable); err == nil || !strings.Contains(err.Error(), "licenses/THIRD-PARTY-NOTICES.md") {
+		t.Fatalf("expected missing consolidated notice error, got %v", err)
 	}
 }
 

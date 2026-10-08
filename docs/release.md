@@ -63,14 +63,14 @@ The release workflow builds and tests one executable for each supported platform
 - `fabricum-<version>-windows-x64.exe`
 
 Each executable contains compressed copies of `cwebp`, `avifenc`, `basisu`,
-`gltfpack`, required native runtime libraries, the project license, and the
+`gltfpack`, `oxipng`, required native runtime libraries, the project license, and the
 third-party notice, patent, and version inventory. Decoder-only tools are not
 included. `fabricum third-party-notices` prints the embedded legal inventory.
 The expected standalone binary size is 15–50 MiB.
 
 Before upload, the workflow copies only the executable into a temporary
 directory and runs `compatibility-check` with an empty `PATH`. This proves
-inspection, PNG/WebP/AVIF output, loose KTX2 encoding, and glTF optimization
+inspection, PNG/WebP/AVIF output, lossless PNG file optimization, loose KTX2 encoding, and glTF optimization
 without a source checkout, package installation, Node, Sharp, or a sidecar
 codec directory.
 

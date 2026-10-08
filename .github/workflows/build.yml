@@ -39,6 +39,24 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+      - name: Install Windows UCRT64 GCC
+        if: runner.os == 'Windows'
+        id: msys2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: mingw-w64-ucrt-x86_64-gcc
+      - name: Setup static Windows PNG build tools
+        if: runner.os == 'Windows'
+        shell: pwsh
+        env:
+          MSYS2_LOCATION: ${{ steps.msys2.outputs.msys2-location }}
+        run: |
+          rustup toolchain install 1.88.0-x86_64-pc-windows-msvc --profile minimal --target x86_64-pc-windows-gnu
+          $gccDirectory = Join-Path $env:MSYS2_LOCATION 'ucrt64\bin'
+          if (!(Test-Path -LiteralPath "$gccDirectory\gcc.exe")) { throw 'MinGW UCRT64 GCC is required' }
+          $gccDirectory | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Install pinned native codec tools
         run: node scripts/install-native-codecs.mjs
       - name: Install repository dependencies

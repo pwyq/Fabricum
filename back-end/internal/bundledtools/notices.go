@@ -12,7 +12,6 @@ import (
 var noticeFiles = []string{
 	"licenses/LICENSE",
 	"licenses/THIRD-PARTY-NOTICES.md",
-	"licenses/PATENTS.md",
 	"licenses/NATIVE-TOOLS.md",
 	"licenses/versions.json",
 }

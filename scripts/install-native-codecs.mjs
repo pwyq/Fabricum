@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
+import { installPNGOptimizer } from './native/png-optimizer.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const versions = JSON.parse(await readFile(join(root, 'native', 'versions.json'), 'utf8'))
@@ -13,8 +14,8 @@ const outputDirectory = process.env.FABRICUM_NATIVE_OUTPUT_DIR
   ? join(process.env.RUNNER_TEMP, 'fabricum-codecs')
   : join(root, 'bin', 'codecs')
 
-function run(command, args, cwd = root) {
-  const result = spawnSync(command, args, { cwd, stdio: 'inherit', windowsHide: true })
+function run(command, args, cwd = root, env = process.env) {
+  const result = spawnSync(command, args, { cwd, env, stdio: 'inherit', windowsHide: true })
   if (result.error) throw result.error
   if (result.status !== 0) throw new Error(`${command} failed with status ${result.status}`)
 }
@@ -208,6 +209,7 @@ async function main() {
   else await installLinux(workspace)
   await installBasis(workspace)
   await installGltfpack(workspace)
+  await installPNGOptimizer({ pinned: versions.oxipng, workspace, download, verify, extract, run, copyExecutables })
   if (process.env.GITHUB_PATH) await writeFile(process.env.GITHUB_PATH, `${outputDirectory}\n`, { flag: 'a' })
   console.log(`Native codec tools installed in ${outputDirectory}`)
 }
