@@ -41,6 +41,8 @@ From the repository root:
   native installer builds it from source with CMake.
 - Static model behavior tests use a gltfpack-compatible native executable; the
   native installer builds the pinned full gltfpack tool with CMake.
+- PNG file optimization tests use pinned Oxipng. Windows builds require
+  Rust 1.88.0 with the GNU target and MinGW GCC; CI checks system-only DLL imports.
 
 ## Git rules
 
@@ -67,7 +69,7 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`,
 - `package.json` and `back-end/internal/editor/config.go` must match it.
 - `npm run release:archive` creates a source archive and SHA-256 file in `bin`.
 - `npm run release:binary` compiles, packages, and clean-checks one standalone
-  executable for the current platform; it requires all four pinned native tools.
+  executable for the current platform; it requires all five pinned native tools.
 - Local release commands do not publish, tag, commit, or contact GitHub.
 - Published standalone executables support Linux x64 and Windows x64. macOS is not a
   supported release target until its native dependencies receive the same checks.

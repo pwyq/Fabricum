@@ -39,6 +39,14 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+      - name: Setup static Windows PNG build tools
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          rustup toolchain install 1.88.0-x86_64-pc-windows-msvc --profile minimal --target x86_64-pc-windows-gnu
+          $gccDirectory = 'C:\msys64\ucrt64\bin'
+          if (!(Test-Path "$gccDirectory\gcc.exe")) { throw 'MinGW UCRT64 GCC is required' }
+          $gccDirectory | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Install pinned native codec tools
         run: node scripts/install-native-codecs.mjs
       - name: Install repository dependencies

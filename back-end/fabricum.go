@@ -50,6 +50,12 @@ type ModelOptimizationResult = processing.ModelOptimizationResult
 type ModelReceipt = cli.ModelReceipt
 type AssetFacts = processing.AssetFacts
 type InspectionReport = processing.InspectionReport
+type PNGOptimizationRequest = processing.PNGOptimizationRequest
+type PNGOptimizationResult = processing.PNGOptimizationResult
+type PNGOptimizationReceipt = cli.PNGOptimizationReceipt
+
+const OxipngVersion = processing.OxipngVersion
+const PNGOptimizationReceiptSchemaVersion = cli.PNGOptimizationReceiptSchemaVersion
 
 const InspectionSchemaVersion = processing.InspectionSchemaVersion
 const ExportReceiptSchemaVersion = cli.ExportReceiptSchemaVersion
@@ -153,4 +159,19 @@ func ModelOptimizationFile(ctx context.Context, path string, output io.Writer) e
 // The report is written even when one or more individual files fail.
 func Inspect(paths []string, output io.Writer) error {
 	return cli.RunInspection(paths, output)
+}
+
+// OptimizePNG optimizes an existing static PNG in place, retaining the original
+// unless a smaller candidate preserves all RGBA values and rendering information.
+func OptimizePNG(ctx context.Context, request PNGOptimizationRequest) (PNGOptimizationResult, error) {
+	return processing.OptimizePNG(ctx, request)
+}
+
+// OptimizePNGFiles writes a versioned JSON receipt with results for every file.
+func OptimizePNGFiles(ctx context.Context, requests []PNGOptimizationRequest, output io.Writer) error {
+	return cli.RunPNGOptimization(ctx, requests, output)
+}
+
+func OptimizePNGArgs(ctx context.Context, args []string, output io.Writer) error {
+	return cli.RunPNGOptimizationArgs(ctx, args, output)
 }

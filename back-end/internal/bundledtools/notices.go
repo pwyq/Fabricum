@@ -12,9 +12,9 @@ import (
 var noticeFiles = []string{
 	"licenses/LICENSE",
 	"licenses/THIRD-PARTY-NOTICES.md",
-	"licenses/PATENTS.md",
 	"licenses/NATIVE-TOOLS.md",
 	"licenses/versions.json",
+	"licenses/OXIPNG-LICENSES.txt",
 }
 
 // Notices returns the legal and version inventory stored in a release binary.
