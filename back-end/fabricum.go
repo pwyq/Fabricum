@@ -19,6 +19,12 @@ const (
 
 const PNGModeIndexed = processing.PNGModeIndexed
 
+// UpdateArgs checks GitHub and installs a compatible, verified stable release.
+// It writes a versioned JSON result and leaves the running executable intact.
+func UpdateArgs(ctx context.Context, args []string, output io.Writer) error {
+	return cli.RunUpdateArgs(ctx, args, output)
+}
+
 type Source = editor.Source
 type Config = editor.Config
 type ExportRequest = processing.ExportRequest
