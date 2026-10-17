@@ -16,6 +16,14 @@ Use `sources` to restrict the editor to project-owned inputs:
 }
 ```
 
+## Executable updates
+
+For integrations that manage the Fabricum executable, use
+[`fabricum update`](updates.md) with caller-supplied compatibility bounds. On
+success, save and invoke the absolute `executablePath` from its JSON result.
+The updater owns release selection, checksum verification, and installation;
+the caller decides when to check and how to handle a failed check.
+
 ## Sources
 
 - The editor only shows configured sources.

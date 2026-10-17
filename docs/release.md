@@ -82,6 +82,11 @@ Only Linux x64 and Windows x64 are declared release platforms. macOS source
 builds are not published until equivalent standalone-binary and compatibility
 checks exist.
 
+Consumers can use [`fabricum update`](updates.md) to discover compatible stable
+releases and install the correct executable after verifying its published
+SHA-256 sidecar. Preserve the current asset naming and checksum format when
+changing release packaging.
+
 ## Gates
 
 - Validate the tag, changelog, and release scripts.
