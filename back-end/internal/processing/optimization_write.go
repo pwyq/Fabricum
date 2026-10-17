@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 )
 
-func replaceOptimizedPNG(ctx context.Context, path string, original, candidate []byte, info os.FileInfo) error {
-	temporary, err := os.CreateTemp(filepath.Dir(path), ".fabricum-png-*")
+func replaceOptimizedFile(ctx context.Context, path string, original, candidate []byte, info os.FileInfo) error {
+	temporary, err := os.CreateTemp(filepath.Dir(path), ".fabricum-optimize-*")
 	if err != nil {
 		return err
 	}
@@ -37,5 +37,5 @@ func replaceOptimizedPNG(ctx context.Context, path string, original, candidate [
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	return renameOptimizedPNG(temporary.Name(), path)
+	return renameOptimizedFile(temporary.Name(), path)
 }

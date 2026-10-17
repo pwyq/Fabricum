@@ -34,7 +34,7 @@ func testBuild(t *testing.T, platform, suffix, library string) {
 	if err := os.WriteFile(filepath.Join(native, library), []byte("library"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	for _, source := range []string{"LICENSE", "native/NOTICE.md", "native/README.md", "native/versions.json"} {
+	for _, source := range []string{"LICENSE", "native/NOTICE.md", "native/README.md", "native/versions.json", "native/licenses/libjpeg-turbo.txt"} {
 		data, err := os.ReadFile(filepath.Join("..", "..", "..", filepath.FromSlash(source)))
 		if err != nil {
 			t.Fatal(err)
@@ -75,7 +75,7 @@ func testBuild(t *testing.T, platform, suffix, library string) {
 	if !names["payload/"+library] {
 		t.Fatal("runtime library was not embedded")
 	}
-	for _, notice := range []string{"licenses/LICENSE", "licenses/THIRD-PARTY-NOTICES.md", "licenses/NATIVE-TOOLS.md", "licenses/versions.json"} {
+	for _, notice := range []string{"licenses/LICENSE", "licenses/THIRD-PARTY-NOTICES.md", "licenses/NATIVE-TOOLS.md", "licenses/versions.json", "licenses/libjpeg-turbo.txt"} {
 		if !names[notice] {
 			t.Errorf("missing embedded notice %s", notice)
 		}

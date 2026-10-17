@@ -55,6 +55,7 @@ func TestReadsConsolidatedNoticesWithoutExtractingThem(t *testing.T) {
 		"licenses/THIRD-PARTY-NOTICES.md",
 		"licenses/NATIVE-TOOLS.md",
 		"licenses/versions.json",
+		"licenses/libjpeg-turbo.txt",
 	}
 	for _, name := range expectedNotices {
 		files[name] = "contents of " + name

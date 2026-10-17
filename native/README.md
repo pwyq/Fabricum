@@ -5,8 +5,12 @@ the pinned `basisu` executable. Model optimization uses the statically linked
 `gltfpack` executable built from the pinned meshoptimizer source. Put the
 executables in `PATH`, or point Fabricum's `encoderDirectory` setting (or
 `--encoder-directory`) at the directory containing them. Release executables
-embed these tools and the pinned `oxipng` PNG optimizer, extracting them into
-a content-addressed user cache. Oxipng uses a static Windows GNU source build and
+embed these tools, the pinned `oxipng` PNG optimizer, and libjpeg-turbo 3.1.3's
+`jpegtran` JPEG optimizer, extracting them into a content-addressed user cache.
+`jpegtran` is built from verified source with static libjpeg and, on Windows,
+the static MSVC CRT. SIMD is disabled, so NASM is not required. See the
+[JPEG backend evaluation](../docs/jpeg-optimization-backend.md).
+Oxipng uses a static Windows GNU source build and
 the official Linux x64 musl artifact. See the [backend evaluation](../docs/png-optimization-backend.md)
 for compression settings, preservation policy, size cost, and licenses.
 
@@ -31,6 +35,10 @@ Verify the digests in `versions.json` before putting the executables in
 `PATH`.
 
 ## Windows
+
+The `jpegtran` source build uses CMake with Visual Studio C++ Build Tools and
+the Windows SDK, linking the CRT statically. CI runners include these tools.
+No separate JPEG runtime installation is needed by standalone releases.
 
 Use the official libwebp 1.6.0 x64 archive and the libavif 1.4.2
 `windows-artifacts.zip`, verifying the digests in `versions.json`. The libavif

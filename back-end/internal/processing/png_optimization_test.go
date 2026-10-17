@@ -177,7 +177,7 @@ func TestPNGOptimizationConcurrentEditIsRetained(t *testing.T) {
 func TestPNGAtomicReplacementFailureRetainsOriginal(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "original.png")
 	writePNGTestFile(t, path, []byte("original"))
-	if err := renameOptimizedPNG(path+".missing", path); err == nil {
+	if err := renameOptimizedFile(path+".missing", path); err == nil {
 		t.Fatal("expected rename failure")
 	}
 	data, _ := os.ReadFile(path)

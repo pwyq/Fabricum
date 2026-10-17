@@ -33,6 +33,10 @@ func Run(ctx context.Context, output io.Writer) error {
 	if err != nil {
 		return err
 	}
+	jpegOptimization, err := runJPEGWorkflow(ctx, fixture)
+	if err != nil {
+		return err
+	}
 	imageExports, err := runImageWorkflow(ctx, fixture)
 	if err != nil {
 		return err
@@ -57,7 +61,8 @@ func Run(ctx context.Context, output io.Writer) error {
 		SchemaVersion: ReceiptSchemaVersion, Processor: "fabricum/" + fabricum.Version,
 		FixturePolicy: "synthetic fixtures are generated in a disposable temporary directory",
 		ImageExports:  imageExports, Sprites: sprites, MaterialSet: materialSet, Models: models, Inspection: inspection,
-		PNGOptimization: pngOptimization,
+		PNGOptimization:  pngOptimization,
+		JPEGOptimization: jpegOptimization,
 	}
 	if err := json.NewEncoder(output).Encode(receipt); err != nil {
 		return fmt.Errorf("write compatibility receipt: %w", err)
