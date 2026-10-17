@@ -69,7 +69,7 @@ accepted; unsupported constructs fail explicitly rather than being rewritten.
 ID names use the conservative ASCII form `[A-Za-z_][A-Za-z0-9_.:-]*`.
 SVGZ, bitmap tracing, raster export, embedded images, and interactive documents
 are outside this command's profile. Inputs are limited to 16 MiB, 200,000 XML
-tokens, 128 element levels, and 256 attributes per element.
+tokens, 128 element levels, 256 attributes per element, and 256 in-scope namespaces.
 
 ## File safety and report
 

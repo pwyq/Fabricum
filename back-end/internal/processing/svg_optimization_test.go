@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -185,4 +186,18 @@ func TestSVGPathAndResourceLimits(t *testing.T) {
 			t.Fatal("accepted symbolic link")
 		}
 	}
+}
+
+func TestSVGBoundsNamespaceScope(t *testing.T) {
+	var input strings.Builder
+	input.WriteString(`<svg xmlns="` + svgNamespace + `">`)
+	for level := 0; level < 3; level++ {
+		input.WriteString("<g")
+		for prefix := 0; prefix < 100; prefix++ {
+			fmt.Fprintf(&input, ` xmlns:n%d_%d="urn:metadata"`, level, prefix)
+		}
+		input.WriteString(">")
+	}
+	input.WriteString("</g></g></g></svg>")
+	assertSVGFailureUnchanged(t, input.String())
 }

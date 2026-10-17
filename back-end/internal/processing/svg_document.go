@@ -45,6 +45,9 @@ func svgNamespaceScope(parent map[string]string, n *svgNode) (map[string]string,
 			return nil, fmt.Errorf("invalid reserved or empty SVG namespace binding")
 		}
 		scope[prefix] = attr.Value
+		if len(scope) > 256 {
+			return nil, fmt.Errorf("SVG exceeds in-scope namespace limit")
+		}
 	}
 	names := []string{n.qname}
 	for _, attr := range n.attrs {
