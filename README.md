@@ -58,6 +58,13 @@ Machine-readable asset inspection:
 
 > bin\fabricum.exe inspect image.png model.glb texture.ktx2
 
+Noninteractive release updates:
+
+> bin\fabricum.exe update --min-version 0.2.4 --max-version 1.0.0
+
+See [release updates](docs/updates.md) for verified installs, compatibility bounds,
+and the JSON result containing the executable path to use.
+
 Noninteractive image transforms:
 
 > bin\fabricum.exe transform transform.json

@@ -9,6 +9,7 @@
 - [Compatibility check](compatibility.md): one node-free end-to-end proof run.
 - [Development](development.md): layout, checks, CI, and Git rules.
 - [Releases](release.md): version policy and publishing.
+- [Release updates](updates.md): automatic checks, verified installs, and JSON results.
 - [Dependencies](dependencies.md): runtime packages and licenses.
 
 See the [project README](../README.md) to install and run Fabricum.
