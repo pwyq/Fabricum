@@ -4,6 +4,7 @@
 
 | Dependency | Purpose | License notes |
 | --- | --- | --- |
+| `jpegtran` from libjpeg-turbo 3.1.3 | Offline coefficient-preserving JPEG optimization. | IJG and BSD-3-Clause; full upstream text in `native/licenses/libjpeg-turbo.txt`, embedded in releases. |
 | `oxipng` 10.2.1 | Offline lossless PNG file optimization. | MIT; dependency and static runtime notices consolidated in `native/NOTICE.md` and embedded in releases. |
 | Rust 1.88.0 and MinGW GCC | Windows Oxipng source build with static runtime; build tools are not distributed. | Rust MIT/Apache-2.0, MinGW CRT ZPL/BSD, GCC runtime exception; runtime notices are embedded. |
 | Go 1.26.6 | Server, image processing, PNG, hashing, files, and tests. No third-party Go modules. | BSD-3-Clause. Preserve the Go license when redistributing binaries. |
@@ -40,7 +41,7 @@ patent terms again before distributing native binaries.
 
 - Source archives include all Git-tracked project files, including the lockfile,
   native version manifest, native notice, and project license.
-- Release executables contain `cwebp`, `avifenc`, `basisu`, `gltfpack`, `oxipng`, any
+- Release executables contain `cwebp`, `avifenc`, `basisu`, `gltfpack`, `oxipng`, `jpegtran`, any
   required runtime libraries, `native/NOTICE.md`, and
   `native/versions.json`. Fabricum extracts only runtime files into a verified,
   content-addressed user cache. Run `fabricum third-party-notices` to print the

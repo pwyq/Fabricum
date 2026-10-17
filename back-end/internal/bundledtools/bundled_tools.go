@@ -18,7 +18,7 @@ import (
 var ErrNotBundled = errors.New("native tools are not embedded")
 
 var requiredTools = map[string]struct{}{
-	"avifenc": {}, "basisu": {}, "cwebp": {}, "gltfpack": {}, "oxipng": {},
+	"avifenc": {}, "basisu": {}, "cwebp": {}, "gltfpack": {}, "oxipng": {}, "jpegtran": {},
 }
 
 var resolved struct {

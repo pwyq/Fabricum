@@ -8,6 +8,7 @@ are listed below.
 
 | Tool and implementation | Pinned source | Included dependency | License and notice |
 | --- | --- | --- | --- |
+| `jpegtran` / libjpeg-turbo 3.1.3 | [libjpeg-turbo 3.1.3](https://github.com/libjpeg-turbo/libjpeg-turbo/tree/3.1.3) | Static libjpeg API library, static Windows CRT; SIMD and TurboJPEG API disabled | IJG and BSD-3-Clause; full upstream license and IJG README in [licenses/libjpeg-turbo.txt](licenses/libjpeg-turbo.txt), embedded in releases |
 | `oxipng` 10.2.1 | [Oxipng v10.2.1](https://github.com/oxipng/oxipng/tree/v10.2.1) | libdeflate and Rust Zopfli, locked Rust dependencies, and static platform runtimes | MIT; dependency and static runtime notices are consolidated in this inventory |
 | `cwebp` / libwebp 1.6.0 | [libwebp v1.6.0](https://github.com/webmproject/libwebp/tree/v1.6.0) | libwebp and libsharpyuv | [COPYING](https://github.com/webmproject/libwebp/blob/v1.6.0/COPYING) |
 | `avifenc` / libavif 1.4.2 | [libavif v1.4.2](https://github.com/AOMediaCodec/libavif/tree/v1.4.2) | libaom 3.14.1 (`aom` only) | [libavif LICENSE](https://github.com/AOMediaCodec/libavif/blob/v1.4.2/LICENSE), [libaom LICENSE](https://aomedia.googlesource.com/aom/+/v3.14.1/LICENSE) |
@@ -32,6 +33,10 @@ Rust packages under MIT/Apache-2.0. Static runtime notices cover Rust
 (MIT/Apache-2.0), musl (MIT), MinGW CRT (ZPL/BSD), and the GCC runtime exception.
 
 ## Patent information
+
+This software is based in part on the work of the Independent JPEG Group.
+The bundled JPEG tool retains the [libjpeg-turbo license](licenses/libjpeg-turbo.txt)
+and IJG documentation; it is used only for coefficient-preserving Huffman coding.
 
 This section records the upstream patent-information files that apply to the
 bundled codec implementations. It is an attribution pointer, not legal

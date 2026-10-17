@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { installPNGOptimizer } from './native/png-optimizer.mjs'
+import { installJPEGOptimizer } from './native/jpeg-optimizer.mjs'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const versions = JSON.parse(await readFile(join(root, 'native', 'versions.json'), 'utf8'))
@@ -210,6 +211,7 @@ async function main() {
   await installBasis(workspace)
   await installGltfpack(workspace)
   await installPNGOptimizer({ pinned: versions.oxipng, workspace, download, verify, extract, run, copyExecutables })
+  await installJPEGOptimizer({ pinned: versions.jpegtran, workspace, outputDirectory, download, verify, extract, run, findFile })
   if (process.env.GITHUB_PATH) await writeFile(process.env.GITHUB_PATH, `${outputDirectory}\n`, { flag: 'a' })
   console.log(`Native codec tools installed in ${outputDirectory}`)
 }

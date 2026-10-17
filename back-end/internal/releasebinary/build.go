@@ -11,13 +11,14 @@ import (
 	"time"
 )
 
-var requiredTools = []string{"avifenc", "basisu", "cwebp", "gltfpack", "oxipng"}
+var requiredTools = []string{"avifenc", "basisu", "cwebp", "gltfpack", "oxipng", "jpegtran"}
 
 var metadataFiles = map[string]string{
-	"LICENSE":              "licenses/LICENSE",
-	"native/NOTICE.md":     "licenses/THIRD-PARTY-NOTICES.md",
-	"native/README.md":     "licenses/NATIVE-TOOLS.md",
-	"native/versions.json": "licenses/versions.json",
+	"LICENSE":                           "licenses/LICENSE",
+	"native/NOTICE.md":                  "licenses/THIRD-PARTY-NOTICES.md",
+	"native/README.md":                  "licenses/NATIVE-TOOLS.md",
+	"native/versions.json":              "licenses/versions.json",
+	"native/licenses/libjpeg-turbo.txt": "licenses/libjpeg-turbo.txt",
 }
 
 type Options struct {

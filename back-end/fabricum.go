@@ -57,6 +57,13 @@ type PNGOptimizationReceipt = cli.PNGOptimizationReceipt
 const OxipngVersion = processing.OxipngVersion
 const PNGOptimizationReceiptSchemaVersion = cli.PNGOptimizationReceiptSchemaVersion
 
+type JPEGOptimizationRequest = processing.JPEGOptimizationRequest
+type JPEGOptimizationResult = processing.JPEGOptimizationResult
+type JPEGOptimizationReceipt = cli.JPEGOptimizationReceipt
+
+const JPEGTranVersion = processing.JPEGTranVersion
+const JPEGOptimizationReceiptSchemaVersion = cli.JPEGOptimizationReceiptSchemaVersion
+
 const InspectionSchemaVersion = processing.InspectionSchemaVersion
 const ExportReceiptSchemaVersion = cli.ExportReceiptSchemaVersion
 const TransformReceiptSchemaVersion = cli.TransformReceiptSchemaVersion
@@ -174,4 +181,19 @@ func OptimizePNGFiles(ctx context.Context, requests []PNGOptimizationRequest, ou
 
 func OptimizePNGArgs(ctx context.Context, args []string, output io.Writer) error {
 	return cli.RunPNGOptimizationArgs(ctx, args, output)
+}
+
+// OptimizeJPEG optimizes an existing JPEG in place, preserving its coefficients
+// and metadata and retaining the original unless the candidate is smaller.
+func OptimizeJPEG(ctx context.Context, request JPEGOptimizationRequest) (JPEGOptimizationResult, error) {
+	return processing.OptimizeJPEG(ctx, request)
+}
+
+// OptimizeJPEGFiles emits a versioned JSON receipt with a result for every file.
+func OptimizeJPEGFiles(ctx context.Context, requests []JPEGOptimizationRequest, output io.Writer) error {
+	return cli.RunJPEGOptimization(ctx, requests, output)
+}
+
+func OptimizeJPEGArgs(ctx context.Context, args []string, output io.Writer) error {
+	return cli.RunJPEGOptimizationArgs(ctx, args, output)
 }

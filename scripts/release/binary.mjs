@@ -44,6 +44,10 @@ function validateReceipt(data) {
   if (!optimizedPNG?.changed || optimizedPNG.savingsBytes <= 0 || optimizedPNG.optimizer !== 'oxipng' || !optimizedPNG.optimizerVersion) {
     throw new Error('compatibility receipt omitted lossless PNG size reduction')
   }
+  const optimizedJPEG = receipt.jpegOptimization?.files?.[0]
+  if (!optimizedJPEG?.changed || optimizedJPEG.savingsBytes <= 0 || optimizedJPEG.optimizer !== 'jpegtran' || !optimizedJPEG.optimizerVersion) {
+    throw new Error('compatibility receipt omitted lossless JPEG size reduction')
+  }
   const inspectedFormats = new Set((receipt.inspection.assets || []).map(asset => asset.format))
   for (const format of ['png', 'webp', 'avif', 'ktx2', 'gltf']) if (!inspectedFormats.has(format)) throw new Error(`compatibility receipt omitted ${format} inspection`)
 }
@@ -70,7 +74,7 @@ function checkStandaloneBinary(binary, executableName) {
     if (result.status !== 0) throw new Error(`standalone compatibility check failed: ${(result.stderr || '').trim()}`)
     validateReceipt(result.stdout)
     const notices = spawnSync(isolated, ['third-party-notices'], { cwd: directory, env: environment, encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 })
-    if (notices.error || notices.status !== 0 || !notices.stdout.includes('THIRD-PARTY-NOTICES.md')) {
+    if (notices.error || notices.status !== 0 || !notices.stdout.includes('THIRD-PARTY-NOTICES.md') || !notices.stdout.includes('libjpeg-turbo Licenses')) {
       throw new Error(`standalone binary did not expose its embedded notices: ${notices.error?.message || (notices.stderr || '').trim()}`)
     }
   } finally {

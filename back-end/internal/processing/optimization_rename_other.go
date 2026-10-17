@@ -4,6 +4,6 @@ package processing
 
 import "os"
 
-func renameOptimizedPNG(source, destination string) error {
+func renameOptimizedFile(source, destination string) error {
 	return os.Rename(source, destination)
 }

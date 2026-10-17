@@ -17,15 +17,16 @@ const ReceiptSchemaVersion = 1
 // Receipt is the node-free end-to-end compatibility report. The nested
 // receipts are the same versioned contracts emitted by each Fabricum command.
 type Receipt struct {
-	SchemaVersion   int                             `json:"schemaVersion"`
-	Processor       string                          `json:"processor"`
-	FixturePolicy   string                          `json:"fixturePolicy"`
-	ImageExports    []fabricum.ExportReceipt        `json:"imageExports"`
-	Sprites         fabricum.TransformReceipt       `json:"sprites"`
-	MaterialSet     fabricum.TextureReceipt         `json:"materialSet"`
-	Models          []fabricum.ModelReceipt         `json:"models"`
-	Inspection      fabricum.InspectionReport       `json:"inspection"`
-	PNGOptimization fabricum.PNGOptimizationReceipt `json:"pngOptimization"`
+	SchemaVersion    int                              `json:"schemaVersion"`
+	Processor        string                           `json:"processor"`
+	FixturePolicy    string                           `json:"fixturePolicy"`
+	ImageExports     []fabricum.ExportReceipt         `json:"imageExports"`
+	Sprites          fabricum.TransformReceipt        `json:"sprites"`
+	MaterialSet      fabricum.TextureReceipt          `json:"materialSet"`
+	Models           []fabricum.ModelReceipt          `json:"models"`
+	Inspection       fabricum.InspectionReport        `json:"inspection"`
+	PNGOptimization  fabricum.PNGOptimizationReceipt  `json:"pngOptimization"`
+	JPEGOptimization fabricum.JPEGOptimizationReceipt `json:"jpegOptimization"`
 }
 
 func writeJSON(path string, value any) error {

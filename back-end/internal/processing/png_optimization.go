@@ -107,7 +107,7 @@ func optimizePNG(ctx context.Context, request PNGOptimizationRequest, optimize p
 	if len(candidate) >= len(original) {
 		return result, nil
 	}
-	if err := replaceOptimizedPNG(ctx, path, original, candidate, info); err != nil {
+	if err := replaceOptimizedFile(ctx, path, original, candidate, info); err != nil {
 		return result, fmt.Errorf("replace PNG: %w", err)
 	}
 	result.OutputBytes = len(candidate)
