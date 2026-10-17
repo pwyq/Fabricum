@@ -35,6 +35,16 @@ func svgEditorNamespace(namespace string) bool {
 	}, namespace)
 }
 
+func svgMetadataNamespace(namespace string) bool {
+	return svgContains([]string{
+		"http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+		"http://purl.org/dc/elements/1.1/",
+		"http://creativecommons.org/ns#",
+		"adobe:ns:meta/",
+		"http://ns.adobe.com/xap/1.0/",
+	}, namespace)
+}
+
 func validateSVG(root *svgNode) (*svgPolicy, error) {
 	policy := &svgPolicy{ids: map[string]bool{}}
 	if err := policy.visit(root, false); err != nil {
@@ -59,16 +69,15 @@ func (p *svgPolicy) visit(n *svgNode, metadata bool) error {
 	if local == "script" || local == "foreignobject" || strings.HasPrefix(local, "animate") || local == "set" || local == "discard" {
 		return fmt.Errorf("unsafe or unsupported SVG element %s", n.qname)
 	}
-	if !metadata && !svgEditorNamespace(n.name.Space) && (n.name.Space != svgNamespace || !svgContains(svgElements, n.name.Local)) {
+	// Metadata is not a sandbox: HTML objects/iframes or other active elements
+	// nested there can still load resources in a document renderer.
+	if n.name.Space == svgNamespace && !svgContains(svgElements, n.name.Local) || n.name.Space != svgNamespace && !svgEditorNamespace(n.name.Space) && !(metadata && svgMetadataNamespace(n.name.Space)) {
 		return fmt.Errorf("unsupported SVG element or namespace %s", n.qname)
 	}
 	metadata = metadata || n.name.Local == "metadata" || svgEditorNamespace(n.name.Space)
 	for _, attr := range n.attrs {
 		name, value := strings.ToLower(attr.Name.Local), attr.Value
 		if attr.Name.Space == "xmlns" || attr.Name == (xml.Name{Local: "xmlns"}) {
-			if strings.HasPrefix(attr.raw, "xmlns:xml=") && value != xmlNamespace || strings.HasPrefix(attr.raw, "xmlns:xmlns=") || value == "http://www.w3.org/2000/xmlns/" {
-				return fmt.Errorf("invalid reserved SVG namespace binding")
-			}
 			continue
 		}
 		if strings.HasPrefix(name, "on") || name == "base" || name == "src" {
