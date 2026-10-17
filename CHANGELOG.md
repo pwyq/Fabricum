@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.2.5 - Offline optimization and verified updates
+
+2026-10-17
+
+### Added
+
+- Added lossless in-place PNG optimization with pinned Oxipng and optional text/timestamp metadata stripping.
+- Added lossless in-place JPEG optimization with pinned jpegtran, metadata preservation, and optional progressive scans.
+- Added offline SVG optimization with conservative cleanup, reference preservation, and input security checks.
+- Added automatic stable-release checks and verified Windows/Linux installation with caller compatibility bounds and JSON results.
+
+### Changed
+
+- Bundled PNG/JPEG optimization tools and extended standalone compatibility checks for all new optimizers.
+
 ## v0.2.4 - Source selection and export controls
 
 2026-09-30
