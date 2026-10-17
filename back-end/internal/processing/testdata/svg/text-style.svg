@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="96" viewBox="0 0 180 96" aria-labelledby="title description">
+  <title id="title">Styled text &amp; selectors</title>
+  <desc id="description">Groups and explicit attributes participate in CSS selectors.</desc>
+  <style><![CDATA[
+    g > rect:first-child { fill: #224488; }
+    text { font-family: sans-serif; font-size: 18px; fill: #182028; white-space: pre; }
+    [clipPathUnits] + linearGradient { color: red; }
+    .accent { fill: #dd2244; }
+  ]]></style>
+  <g>
+    <rect x="0" y="0" width="180" height="30"/>
+  </g>
+  <text x="4" y="55" xml:space="preserve"> A <tspan class="accent"> B </tspan> C &amp; D </text>
+  <text x="4" y="82"> spaced <tspan>words</tspan> here </text>
+</svg>
