@@ -76,16 +76,13 @@ func install(ctx context.Context, client *http.Client, root, name, digest, addre
 	// The content hash also isolates a republished asset from an earlier install.
 	destination := filepath.Join(root, name+"-"+digest)
 	path := filepath.Join(destination, name)
-	if err := verifyInstalled(ctx, destination, name, digest); err == nil {
+	if _, err := os.Lstat(destination); err == nil {
+		if err := verifyInstalled(ctx, destination, name, digest); err != nil {
+			return "", false, fmt.Errorf("verify existing installation: %w", err)
+		}
 		return path, false, nil
 	} else if !errors.Is(err, os.ErrNotExist) {
-		return "", false, fmt.Errorf("verify existing installation: %w", err)
-	}
-	if _, err := os.Lstat(destination); !errors.Is(err, os.ErrNotExist) {
-		if checkErr := verifyInstalled(ctx, destination, name, digest); checkErr == nil {
-			return path, false, nil
-		}
-		return "", false, fmt.Errorf("refusing to replace incomplete existing installation")
+		return "", false, fmt.Errorf("inspect existing installation: %w", err)
 	}
 	if err := os.MkdirAll(root, 0700); err != nil {
 		return "", false, fmt.Errorf("create update directory: %w", err)
