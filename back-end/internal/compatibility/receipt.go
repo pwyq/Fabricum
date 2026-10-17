@@ -27,6 +27,7 @@ type Receipt struct {
 	Inspection       fabricum.InspectionReport        `json:"inspection"`
 	PNGOptimization  fabricum.PNGOptimizationReceipt  `json:"pngOptimization"`
 	JPEGOptimization fabricum.JPEGOptimizationReceipt `json:"jpegOptimization"`
+	SVGOptimization  fabricum.SVGOptimizationReceipt  `json:"svgOptimization"`
 }
 
 func writeJSON(path string, value any) error {

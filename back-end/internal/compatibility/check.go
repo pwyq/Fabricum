@@ -29,6 +29,10 @@ func Run(ctx context.Context, output io.Writer) error {
 	if err != nil {
 		return err
 	}
+	svgOptimization, err := runSVGWorkflow(ctx, fixture)
+	if err != nil {
+		return err
+	}
 	pngOptimization, err := runPNGWorkflow(ctx, fixture)
 	if err != nil {
 		return err
@@ -63,6 +67,7 @@ func Run(ctx context.Context, output io.Writer) error {
 		ImageExports:  imageExports, Sprites: sprites, MaterialSet: materialSet, Models: models, Inspection: inspection,
 		PNGOptimization:  pngOptimization,
 		JPEGOptimization: jpegOptimization,
+		SVGOptimization:  svgOptimization,
 	}
 	if err := json.NewEncoder(output).Encode(receipt); err != nil {
 		return fmt.Errorf("write compatibility receipt: %w", err)

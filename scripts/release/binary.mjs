@@ -48,6 +48,10 @@ function validateReceipt(data) {
   if (!optimizedJPEG?.changed || optimizedJPEG.savingsBytes <= 0 || optimizedJPEG.optimizer !== 'jpegtran' || !optimizedJPEG.optimizerVersion) {
     throw new Error('compatibility receipt omitted lossless JPEG size reduction')
   }
+  const optimizedSVG = receipt.svgOptimization?.files?.[0]
+  if (!optimizedSVG?.changed || optimizedSVG.savingsBytes <= 0 || optimizedSVG.optimizer !== 'fabricum-svg' || optimizedSVG.optimizerVersion !== '1.0.0') {
+    throw new Error('compatibility receipt omitted offline SVG size reduction')
+  }
   const inspectedFormats = new Set((receipt.inspection.assets || []).map(asset => asset.format))
   for (const format of ['png', 'webp', 'avif', 'ktx2', 'gltf']) if (!inspectedFormats.has(format)) throw new Error(`compatibility receipt omitted ${format} inspection`)
 }
@@ -74,7 +78,7 @@ function checkStandaloneBinary(binary, executableName) {
     if (result.status !== 0) throw new Error(`standalone compatibility check failed: ${(result.stderr || '').trim()}`)
     validateReceipt(result.stdout)
     const notices = spawnSync(isolated, ['third-party-notices'], { cwd: directory, env: environment, encoding: 'utf8', windowsHide: true, maxBuffer: 8 * 1024 * 1024 })
-    if (notices.error || notices.status !== 0 || !notices.stdout.includes('THIRD-PARTY-NOTICES.md') || !notices.stdout.includes('libjpeg-turbo Licenses')) {
+    if (notices.error || notices.status !== 0 || !notices.stdout.includes('THIRD-PARTY-NOTICES.md') || !notices.stdout.includes('libjpeg-turbo Licenses') || !notices.stdout.includes('fabricum-svg 1.0.0')) {
       throw new Error(`standalone binary did not expose its embedded notices: ${notices.error?.message || (notices.stderr || '').trim()}`)
     }
   } finally {
