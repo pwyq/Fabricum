@@ -43,6 +43,10 @@ From the repository root:
   native installer builds the pinned full gltfpack tool with CMake.
 - JPEG file optimization tests use pinned libjpeg-turbo `jpegtran`, built with
   CMake and a static CRT on Windows (MSVC); no NASM dependency is needed.
+- SVG optimization uses only Go's standard library. Pixel comparison tests use
+  Chromium/Edge (`FABRICUM_SVG_BROWSER` can name its executable); CI requires a
+  browser. Source-only environments without one skip rendering tests. Browser
+  runs use headless mode and disposable profiles; no browser ships in releases.
 - PNG file optimization tests use pinned Oxipng. Windows builds require
   Rust 1.88.0 with the GNU target and MinGW GCC; CI checks system-only DLL imports.
 

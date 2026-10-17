@@ -1,0 +1,7 @@
+<?xml version='1.0'?>
+<s:svg xmlns:s='http://www.w3.org/2000/svg' width='128' height='64' viewBox='0 0 128 64'>
+  <!-- Namespace prefixes and significant spaces must survive. -->
+  <s:g xml:space='preserve'>
+    <s:text x = '4' y = '30' font-family = 'sans-serif'>A <s:tspan>B</s:tspan> C&#32;D</s:text>
+  </s:g>
+</s:svg>

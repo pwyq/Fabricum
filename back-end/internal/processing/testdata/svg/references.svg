@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="128" height="96" viewBox="0 0 128 96">
+  <!-- Every definition and reference must keep working. -->
+  <defs>
+    <linearGradient id="paint" gradientUnits="objectBoundingBox" spreadMethod="pad">
+      <stop offset="0%" stop-color="#e12b40"/>
+      <stop offset="50%" stop-color="#ffcc22"/>
+      <stop offset="100%" stop-color="#3b88ff"/>
+    </linearGradient>
+    <linearGradient id="duplicate" gradientUnits="objectBoundingBox" spreadMethod="pad">
+      <stop offset="0%" stop-color="#e12b40"/>
+      <stop offset="50%" stop-color="#ffcc22"/>
+      <stop offset="100%" stop-color="#3b88ff"/>
+    </linearGradient>
+    <clipPath id="clip" clipPathUnits="userSpaceOnUse"><circle cx="32" cy="32" r="27"/></clipPath>
+    <mask id="mask" maskUnits="objectBoundingBox" maskContentUnits="userSpaceOnUse"><rect width="128" height="96" fill="white"/><circle cx="90" cy="28" r="12" fill="black"/></mask>
+    <filter id="blur" filterUnits="objectBoundingBox" primitiveUnits="userSpaceOnUse"><feGaussianBlur stdDeviation="1.25"/></filter>
+    <path id="triangle" d="M 6 82 L 36 44 L 62 82 Z"/>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" fill="url(#paint)" clip-path="url(#clip)"/>
+  <rect x="68" y="8" width="52" height="72" fill="url(#duplicate)" mask="url(#mask)" filter="url(#blur)"/>
+  <use xlink:href="#triangle" fill="#228866"/>
+</svg>

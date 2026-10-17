@@ -6,6 +6,12 @@ tools after extracting them into a verified user cache; they are not Node
 dependencies. The applicable license notices and patent-information pointers
 are listed below.
 
+The built-in **fabricum-svg 1.0.0** optimizer is Fabricum's own Apache-2.0 code,
+compiled with the Go standard library/runtime (BSD-3-Clause). It adds no SVG
+packages, external executables, JavaScript runtime, or transitive dependencies.
+Its version is pinned in the source and in every SVG size result; SVGO and
+svgcleaner are not bundled.
+
 | Tool and implementation | Pinned source | Included dependency | License and notice |
 | --- | --- | --- | --- |
 | `jpegtran` / libjpeg-turbo 3.1.3 | [libjpeg-turbo 3.1.3](https://github.com/libjpeg-turbo/libjpeg-turbo/tree/3.1.3) | Static libjpeg API library, static Windows CRT; SIMD and TurboJPEG API disabled | IJG and BSD-3-Clause; full upstream license and IJG README in [licenses/libjpeg-turbo.txt](licenses/libjpeg-turbo.txt), embedded in releases |
