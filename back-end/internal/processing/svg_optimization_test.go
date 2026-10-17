@@ -143,6 +143,15 @@ func TestSVGPreservesSensitiveStructures(t *testing.T) {
 	}
 }
 
+func TestSVGGroupUnwrappingPreservesFollowingSiblings(t *testing.T) {
+	input := `<svg xmlns="` + svgNamespace + `"><g><rect id="first"/><path id="second"/></g><circle id="third"/></svg>`
+	expected := `<svg xmlns="` + svgNamespace + `"><rect id="first"/><path id="second"/><circle id="third"/></svg>`
+	output, _, err := optimizeSVGDocument(context.Background(), []byte(input))
+	if err != nil || string(output) != expected {
+		t.Fatalf("lost or reordered sibling: %s, %v", output, err)
+	}
+}
+
 func TestSVGPathAndResourceLimits(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()

@@ -9,4 +9,5 @@
       <path d="M 20.123456789 48 L 40 68 L 76 28" fill="none" stroke="white" stroke-width="8"/>
     </g>
   </g>
+  <g><circle cx="80" cy="16" r="4" fill="white"/><circle cx="16" cy="80" r="4" fill="white"/></g><rect x="10" y="10" width="3" height="3" fill="white"/>
 </svg>

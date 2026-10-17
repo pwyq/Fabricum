@@ -21,7 +21,9 @@ func cleanSVG(n *svgNode, preserveSpace bool) {
 		}
 	}
 	n.attrs = attrs
-	children := n.children[:0]
+	// Unwrapping can add more than one child. A fresh slice avoids overwriting
+	// siblings that the loop has not visited yet.
+	children := make([]*svgNode, 0, len(n.children))
 	for _, child := range n.children {
 		if (child.name == (xml.Name{Space: svgNamespace, Local: "metadata"}) || svgEditorNamespace(child.name.Space)) && !svgHasID(child) {
 			continue
