@@ -9,6 +9,7 @@ browser GUI for preparing 2D artwork.
 - Run deterministic noninteractive 2D transforms, including channel packing.
 - Optimize existing PNG files losslessly and offline, preserving color information.
 - Optimize existing JPEG files losslessly and offline, preserving DCT coefficients and metadata.
+- Optimize static SVG files offline, preserving local references, styles, and numeric precision.
 - Build loose ETC1S and UASTC-Zstandard KTX2 texture sets from ordinary images.
 - Export PNG, WebP, or AVIF, with quality and lossless options, reducing file sizes up to 95%
 - Preview encoded images and exact file sizes before exporting.
@@ -73,6 +74,13 @@ Lossless optimization of existing JPEG files:
 
 See [JPEG optimization](docs/jpeg-optimization.md) for progressive encoding,
 metadata preservation, and JSON results.
+
+Offline static SVG optimization:
+
+> bin\fabricum.exe optimize-svg icon.svg artwork.svg
+
+See [SVG optimization](docs/svg-optimization.md) for the static SVG profile,
+offline security policy, and JSON size reports.
 
 Loose KTX2 texture sets:
 

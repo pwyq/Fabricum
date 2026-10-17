@@ -23,6 +23,7 @@ successful run. It exercises:
 - contained transparent 256×256 and 512×512 indexed PNG sprites;
 - lossless PNG file reduction with exact transparent RGB and an unchanged second run;
 - lossless JPEG reduction with progressive scans, unchanged decoded samples, and an unchanged second run;
+- offline static SVG reduction with preserved viewport/gradient references and an unchanged second run;
 - a complete 1024×1024 ETC1S base-color and UASTC-Zstandard normal/ARM set;
 - ordered inspection of PNG, JPEG, GIF, WebP, AVIF, KTX2, glTF, GLB, and BIN;
 - static-prop transforms, centering, mirrored winding repair, material

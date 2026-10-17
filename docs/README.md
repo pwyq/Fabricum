@@ -5,6 +5,7 @@
 - [Processing](processing.md): formats, file writes, and local security.
 - [PNG optimization](png-optimization.md): offline lossless file optimization and JSON results.
 - [JPEG optimization](jpeg-optimization.md): coefficient-preserving file optimization and metadata policy.
+- [SVG optimization](svg-optimization.md): offline static SVG cleanup, preservation, and size reports.
 - [Compatibility check](compatibility.md): one node-free end-to-end proof run.
 - [Development](development.md): layout, checks, CI, and Git rules.
 - [Releases](release.md): version policy and publishing.
