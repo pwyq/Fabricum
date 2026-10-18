@@ -4,7 +4,7 @@
 
 | Dependency | Purpose | License notes |
 | --- | --- | --- |
-| `fabricum-svg` 1.0.0 (in tree) | Offline static SVG cleanup, compiled into Fabricum; Go standard library only, no transitive SVG dependencies. | Project Apache-2.0; Go runtime BSD-3-Clause. |
+| `fabricum-svg` 1.1.0 (in tree) | Offline static SVG cleanup, compiled into Fabricum; Go standard library only, no transitive SVG dependencies. | Project Apache-2.0; Go runtime BSD-3-Clause. |
 | `jpegtran` from libjpeg-turbo 3.1.3 | Offline coefficient-preserving JPEG optimization. | IJG and BSD-3-Clause; full upstream text in `native/licenses/libjpeg-turbo.txt`, embedded in releases. |
 | `oxipng` 10.2.1 | Offline lossless PNG file optimization. | MIT; dependency and static runtime notices consolidated in `native/NOTICE.md` and embedded in releases. |
 | Rust 1.88.0 and MinGW GCC | Windows Oxipng source build with static runtime; build tools are not distributed. | Rust MIT/Apache-2.0, MinGW CRT ZPL/BSD, GCC runtime exception; runtime notices are embedded. |

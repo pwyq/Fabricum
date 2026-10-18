@@ -86,6 +86,10 @@ Offline static SVG optimization:
 
 > bin\fabricum.exe optimize-svg icon.svg artwork.svg
 
+Prepare a UI icon into a new file, keeping the drawing intact:
+
+> bin\fabricum.exe optimize-svg --icon --precision 2 --selective-rounding --current-color --output icon.svg drawing.svg
+
 See [SVG optimization](docs/svg-optimization.md) for the static SVG profile,
 offline security policy, and JSON size reports.
 

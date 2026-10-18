@@ -14,13 +14,53 @@ import (
 )
 
 func TestSVGOptimizationCLIFlags(t *testing.T) {
-	for _, args := range [][]string{{}, {"--unknown"}, {"--precision", "2"}, {"--encoder-directory", "tools"}} {
+	for _, args := range [][]string{{}, {"--unknown"}, {"--precision", "2"}, {"--precision", "-1", "icon.svg"}, {"--precision", "9", "icon.svg"}, {"--output", "out.svg", "a.svg", "b.svg"}, {"--encoder-directory", "tools"}} {
 		if err := RunSVGOptimizationArgs(nil, args, &bytes.Buffer{}); err == nil {
 			t.Fatalf("expected argument error: %v", args)
 		}
 	}
 	if err := RunSVGOptimizationArgs(nil, []string{"--help"}, &bytes.Buffer{}); !errors.Is(err, flag.ErrHelp) {
 		t.Fatal(err)
+	}
+}
+
+func TestSVGIconCLIOutput(t *testing.T) {
+	directory := t.TempDir()
+	source, destination := filepath.Join(directory, "source with spaces.svg"), filepath.Join(directory, "icon.svg")
+	input := `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 23.99999 24"><g id="layer"><path style="fill:#000000;stroke:black;stroke-width:11.5295" d="M .999 .89 L 1.23456 2.34567"/></g></svg>`
+	if err := os.WriteFile(source, []byte(input), 0600); err != nil {
+		t.Fatal(err)
+	}
+	var output bytes.Buffer
+	args := []string{"--icon", "--precision", "2", "--selective-rounding", "--current-color", "--output", destination, source}
+	if err := RunSVGOptimizationArgs(nil, args, &output); err != nil {
+		t.Fatal(err)
+	}
+	var receipt SVGOptimizationReceipt
+	if err := json.Unmarshal(output.Bytes(), &receipt); err != nil {
+		t.Fatal(err)
+	}
+	result := receipt.Files[0]
+	prepared, err := os.ReadFile(destination)
+	if err != nil || !bytes.Contains(prepared, []byte(`d="M1 .9L1.23 2.35"`)) || !bytes.Contains(prepared, []byte(`fill="currentColor"`)) {
+		t.Fatalf("%s, %v", prepared, err)
+	}
+	if !bytes.Contains(prepared, []byte(`viewBox="0 0 24 24"`)) || !bytes.Contains(prepared, []byte(`stroke-width="11.53"`)) {
+		t.Fatalf("presentation precision: %s", prepared)
+	}
+	if result.Path != source || result.OutputPath != destination || !result.Changed || result.InputBytes != len(input) || result.OutputBytes != len(prepared) || len(result.PathErrors) != 1 {
+		t.Fatalf("%+v", result)
+	}
+	original, _ := os.ReadFile(source)
+	if string(original) != input {
+		t.Fatal("changed source")
+	}
+	output.Reset()
+	if err := RunSVGOptimizationArgs(nil, args, &output); err == nil {
+		t.Fatal("overwrote destination")
+	}
+	if err := json.Unmarshal(output.Bytes(), &receipt); err != nil || receipt.Files[0].Error == "" {
+		t.Fatalf("missing file failure: %s", output.Bytes())
 	}
 }
 

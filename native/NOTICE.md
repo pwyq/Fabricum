@@ -6,7 +6,7 @@ tools after extracting them into a verified user cache; they are not Node
 dependencies. The applicable license notices and patent-information pointers
 are listed below.
 
-The built-in **fabricum-svg 1.0.0** optimizer is Fabricum's own Apache-2.0 code,
+The built-in **fabricum-svg 1.1.0** optimizer is Fabricum's own Apache-2.0 code,
 compiled with the Go standard library/runtime (BSD-3-Clause). It adds no SVG
 packages, external executables, JavaScript runtime, or transitive dependencies.
 Its version is pinned in the source and in every SVG size result; SVGO and
