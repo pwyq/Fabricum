@@ -11,12 +11,14 @@ import (
 type SVGOptimizationRequest = processing.SVGOptimizationRequest
 type SVGOptimizationResult = processing.SVGOptimizationResult
 type SVGOptimizationReceipt = cli.SVGOptimizationReceipt
+type SVGOptimizationOptions = processing.SVGOptimizationOptions
+type SVGPathError = processing.SVGPathError
 
 const SVGOptimizerVersion = processing.SVGOptimizerVersion
 const SVGOptimizationReceiptSchemaVersion = cli.SVGOptimizationReceiptSchemaVersion
 
-// OptimizeSVG optimizes a static SVG in place without fetching resources or
-// rounding geometry. The validated candidate must be smaller than the source.
+// OptimizeSVG optimizes a static SVG offline, with optional icon preparation,
+// numeric rounding, and a separate destination. The default preserves precision.
 func OptimizeSVG(ctx context.Context, request SVGOptimizationRequest) (SVGOptimizationResult, error) {
 	return processing.OptimizeSVG(ctx, request)
 }
